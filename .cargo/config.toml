@@ -1,0 +1,6 @@
+[build]
+target = "wasm32-unknown-unknown"
+
+[target.wasm32-unknown-unknown]
+# Requires running `cargo build --release --bin test-runner` once first.
+runner = "target/release/test-runner"
