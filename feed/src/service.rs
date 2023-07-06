@@ -3,6 +3,7 @@
 mod state;
 
 use self::state::Feed;
+use async_graphql::{Request, Response, Schema, EmptySubscription, Object};
 use async_trait::async_trait;
 use linera_sdk::{base::WithServiceAbi, QueryContext, Service, ViewStateStorage};
 use std::sync::Arc;
@@ -22,9 +23,32 @@ impl Service for Feed {
     async fn query_application(
         self: Arc<Self>,
         _context: &QueryContext,
-        _query: Self::Query,
-    ) -> Result<(), Self::Error> {
-        Err(ServiceError::QueriesNotSupported)
+        request: Request,
+    ) -> Result<Response, Self::Error> {
+        let schema = Schema::build(
+            self.clone(),
+            MutationRoot {},
+            EmptySubscription,
+        ).finish();
+        let response = schema.execute(request).await;
+        Ok(response)
+    }
+}
+
+struct MutationRoot;
+
+#[Object]
+impl MutationRoot {
+    async fn publish(&self, _cid: String, _reply_to_cid: String) -> Vec<u8> {
+        vec![0]
+    }
+
+    async fn like(&self, _cid: String) -> Vec<u8> {
+        vec![0]
+    }
+
+    async fn dislike(&self, _cid: String) -> Vec<u8> {
+        vec![0]
     }
 }
 

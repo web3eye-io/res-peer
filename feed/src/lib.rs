@@ -1,5 +1,7 @@
-use async_graphql::SimpleObject;
-use linera_sdk::base::{ContractAbi, ServiceAbi};
+use std::collections::HashMap;
+
+use async_graphql::{SimpleObject, Request, Response};
+use linera_sdk::base::{ContractAbi, ServiceAbi, Owner};
 use serde::{Deserialize, Serialize};
 
 pub struct FeedAbi;
@@ -17,18 +19,19 @@ impl ContractAbi for FeedAbi {
 
 impl ServiceAbi for FeedAbi {
     type Parameters = ();
-    type Query = ();
-    type QueryResponse = ();
+    type Query = Request;
+    type QueryResponse = Response;
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone, SimpleObject)]
+#[derive(Debug, Deserialize, Serialize, Clone, SimpleObject, Eq, PartialEq)]
 pub struct Content {
     /// Here cid is the content cid::Cid store in ipfs
     cid: String,
     /// Here cid is the cid::Cid of the reply content store in ipfs
     reply_to_cid: String,
-    like: u64,
-    dislike: u64
+    likes: u64,
+    dislikes: u64,
+    accounts: HashMap<Owner, bool>
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
