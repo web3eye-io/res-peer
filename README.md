@@ -11,3 +11,27 @@ ResPeer is a Peer-to-Peer content publishing application on Linera. ResPeer aims
 ## Workflow
 
 ![image](webui/src/assets/Workflow.png)
+
+## Feed of ResPeer
+
+ResPeer provides feed application as an on-chain CMS which will record the content directory of the feed. It also maintain the user reaction to contents. When user action happen, feed application will call credit application to mint credits for sender. This invocation happens on-chain.
+
+User can like, dislike or comment to a content. It's hard to recognize if it's a spam user. So at the first stage, each sender can only like, dislike and comment to a content one time, and each sender can only react to content one time within one minute. User can also reward the content author with gift, credits or Linera token. In future we may introduce some decentralized review mechanism to avoid spam.
+
+## Credit of ResPeer
+
+ResPeer provides credits to incentive user who help to keep the network active. User can earn credits through
+
+* Publish content to feed
+* Like or dislike the content
+* Comment content
+  * The comment is also content, but with less weight to the network, so post a comment earn less credits compare to an origin content
+
+Basically, credits are invaluable in the network. It's valuable only when the mall set exchange rate between the credit and the Linera token. After that when user buy asset from the mall, they can pay with Linera Token, combined with credits.
+
+Each credits amount has its alive time. User's balance will only contain amounts which is not expired. We have two options to the expired credits: return to total supply, or burn it. But it's a bit early to decide which one we should fulfill due to we still lack of enough thoughts about the use cases.
+
+## Mall of ResPeer
+
+ResPeer provides a mall to producers. Beside publishing content, producer can also put their works on shelves with Linera token price. Exchange rate between credits and Linera token will be set through DAO. After that when user want to buy assets from the mall, they can pay with Linera token, combined with credits if they already earn some.
+
