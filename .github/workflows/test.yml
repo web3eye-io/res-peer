@@ -19,6 +19,7 @@ jobs:
           - nightly
     steps:
       - uses: actions/checkout@v3
+      - run: pwd
       - run: rustup target add wasm32-unknown-unknown
       - run: git clone https://github.com/linera-io/linera-protocol.git ../linera-protocol
       - run: cd ../linera-protocol; cargo build -p linera-sdk --bin test-runner --release
