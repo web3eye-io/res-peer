@@ -2,6 +2,7 @@
 members = [
     "credit",
     "feed",
+    "mall"
 ]
 resolver = "2"
 
