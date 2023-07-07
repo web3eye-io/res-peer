@@ -26,4 +26,6 @@ jobs:
       - run: cargo build --verbose
       - run: cp -v ../linera-protocol/target/release/test-runner target/release
       - run: pwd
+      - run: ls target/release
+      - run: ls target/wasm32-unknown-unknown/debug/deps
       - run: cargo test --verbose --target wasm32-unknown-unknown
