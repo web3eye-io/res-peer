@@ -3,7 +3,7 @@
 mod state;
 
 use self::state::Credit;
-use async_graphql::{Response, Schema, Request, EmptySubscription, Object};
+use async_graphql::{EmptySubscription, Object, Request, Response, Schema};
 use async_trait::async_trait;
 use linera_sdk::{base::WithServiceAbi, QueryContext, Service, ViewStateStorage};
 use std::sync::Arc;
@@ -25,11 +25,7 @@ impl Service for Credit {
         _context: &QueryContext,
         request: Request,
     ) -> Result<Response, Self::Error> {
-        let schema = Schema::build(
-            self.clone(),
-            MutationRoot {},
-            EmptySubscription,
-        ).finish();
+        let schema = Schema::build(self.clone(), MutationRoot {}, EmptySubscription).finish();
         let response = schema.execute(request).await;
         Ok(response)
     }
@@ -44,7 +40,6 @@ impl MutationRoot {
     }
 }
 
-
 /// An error that can occur while querying the service.
 #[derive(Debug, Error)]
 pub enum ServiceError {
@@ -55,6 +50,5 @@ pub enum ServiceError {
     /// Invalid query argument; could not deserialize request.
     #[error("Invalid query argument; could not deserialize request")]
     InvalidQuery(#[from] serde_json::Error),
-
     // Add error variants here.
 }

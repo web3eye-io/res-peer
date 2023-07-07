@@ -1,10 +1,10 @@
-use linera_views::views::{GraphQLView, RootView};
-use linera_sdk::{
-    base::{Owner, Amount, Timestamp},
-    views::{MapView, ViewStorageContext, RegisterView},
-};
 use credit::AgeAmounts;
 use credit::InitialState;
+use linera_sdk::{
+    base::{Amount, Owner, Timestamp},
+    views::{MapView, RegisterView, ViewStorageContext},
+};
+use linera_views::views::{GraphQLView, RootView};
 
 #[derive(RootView, GraphQLView)]
 #[view(context = "ViewStorageContext")]

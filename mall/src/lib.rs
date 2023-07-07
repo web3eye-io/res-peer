@@ -1,5 +1,5 @@
 use async_graphql::SimpleObject;
-use linera_sdk::base::{ContractAbi, ServiceAbi, Amount};
+use linera_sdk::base::{Amount, ContractAbi, ServiceAbi};
 use serde::{Deserialize, Serialize};
 
 pub struct MallAbi;
@@ -26,10 +26,10 @@ pub struct NFT {
     /// Storage location of http or ipfs
     pub uri: String,
     /// Price in Linera Token
-    pub price: Amount
+    pub price: Amount,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
 pub struct InitialState {
-    pub credits_per_linera: Amount
+    pub credits_per_linera: Amount,
 }

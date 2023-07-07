@@ -3,7 +3,7 @@
 mod state;
 
 use self::state::Feed;
-use async_graphql::{Request, Response, Schema, EmptySubscription, Object};
+use async_graphql::{EmptySubscription, Object, Request, Response, Schema};
 use async_trait::async_trait;
 use linera_sdk::{base::WithServiceAbi, QueryContext, Service, ViewStateStorage};
 use std::sync::Arc;
@@ -25,11 +25,7 @@ impl Service for Feed {
         _context: &QueryContext,
         request: Request,
     ) -> Result<Response, Self::Error> {
-        let schema = Schema::build(
-            self.clone(),
-            MutationRoot {},
-            EmptySubscription,
-        ).finish();
+        let schema = Schema::build(self.clone(), MutationRoot {}, EmptySubscription).finish();
         let response = schema.execute(request).await;
         Ok(response)
     }
@@ -62,6 +58,5 @@ pub enum ServiceError {
     /// Invalid query argument; could not deserialize request.
     #[error("Invalid query argument; could not deserialize request")]
     InvalidQuery(#[from] serde_json::Error),
-
     // Add error variants here.
 }

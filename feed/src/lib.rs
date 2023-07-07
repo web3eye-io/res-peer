@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
-use async_graphql::{SimpleObject, Request, Response};
-use linera_sdk::base::{ContractAbi, ServiceAbi, Owner};
+use async_graphql::{Request, Response, SimpleObject};
+use linera_sdk::base::{ContractAbi, Owner, ServiceAbi};
 use serde::{Deserialize, Serialize};
 
 pub struct FeedAbi;
@@ -31,10 +31,10 @@ pub struct Content {
     reply_to_cid: String,
     likes: u64,
     dislikes: u64,
-    accounts: HashMap<Owner, bool>
+    accounts: HashMap<Owner, bool>,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
 pub struct InitialState {
-    pub react_interval_ms: u64
+    pub react_interval_ms: u64,
 }

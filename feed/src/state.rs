@@ -1,5 +1,8 @@
 use feed::{Content, InitialState};
-use linera_sdk::{views::{ViewStorageContext, MapView, RegisterView}, base::{Owner, Timestamp}};
+use linera_sdk::{
+    base::{Owner, Timestamp},
+    views::{MapView, RegisterView, ViewStorageContext},
+};
 use linera_views::views::{GraphQLView, RootView};
 
 #[derive(RootView, GraphQLView)]
@@ -7,7 +10,7 @@ use linera_views::views::{GraphQLView, RootView};
 pub struct Feed {
     pub contents: MapView<String, Content>,
     pub react_interval_ms: RegisterView<u64>,
-    pub react_accounts: MapView<Owner, Timestamp>
+    pub react_accounts: MapView<Owner, Timestamp>,
 }
 
 #[allow(dead_code)]

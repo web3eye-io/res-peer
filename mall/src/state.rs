@@ -1,13 +1,16 @@
-use linera_sdk::{views::{ViewStorageContext, MapView, RegisterView}, base::{Owner, Amount}};
+use linera_sdk::{
+    base::{Amount, Owner},
+    views::{MapView, RegisterView, ViewStorageContext},
+};
 use linera_views::views::{GraphQLView, RootView};
-use mall::{NFT, InitialState};
+use mall::{InitialState, NFT};
 
 #[derive(RootView, GraphQLView)]
 #[view(context = "ViewStorageContext")]
 pub struct Mall {
     pub collections: MapView<Owner, Vec<NFT>>,
     pub assets: MapView<Owner, Vec<NFT>>,
-    pub credits_per_linera: RegisterView<Amount>
+    pub credits_per_linera: RegisterView<Amount>,
 }
 
 #[allow(dead_code)]

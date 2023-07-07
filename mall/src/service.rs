@@ -38,6 +38,5 @@ pub enum ServiceError {
     /// Invalid query argument; could not deserialize request.
     #[error("Invalid query argument; could not deserialize request")]
     InvalidQuery(#[from] serde_json::Error),
-
     // Add error variants here.
 }

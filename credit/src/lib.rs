@@ -1,6 +1,6 @@
-use linera_sdk::base::{ContractAbi, ServiceAbi, Amount, Timestamp};
+use async_graphql::{Request, Response, SimpleObject};
+use linera_sdk::base::{Amount, ContractAbi, ServiceAbi, Timestamp};
 use serde::{Deserialize, Serialize};
-use async_graphql::{SimpleObject, Request, Response};
 
 pub struct CreditAbi;
 
@@ -29,13 +29,15 @@ pub struct AgeAmount {
 
 #[derive(Debug, Deserialize, Serialize, Clone, SimpleObject)]
 pub struct AgeAmounts {
-    pub amounts: Vec<AgeAmount>
+    pub amounts: Vec<AgeAmount>,
 }
 
 impl AgeAmounts {
     pub fn sum(&self) -> Amount {
         let mut _sum = Amount::zero();
-        self.amounts.iter().for_each(|a| _sum = _sum.try_add(a.amount).unwrap());
+        self.amounts
+            .iter()
+            .for_each(|a| _sum = _sum.try_add(a.amount).unwrap());
         _sum
     }
 }

@@ -79,6 +79,5 @@ pub enum ContractError {
     /// Failed to deserialize JSON string
     #[error("Failed to deserialize JSON string")]
     JsonError(#[from] serde_json::Error),
-
     // Add more error variants here.
 }
