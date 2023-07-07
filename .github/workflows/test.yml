@@ -24,5 +24,6 @@ jobs:
       - run: git clone https://github.com/linera-io/linera-protocol.git ../linera-protocol
       - run: cd ../linera-protocol; cargo build -p linera-sdk --bin test-runner --release
       - run: cargo build --verbose
-      - run: cp ../linera-protocol/target/release/test-runner target/release
+      - run: cp -v ../linera-protocol/target/release/test-runner target/release
+      - run: pwd
       - run: cargo test --verbose --target wasm32-unknown-unknown
