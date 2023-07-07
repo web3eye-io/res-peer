@@ -4,6 +4,7 @@ mod state;
 
 use self::state::Feed;
 use async_trait::async_trait;
+use feed::Operation;
 use linera_sdk::{
     base::{SessionId, WithContractAbi},
     ApplicationCallResult, CalleeContext, Contract, ExecutionResult, MessageContext,
@@ -34,8 +35,25 @@ impl Contract for Feed {
     async fn execute_operation(
         &mut self,
         _context: &OperationContext,
-        _operation: Self::Operation,
+        operation: Self::Operation,
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
+        match operation {
+            Operation::Publish { cid } => {
+                log::info!("Publish cid {:?}", cid);
+            },
+            Operation::Like { cid } => {
+                log::info!("Like cid {:?}", cid);
+            },
+            Operation::Dislike { cid } => {
+                log::info!("Dislike cid {:?}", cid);
+            },
+            Operation::Comment { comment_cid, content_cid } => {
+                log::info!("Comment cid {:?} to cid {:?}", comment_cid, content_cid);
+            },
+            Operation::Tip { cid, amount } => {
+                log::info!("Tip cid {:?} amount {:?}", cid, amount);
+            }
+        }
         Ok(ExecutionResult::default())
     }
 

@@ -5,7 +5,8 @@ mod state;
 use self::state::Feed;
 use async_graphql::{EmptySubscription, Object, Request, Response, Schema};
 use async_trait::async_trait;
-use linera_sdk::{base::WithServiceAbi, QueryContext, Service, ViewStateStorage};
+use feed::Operation;
+use linera_sdk::{base::{WithServiceAbi, Amount}, QueryContext, Service, ViewStateStorage};
 use std::sync::Arc;
 use thiserror::Error;
 
@@ -35,16 +36,30 @@ struct MutationRoot;
 
 #[Object]
 impl MutationRoot {
-    async fn publish(&self, _cid: String, _reply_to_cid: String) -> Vec<u8> {
-        vec![0]
+    async fn publish(&self, ccid: String) -> Vec<u8> {
+        cid::Cid::try_from(ccid.clone()).expect("Invalid content cid");
+        bcs::to_bytes(&Operation::Publish { cid: ccid }).unwrap()
     }
 
-    async fn like(&self, _cid: String) -> Vec<u8> {
-        vec![0]
+    async fn like(&self, ccid: String) -> Vec<u8> {
+        cid::Cid::try_from(ccid.clone()).expect("Invalid content cid");
+        bcs::to_bytes(&Operation::Like { cid: ccid }).unwrap()
     }
 
-    async fn dislike(&self, _cid: String) -> Vec<u8> {
-        vec![0]
+    async fn dislike(&self, ccid: String) -> Vec<u8> {
+        cid::Cid::try_from(ccid.clone()).expect("Invalid content cid");
+        bcs::to_bytes(&Operation::Like { cid: ccid }).unwrap()
+    }
+
+    async fn comment(&self, ccid: String, comment_cid: String) -> Vec<u8> {
+        cid::Cid::try_from(ccid.clone()).expect("Invalid content cid");
+        cid::Cid::try_from(comment_cid.clone()).expect("Invalid comment cid");
+        bcs::to_bytes(&Operation::Comment { content_cid: ccid, comment_cid }).unwrap()
+    }
+
+    async fn tip(&self, ccid: String, amount: Amount) -> Vec<u8> {
+        cid::Cid::try_from(ccid.clone()).expect("Invalid content cid");
+        bcs::to_bytes(&Operation::Tip { cid: ccid, amount: amount }).unwrap()
     }
 }
 
