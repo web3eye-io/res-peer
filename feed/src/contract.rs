@@ -53,7 +53,6 @@ impl Contract for Feed {
                             .create_content(
                                 Content {
                                     cid,
-                                    comment_to_cid: None,
                                     likes: 0,
                                     dislikes: 0,
                                     accounts: HashMap::default(),

@@ -27,8 +27,6 @@ impl ServiceAbi for FeedAbi {
 pub struct Content {
     /// Here cid is the content cid::Cid store in ipfs
     pub cid: String,
-    /// Here cid is the cid::Cid of the reply content store in ipfs
-    pub comment_to_cid: Option<String>,
     pub likes: u64,
     pub dislikes: u64,
     pub accounts: HashMap<Owner, bool>,

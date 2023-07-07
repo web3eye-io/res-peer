@@ -66,11 +66,7 @@ impl MutationRoot {
 
     async fn tip(&self, ccid: String, amount: Amount) -> Vec<u8> {
         cid::Cid::try_from(ccid.clone()).expect("Invalid content cid");
-        bcs::to_bytes(&Operation::Tip {
-            cid: ccid,
-            amount: amount,
-        })
-        .unwrap()
+        bcs::to_bytes(&Operation::Tip { cid: ccid, amount }).unwrap()
     }
 }
 
