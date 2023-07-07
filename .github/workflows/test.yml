@@ -19,5 +19,5 @@ jobs:
           - nightly
     steps:
       - uses: actions/checkout@v3
-      - run: cd peggy; cargo build --verbose
-      - run: cd peggy; cargo test --verbose
+      - run: cargo build --verbose
+      - run: cargo test --verbose
