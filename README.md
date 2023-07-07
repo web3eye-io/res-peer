@@ -1,4 +1,4 @@
-![image](webui/src/assets/ResPeer@3.png)
+![image](webui/src/assets/ResPeer@3x.png)
 
 # ResPeer: Peer-to-Peer content publishing application
 
