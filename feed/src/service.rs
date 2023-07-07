@@ -6,7 +6,10 @@ use self::state::Feed;
 use async_graphql::{EmptySubscription, Object, Request, Response, Schema};
 use async_trait::async_trait;
 use feed::Operation;
-use linera_sdk::{base::{WithServiceAbi, Amount}, QueryContext, Service, ViewStateStorage};
+use linera_sdk::{
+    base::{Amount, WithServiceAbi},
+    QueryContext, Service, ViewStateStorage,
+};
 use std::sync::Arc;
 use thiserror::Error;
 
@@ -54,12 +57,20 @@ impl MutationRoot {
     async fn comment(&self, ccid: String, comment_cid: String) -> Vec<u8> {
         cid::Cid::try_from(ccid.clone()).expect("Invalid content cid");
         cid::Cid::try_from(comment_cid.clone()).expect("Invalid comment cid");
-        bcs::to_bytes(&Operation::Comment { content_cid: ccid, comment_cid }).unwrap()
+        bcs::to_bytes(&Operation::Comment {
+            content_cid: ccid,
+            comment_cid,
+        })
+        .unwrap()
     }
 
     async fn tip(&self, ccid: String, amount: Amount) -> Vec<u8> {
         cid::Cid::try_from(ccid.clone()).expect("Invalid content cid");
-        bcs::to_bytes(&Operation::Tip { cid: ccid, amount: amount }).unwrap()
+        bcs::to_bytes(&Operation::Tip {
+            cid: ccid,
+            amount: amount,
+        })
+        .unwrap()
     }
 }
 
