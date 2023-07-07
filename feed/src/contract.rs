@@ -34,24 +34,24 @@ impl Contract for Feed {
 
     async fn execute_operation(
         &mut self,
-        _context: &OperationContext,
+        context: &OperationContext,
         operation: Self::Operation,
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
         match operation {
             Operation::Publish { cid } => {
-                log::info!("Publish cid {:?}", cid);
+                log::info!("Publish cid {:?} sender {:?} chain {:?}", cid, context.authenticated_signer, context.chain_id);
             },
             Operation::Like { cid } => {
-                log::info!("Like cid {:?}", cid);
+                log::info!("Like cid {:?} sender {:?} chain {:?}", cid, context.authenticated_signer, context.chain_id);
             },
             Operation::Dislike { cid } => {
-                log::info!("Dislike cid {:?}", cid);
+                log::info!("Dislike cid {:?} sender {:?} chain {:?}", cid, context.authenticated_signer, context.chain_id);
             },
             Operation::Comment { comment_cid, content_cid } => {
-                log::info!("Comment cid {:?} to cid {:?}", comment_cid, content_cid);
+                log::info!("Comment cid {:?} to cid {:?} sender {:?} chain {:?}", comment_cid, content_cid, context.authenticated_signer, context.chain_id);
             },
             Operation::Tip { cid, amount } => {
-                log::info!("Tip cid {:?} amount {:?}", cid, amount);
+                log::info!("Tip cid {:?} amount {:?} sender {:?} chain {:?}", cid, amount, context.authenticated_signer, context.chain_id);
             }
         }
         Ok(ExecutionResult::default())
