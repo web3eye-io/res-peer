@@ -51,7 +51,10 @@ impl Contract for Feed {
                                 dislikes: 0,
                                 accounts: HashMap::default()
                             }, owner).await {
-                            Ok(_) => return Ok(ExecutionResult::default()),
+                            Ok(_) => {
+                                // TODO: here we call credit application to reward author
+                                return Ok(ExecutionResult::default());
+                            },
                             Err(err) => return Err(ContractError::StateError(err))
                         }
                     },
@@ -65,7 +68,10 @@ impl Contract for Feed {
                 match context.authenticated_signer {
                     Some(owner) => {
                         match self.like_content(cid, owner, true).await {
-                            Ok(_) => return Ok(ExecutionResult::default()),
+                            Ok(_) => {
+                                // TODO: here we call credit application to reward author
+                                return Ok(ExecutionResult::default());
+                            },
                             Err(err) => return Err(ContractError::StateError(err))
                         }
                     },
@@ -79,7 +85,10 @@ impl Contract for Feed {
                 match context.authenticated_signer {
                     Some(owner) => {
                         match self.like_content(cid, owner, false).await {
-                            Ok(_) => return Ok(ExecutionResult::default()),
+                            Ok(_) => {
+                                // TODO: here we call credit application to reward author
+                                return Ok(ExecutionResult::default());
+                            },
                             Err(err) => return Err(ContractError::StateError(err))
                         }
                     },
