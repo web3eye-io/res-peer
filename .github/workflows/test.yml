@@ -20,8 +20,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - run: rustup target add wasm32-unknown-unknown
-      - run: git clone https://github.com/linera-io/linera-protocol.git .linera-protocol
-      - run: cd .linera-protocol; cargo build -p linera-sdk --bin test-runner --release
+      - run: git clone https://github.com/linera-io/linera-protocol.git ../linera-protocol
+      - run: cd ../linera-protocol; cargo build -p linera-sdk --bin test-runner --release
       - run: cargo build --verbose
-      - run: cp .linera-protocol/target/release/test-runner target/release
+      - run: cp ../linera-protocol/target/release/test-runner target/release
       - run: cargo test --verbose
