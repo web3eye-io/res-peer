@@ -2,9 +2,11 @@
 
 mod state;
 
+use std::collections::HashMap;
+
 use self::state::Feed;
 use async_trait::async_trait;
-use feed::Operation;
+use feed::{Operation, Content};
 use linera_sdk::{
     base::{SessionId, WithContractAbi},
     ApplicationCallResult, CalleeContext, Contract, ExecutionResult, MessageContext,
@@ -40,12 +42,51 @@ impl Contract for Feed {
         match operation {
             Operation::Publish { cid } => {
                 log::info!("Publish cid {:?} sender {:?} chain {:?}", cid, context.authenticated_signer, context.chain_id);
+                match context.authenticated_signer {
+                    Some(owner) => {
+                        match self.create_content(Content {
+                                cid,
+                                comment_to_cid: None,
+                                likes: 0,
+                                dislikes: 0,
+                                accounts: HashMap::default()
+                            }, owner).await {
+                            Ok(_) => return Ok(ExecutionResult::default()),
+                            Err(err) => return Err(ContractError::StateError(err))
+                        }
+                    },
+                    _ => {
+                        return Err(ContractError::InvalidPublisher)
+                    }
+                }
             },
             Operation::Like { cid } => {
                 log::info!("Like cid {:?} sender {:?} chain {:?}", cid, context.authenticated_signer, context.chain_id);
+                match context.authenticated_signer {
+                    Some(owner) => {
+                        match self.like_content(cid, owner, true).await {
+                            Ok(_) => return Ok(ExecutionResult::default()),
+                            Err(err) => return Err(ContractError::StateError(err))
+                        }
+                    },
+                    _ => {
+                        return Err(ContractError::InvalidPublisher)
+                    }
+                }
             },
             Operation::Dislike { cid } => {
                 log::info!("Dislike cid {:?} sender {:?} chain {:?}", cid, context.authenticated_signer, context.chain_id);
+                match context.authenticated_signer {
+                    Some(owner) => {
+                        match self.like_content(cid, owner, false).await {
+                            Ok(_) => return Ok(ExecutionResult::default()),
+                            Err(err) => return Err(ContractError::StateError(err))
+                        }
+                    },
+                    _ => {
+                        return Err(ContractError::InvalidPublisher)
+                    }
+                }
             },
             Operation::Comment { comment_cid, content_cid } => {
                 log::info!("Comment cid {:?} to cid {:?} sender {:?} chain {:?}", comment_cid, content_cid, context.authenticated_signer, context.chain_id);
@@ -98,4 +139,10 @@ pub enum ContractError {
     #[error("Failed to deserialize JSON string")]
     JsonError(#[from] serde_json::Error),
     // Add more error variants here.
+
+    #[error("Invalid publisher")]
+    InvalidPublisher,
+
+    #[error("Failed to call state")]
+    StateError(#[from] state::StateError)
 }

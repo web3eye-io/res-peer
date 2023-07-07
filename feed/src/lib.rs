@@ -26,12 +26,12 @@ impl ServiceAbi for FeedAbi {
 #[derive(Debug, Deserialize, Serialize, Clone, SimpleObject, Eq, PartialEq)]
 pub struct Content {
     /// Here cid is the content cid::Cid store in ipfs
-    cid: String,
+    pub cid: String,
     /// Here cid is the cid::Cid of the reply content store in ipfs
-    reply_to_cid: String,
-    likes: u64,
-    dislikes: u64,
-    accounts: HashMap<Owner, bool>,
+    pub comment_to_cid: Option<String>,
+    pub likes: u64,
+    pub dislikes: u64,
+    pub accounts: HashMap<Owner, bool>,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
