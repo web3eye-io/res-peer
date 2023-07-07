@@ -1,5 +1,4 @@
-use credit::AgeAmounts;
-use credit::InitialState;
+use credit::{AgeAmounts, InitialState};
 use linera_sdk::{
     base::{Amount, Owner, Timestamp},
     views::{MapView, RegisterView, ViewStorageContext},
