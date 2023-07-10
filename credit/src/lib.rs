@@ -1,5 +1,5 @@
 use async_graphql::{Request, Response, SimpleObject};
-use linera_sdk::base::{Amount, ContractAbi, ServiceAbi, Timestamp};
+use linera_sdk::base::{Amount, ContractAbi, ServiceAbi, Timestamp, Owner};
 use serde::{Deserialize, Serialize};
 
 pub struct CreditAbi;
@@ -46,4 +46,18 @@ impl AgeAmounts {
 pub struct InitialState {
     pub initial_supply: Amount,
     pub amount_alive_ms: Timestamp,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub enum Operation {
+    Liquidate,
+    Reward {
+        owner: Owner,
+        amount: Amount
+    },
+    Transfer {
+        from: Owner,
+        to: Owner,
+        amount: Amount
+    }
 }
