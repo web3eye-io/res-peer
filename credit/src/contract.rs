@@ -4,6 +4,7 @@ mod state;
 
 use self::state::Credit;
 use async_trait::async_trait;
+use credit::Operation;
 use linera_sdk::{
     base::{SessionId, WithContractAbi},
     ApplicationCallResult, CalleeContext, Contract, ExecutionResult, MessageContext,
@@ -34,8 +35,13 @@ impl Contract for Credit {
     async fn execute_operation(
         &mut self,
         _context: &OperationContext,
-        _operation: Self::Operation,
+        operation: Self::Operation,
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
+        match operation {
+            Operation::Liquidate => {}
+            Operation::Reward { owner, amount } => self.reward(owner, amount).await?,
+            _ => {}
+        }
         Ok(ExecutionResult::default())
     }
 
@@ -80,4 +86,6 @@ pub enum ContractError {
     #[error("Failed to deserialize JSON string")]
     JsonError(#[from] serde_json::Error),
     // Add more error variants here.
+    #[error(transparent)]
+    StateError(#[from] state::StateError),
 }

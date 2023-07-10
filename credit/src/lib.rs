@@ -7,7 +7,7 @@ pub struct CreditAbi;
 impl ContractAbi for CreditAbi {
     type Parameters = ();
     type InitializationArgument = InitialState;
-    type Operation = ();
+    type Operation = Operation;
     type Message = ();
     type ApplicationCall = ();
     type SessionCall = ();
