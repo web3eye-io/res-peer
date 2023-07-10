@@ -9,7 +9,7 @@ impl ContractAbi for CreditAbi {
     type InitializationArgument = InitialState;
     type Operation = Operation;
     type Message = ();
-    type ApplicationCall = ();
+    type ApplicationCall = ApplicationCall;
     type SessionCall = ();
     type SessionState = ();
     type Response = ();
@@ -51,6 +51,19 @@ pub struct InitialState {
 #[derive(Debug, Deserialize, Serialize)]
 pub enum Operation {
     Liquidate,
+    Reward {
+        owner: Owner,
+        amount: Amount,
+    },
+    Transfer {
+        from: Owner,
+        to: Owner,
+        amount: Amount,
+    },
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub enum ApplicationCall {
     Reward {
         owner: Owner,
         amount: Amount,

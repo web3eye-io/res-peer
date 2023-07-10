@@ -6,9 +6,10 @@ use std::collections::HashMap;
 
 use self::state::Feed;
 use async_trait::async_trait;
+use credit::CreditAbi;
 use feed::{Content, Operation};
 use linera_sdk::{
-    base::{Amount, Owner, SessionId, WithContractAbi},
+    base::{Amount, ApplicationId, Owner, SessionId, WithContractAbi},
     ApplicationCallResult, CalleeContext, Contract, ExecutionResult, MessageContext,
     OperationContext, SessionCallResult, ViewStateStorage,
 };
@@ -99,13 +100,20 @@ impl Contract for Feed {
 }
 
 impl Feed {
+    fn credit_id() -> Result<ApplicationId<CreditAbi>, ContractError> {
+        Self::parameters()
+    }
+
     async fn reward_credits(
         &mut self,
         _context: &OperationContext,
-        _owner: Owner,
-        _amount: Amount,
+        owner: Owner,
+        amount: Amount,
     ) -> Result<(), ContractError> {
-        // TODO: call credit to reward credits
+        log::info!("Reward owner {:?} amount {:?}", owner, amount);
+        let call = credit::ApplicationCall::Reward { owner, amount };
+        self.call_application(true, Self::credit_id()?, &call, vec![])
+            .await?;
         Ok(())
     }
 
