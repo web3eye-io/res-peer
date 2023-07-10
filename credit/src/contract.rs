@@ -4,7 +4,7 @@ mod state;
 
 use self::state::Credit;
 use async_trait::async_trait;
-use credit::Operation;
+use credit::{ApplicationCall, Operation};
 use linera_sdk::{
     base::{SessionId, WithContractAbi},
     ApplicationCallResult, CalleeContext, Contract, ExecutionResult, MessageContext,
@@ -55,12 +55,26 @@ impl Contract for Credit {
 
     async fn handle_application_call(
         &mut self,
-        _context: &CalleeContext,
-        _call: Self::ApplicationCall,
+        context: &CalleeContext,
+        call: Self::ApplicationCall,
         _forwarded_sessions: Vec<SessionId>,
     ) -> Result<ApplicationCallResult<Self::Message, Self::Response, Self::SessionState>, Self::Error>
     {
-        Ok(ApplicationCallResult::default())
+        match call {
+            ApplicationCall::Reward { owner, amount } => {
+                log::info!(
+                    "Reward owner {} amount {} caller {}",
+                    owner,
+                    amount,
+                    context.authenticated_caller_id.unwrap()
+                );
+                match self.reward(owner, amount).await {
+                    Ok(_) => return Ok(ApplicationCallResult::default()),
+                    Err(err) => return Err(ContractError::StateError(err)),
+                };
+            }
+            _ => return Err(ContractError::NotImplemented),
+        }
     }
 
     async fn handle_session_call(
@@ -88,4 +102,7 @@ pub enum ContractError {
     // Add more error variants here.
     #[error(transparent)]
     StateError(#[from] state::StateError),
+
+    #[error("NOT IMPLEMENTED")]
+    NotImplemented,
 }
