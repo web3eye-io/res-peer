@@ -1,9 +1,13 @@
-use credit::{AgeAmounts, InitialState};
+use std::cmp::Ordering;
+
+use credit::{AgeAmount, AgeAmounts, InitialState};
 use linera_sdk::{
     base::{Amount, Owner, Timestamp},
+    contract::system_api::current_system_time,
     views::{MapView, RegisterView, ViewStorageContext},
 };
 use linera_views::views::{GraphQLView, RootView};
+use thiserror::Error;
 
 #[derive(RootView, GraphQLView)]
 #[view(context = "ViewStorageContext")]
@@ -31,4 +35,47 @@ impl Credit {
             None => *self.balance.get(),
         }
     }
+
+    pub(crate) async fn reward(&mut self, owner: Owner, amount: Amount) -> Result<(), StateError> {
+        match self.balances.get(&owner).await {
+            Ok(Some(mut amounts)) => {
+                match self.balance.get().cmp(&amount) {
+                    Ordering::Less => return Err(StateError::InsufficientSupplyBalance),
+                    _ => {}
+                }
+                amounts.amounts.push(AgeAmount {
+                    amount,
+                    timestamp: current_system_time(),
+                });
+                match self.balances.insert(&owner, amounts) {
+                    Ok(_) => Ok(()),
+                    Err(err) => Err(StateError::ViewError(err)),
+                }
+            }
+            _ => match self.balances.insert(
+                &owner,
+                AgeAmounts {
+                    amounts: vec![AgeAmount {
+                        amount,
+                        timestamp: current_system_time(),
+                    }],
+                },
+            ) {
+                Ok(_) => Ok(()),
+                Err(err) => Err(StateError::ViewError(err)),
+            },
+        }
+    }
+}
+
+#[derive(Debug, Error)]
+pub enum StateError {
+    #[error("Insufficient supply balance")]
+    InsufficientSupplyBalance,
+
+    #[error("Insufficient account balance")]
+    _InsufficientAccountBalance,
+
+    #[error("View error")]
+    ViewError(#[from] linera_views::views::ViewError),
 }

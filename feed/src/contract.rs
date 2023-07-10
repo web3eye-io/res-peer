@@ -8,7 +8,7 @@ use self::state::Feed;
 use async_trait::async_trait;
 use feed::{Content, Operation};
 use linera_sdk::{
-    base::{SessionId, WithContractAbi, Owner, Amount},
+    base::{Amount, Owner, SessionId, WithContractAbi},
     ApplicationCallResult, CalleeContext, Contract, ExecutionResult, MessageContext,
     OperationContext, SessionCallResult, ViewStateStorage,
 };
@@ -40,15 +40,9 @@ impl Contract for Feed {
         operation: Self::Operation,
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
         match operation {
-            Operation::Publish { cid } => {
-                self.publish(context, cid).await?
-            }
-            Operation::Like { cid } => {
-                self.like(context, cid).await?
-            }
-            Operation::Dislike { cid } => {
-                self.dislike(context, cid).await?
-            }
+            Operation::Publish { cid } => self.publish(context, cid).await?,
+            Operation::Like { cid } => self.like(context, cid).await?,
+            Operation::Dislike { cid } => self.dislike(context, cid).await?,
             Operation::Comment {
                 comment_cid,
                 content_cid,
@@ -110,7 +104,7 @@ impl Feed {
         _context: &OperationContext,
         _owner: Owner,
         _amount: Amount,
-    )  -> Result<(), ContractError> {
+    ) -> Result<(), ContractError> {
         // TODO: call credit to reward credits
         Ok(())
     }
@@ -148,11 +142,7 @@ impl Feed {
         }
     }
 
-    async fn like(
-        &mut self,
-        context: &OperationContext,
-        cid: String,
-    ) -> Result<(), ContractError> {
+    async fn like(&mut self, context: &OperationContext, cid: String) -> Result<(), ContractError> {
         log::info!(
             "Like cid {:?} sender {:?} chain {:?}",
             cid,

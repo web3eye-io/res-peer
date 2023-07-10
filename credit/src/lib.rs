@@ -1,5 +1,5 @@
 use async_graphql::{Request, Response, SimpleObject};
-use linera_sdk::base::{Amount, ContractAbi, ServiceAbi, Timestamp, Owner};
+use linera_sdk::base::{Amount, ContractAbi, Owner, ServiceAbi, Timestamp};
 use serde::{Deserialize, Serialize};
 
 pub struct CreditAbi;
@@ -53,11 +53,11 @@ pub enum Operation {
     Liquidate,
     Reward {
         owner: Owner,
-        amount: Amount
+        amount: Amount,
     },
     Transfer {
         from: Owner,
         to: Owner,
-        amount: Amount
-    }
+        amount: Amount,
+    },
 }

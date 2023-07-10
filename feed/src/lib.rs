@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use async_graphql::{Request, Response, SimpleObject};
-use linera_sdk::base::{Amount, ContractAbi, Owner, ServiceAbi, ApplicationId};
+use linera_sdk::base::{Amount, ApplicationId, ContractAbi, Owner, ServiceAbi};
 use serde::{Deserialize, Serialize};
 
 pub struct FeedAbi;
