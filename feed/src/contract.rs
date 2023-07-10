@@ -8,7 +8,7 @@ use self::state::Feed;
 use async_trait::async_trait;
 use feed::{Content, Operation};
 use linera_sdk::{
-    base::{SessionId, WithContractAbi},
+    base::{SessionId, WithContractAbi, Owner, Amount},
     ApplicationCallResult, CalleeContext, Contract, ExecutionResult, MessageContext,
     OperationContext, SessionCallResult, ViewStateStorage,
 };
@@ -105,6 +105,16 @@ impl Contract for Feed {
 }
 
 impl Feed {
+    async fn reward_credits(
+        &mut self,
+        _context: &OperationContext,
+        _owner: Owner,
+        _amount: Amount,
+    )  -> Result<(), ContractError> {
+        // TODO: call credit to reward credits
+        Ok(())
+    }
+
     async fn publish(
         &mut self,
         context: &OperationContext,
@@ -130,10 +140,7 @@ impl Feed {
                     )
                     .await
                 {
-                    Ok(_) => {
-                        // TODO: here we call credit application to reward author
-                        return Ok(());
-                    }
+                    Ok(_) => return self.reward_credits(context, owner, Amount::from(500)).await,
                     Err(err) => return Err(ContractError::StateError(err)),
                 }
             }
