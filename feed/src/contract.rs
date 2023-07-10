@@ -41,75 +41,13 @@ impl Contract for Feed {
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
         match operation {
             Operation::Publish { cid } => {
-                log::info!(
-                    "Publish cid {:?} sender {:?} chain {:?}",
-                    cid,
-                    context.authenticated_signer,
-                    context.chain_id
-                );
-                match context.authenticated_signer {
-                    Some(owner) => {
-                        match self
-                            .create_content(
-                                Content {
-                                    cid,
-                                    likes: 0,
-                                    dislikes: 0,
-                                    accounts: HashMap::default(),
-                                },
-                                owner,
-                            )
-                            .await
-                        {
-                            Ok(_) => {
-                                // TODO: here we call credit application to reward author
-                                return Ok(ExecutionResult::default());
-                            }
-                            Err(err) => return Err(ContractError::StateError(err)),
-                        }
-                    }
-                    _ => return Err(ContractError::InvalidPublisher),
-                }
+                self.publish(context, cid).await?
             }
             Operation::Like { cid } => {
-                log::info!(
-                    "Like cid {:?} sender {:?} chain {:?}",
-                    cid,
-                    context.authenticated_signer,
-                    context.chain_id
-                );
-                match context.authenticated_signer {
-                    Some(owner) => {
-                        match self.like_content(cid, owner, true).await {
-                            Ok(_) => {
-                                // TODO: here we call credit application to reward author
-                                return Ok(ExecutionResult::default());
-                            }
-                            Err(err) => return Err(ContractError::StateError(err)),
-                        }
-                    }
-                    _ => return Err(ContractError::InvalidPublisher),
-                }
+                self.like(context, cid).await?
             }
             Operation::Dislike { cid } => {
-                log::info!(
-                    "Dislike cid {:?} sender {:?} chain {:?}",
-                    cid,
-                    context.authenticated_signer,
-                    context.chain_id
-                );
-                match context.authenticated_signer {
-                    Some(owner) => {
-                        match self.like_content(cid, owner, false).await {
-                            Ok(_) => {
-                                // TODO: here we call credit application to reward author
-                                return Ok(ExecutionResult::default());
-                            }
-                            Err(err) => return Err(ContractError::StateError(err)),
-                        }
-                    }
-                    _ => return Err(ContractError::InvalidPublisher),
-                }
+                self.dislike(context, cid).await?
             }
             Operation::Comment {
                 comment_cid,
@@ -166,6 +104,94 @@ impl Contract for Feed {
     }
 }
 
+impl Feed {
+    async fn publish(
+        &mut self,
+        context: &OperationContext,
+        cid: String,
+    ) -> Result<(), ContractError> {
+        log::info!(
+            "Publish cid {:?} sender {:?} chain {:?}",
+            cid,
+            context.authenticated_signer,
+            context.chain_id
+        );
+        match context.authenticated_signer {
+            Some(owner) => {
+                match self
+                    .create_content(
+                        Content {
+                            cid,
+                            likes: 0,
+                            dislikes: 0,
+                            accounts: HashMap::default(),
+                        },
+                        owner,
+                    )
+                    .await
+                {
+                    Ok(_) => {
+                        // TODO: here we call credit application to reward author
+                        return Ok(());
+                    }
+                    Err(err) => return Err(ContractError::StateError(err)),
+                }
+            }
+            _ => return Err(ContractError::InvalidPublisher),
+        }
+    }
+
+    async fn like(
+        &mut self,
+        context: &OperationContext,
+        cid: String,
+    ) -> Result<(), ContractError> {
+        log::info!(
+            "Like cid {:?} sender {:?} chain {:?}",
+            cid,
+            context.authenticated_signer,
+            context.chain_id
+        );
+        match context.authenticated_signer {
+            Some(owner) => {
+                match self.like_content(cid, owner, true).await {
+                    Ok(_) => {
+                        // TODO: here we call credit application to reward author
+                        return Ok(());
+                    }
+                    Err(err) => return Err(ContractError::StateError(err)),
+                }
+            }
+            _ => return Err(ContractError::InvalidPublisher),
+        }
+    }
+
+    async fn dislike(
+        &mut self,
+        context: &OperationContext,
+        cid: String,
+    ) -> Result<(), ContractError> {
+        log::info!(
+            "Dislike cid {:?} sender {:?} chain {:?}",
+            cid,
+            context.authenticated_signer,
+            context.chain_id
+        );
+        match context.authenticated_signer {
+            Some(owner) => {
+                match self.like_content(cid, owner, false).await {
+                    Ok(_) => {
+                        // TODO: here we call credit application to reward author
+                        return Ok(());
+                    }
+                    Err(err) => return Err(ContractError::StateError(err)),
+                }
+            }
+            _ => return Err(ContractError::InvalidPublisher),
+        }
+    }
+}
+
 /// An error that can occur during the contract execution.
 #[derive(Debug, Error)]
 pub enum ContractError {
@@ -180,6 +206,6 @@ pub enum ContractError {
     #[error("Invalid publisher")]
     InvalidPublisher,
 
-    #[error("Failed to call state")]
+    #[error(transparent)]
     StateError(#[from] state::StateError),
 }

@@ -1,13 +1,13 @@
 use std::collections::HashMap;
 
 use async_graphql::{Request, Response, SimpleObject};
-use linera_sdk::base::{Amount, ContractAbi, Owner, ServiceAbi};
+use linera_sdk::base::{Amount, ContractAbi, Owner, ServiceAbi, ApplicationId};
 use serde::{Deserialize, Serialize};
 
 pub struct FeedAbi;
 
 impl ContractAbi for FeedAbi {
-    type Parameters = ();
+    type Parameters = ApplicationId<credit::CreditAbi>;
     type InitializationArgument = InitialState;
     type Operation = Operation;
     type Message = ();
@@ -18,7 +18,7 @@ impl ContractAbi for FeedAbi {
 }
 
 impl ServiceAbi for FeedAbi {
-    type Parameters = ();
+    type Parameters = ApplicationId<credit::CreditAbi>;
     type Query = Request;
     type QueryResponse = Response;
 }
