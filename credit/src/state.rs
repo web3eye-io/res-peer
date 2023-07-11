@@ -2,7 +2,7 @@ use std::cmp::Ordering;
 
 use credit::{AgeAmount, AgeAmounts, InitialState};
 use linera_sdk::{
-    base::{Amount, Owner, Timestamp},
+    base::{Amount, Owner},
     contract::system_api::current_system_time,
     views::{MapView, RegisterView, ViewStorageContext},
 };
@@ -14,7 +14,7 @@ use thiserror::Error;
 pub struct Credit {
     pub initial_supply: RegisterView<Amount>,
     pub balance: RegisterView<Amount>,
-    pub amount_alive_ms: RegisterView<Timestamp>,
+    pub amount_alive_ms: RegisterView<u64>,
     pub balances: MapView<Owner, AgeAmounts>,
 }
 
@@ -72,6 +72,24 @@ impl Credit {
                 },
                 Err(err) => Err(StateError::ViewError(err)),
             },
+        }
+    }
+
+    pub(crate) async fn liquidate(&mut self) {
+        let owners = self.balances.indices().await.unwrap();
+        for owner in owners {
+            let mut amounts = self.balances.get(&owner).await.unwrap().unwrap();
+            for (_, amount) in amounts.amounts.clone().into_iter().enumerate() {
+                if current_system_time().saturating_diff_micros(amount.timestamp)
+                    > *self.amount_alive_ms.get() {
+                    self.balance.set(self.balance.get().saturating_sub(amount.amount));
+                    continue;
+                }
+            }
+            amounts.amounts.retain(|amount| {
+                current_system_time().saturating_diff_micros(amount.timestamp) > *self.amount_alive_ms.get()
+            });
+            self.balances.insert(&owner, amounts).unwrap();
         }
     }
 }

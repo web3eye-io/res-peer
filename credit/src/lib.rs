@@ -45,7 +45,7 @@ impl AgeAmounts {
 #[derive(Clone, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
 pub struct InitialState {
     pub initial_supply: Amount,
-    pub amount_alive_ms: Timestamp,
+    pub amount_alive_ms: u64,
 }
 
 #[derive(Debug, Deserialize, Serialize)]

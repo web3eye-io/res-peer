@@ -38,7 +38,7 @@ impl Contract for Credit {
         operation: Self::Operation,
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
         match operation {
-            Operation::Liquidate => {}
+            Operation::Liquidate => self.liquidate().await,
             Operation::Reward { owner, amount } => self.reward(owner, amount).await?,
             _ => {}
         }
