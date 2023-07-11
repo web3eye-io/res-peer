@@ -50,7 +50,10 @@ impl Credit {
                     timestamp: current_system_time(),
                 });
                 match self.balances.insert(&owner, amounts) {
-                    Ok(_) => Ok(()),
+                    Ok(_) => {
+                        self.balance.set(self.balance.get().saturating_sub(amount));
+                        Ok(())
+                    },
                     Err(err) => Err(StateError::ViewError(err)),
                 }
             }
@@ -63,7 +66,10 @@ impl Credit {
                     }],
                 },
             ) {
-                Ok(_) => Ok(()),
+                Ok(_) => {
+                    self.balance.set(self.balance.get().saturating_sub(amount));
+                    Ok(())
+                },
                 Err(err) => Err(StateError::ViewError(err)),
             },
         }
