@@ -40,6 +40,7 @@ impl Credit {
     pub(crate) async fn reward(&mut self, owner: Owner, amount: Amount) -> Result<(), StateError> {
         match self.balances.get(&owner).await {
             Ok(Some(mut amounts)) => {
+                log::error!("Supply balance {} reward amount {}", self.balance.get(), amount);
                 match self.balance.get().cmp(&amount) {
                     Ordering::Less => return Err(StateError::InsufficientSupplyBalance),
                     _ => {}
