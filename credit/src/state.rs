@@ -22,6 +22,7 @@ pub struct Credit {
 impl Credit {
     pub(crate) async fn initialize(&mut self, state: InitialState) {
         self.initial_supply.set(state.initial_supply);
+        self.balance.set(state.initial_supply);
         self.amount_alive_ms.set(state.amount_alive_ms);
     }
 
