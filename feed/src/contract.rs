@@ -142,7 +142,11 @@ impl Feed {
                     )
                     .await
                 {
-                    Ok(_) => return self.reward_credits(context, owner, Amount::from_tokens(500)).await,
+                    Ok(_) => {
+                        return self
+                            .reward_credits(context, owner, Amount::from_tokens(500))
+                            .await
+                    }
                     Err(err) => return Err(ContractError::StateError(err)),
                 }
             }

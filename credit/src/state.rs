@@ -40,7 +40,11 @@ impl Credit {
     pub(crate) async fn reward(&mut self, owner: Owner, amount: Amount) -> Result<(), StateError> {
         match self.balances.get(&owner).await {
             Ok(Some(mut amounts)) => {
-                log::error!("Supply balance {} reward amount {}", self.balance.get(), amount);
+                log::error!(
+                    "Supply balance {} reward amount {}",
+                    self.balance.get(),
+                    amount
+                );
                 match self.balance.get().cmp(&amount) {
                     Ordering::Less => return Err(StateError::InsufficientSupplyBalance),
                     _ => {}
@@ -53,7 +57,7 @@ impl Credit {
                     Ok(_) => {
                         self.balance.set(self.balance.get().saturating_sub(amount));
                         Ok(())
-                    },
+                    }
                     Err(err) => Err(StateError::ViewError(err)),
                 }
             }
@@ -69,7 +73,7 @@ impl Credit {
                 Ok(_) => {
                     self.balance.set(self.balance.get().saturating_sub(amount));
                     Ok(())
-                },
+                }
                 Err(err) => Err(StateError::ViewError(err)),
             },
         }
@@ -81,13 +85,16 @@ impl Credit {
             let mut amounts = self.balances.get(&owner).await.unwrap().unwrap();
             for (_, amount) in amounts.amounts.clone().into_iter().enumerate() {
                 if current_system_time().saturating_diff_micros(amount.timestamp)
-                    > *self.amount_alive_ms.get() {
-                    self.balance.set(self.balance.get().saturating_add(amount.amount));
+                    > *self.amount_alive_ms.get()
+                {
+                    self.balance
+                        .set(self.balance.get().saturating_add(amount.amount));
                     continue;
                 }
             }
             amounts.amounts.retain(|amount| {
-                current_system_time().saturating_diff_micros(amount.timestamp) > *self.amount_alive_ms.get()
+                current_system_time().saturating_diff_micros(amount.timestamp)
+                    > *self.amount_alive_ms.get()
             });
             self.balances.insert(&owner, amounts).unwrap();
         }
