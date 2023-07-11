@@ -82,7 +82,7 @@ impl Credit {
             for (_, amount) in amounts.amounts.clone().into_iter().enumerate() {
                 if current_system_time().saturating_diff_micros(amount.timestamp)
                     > *self.amount_alive_ms.get() {
-                    self.balance.set(self.balance.get().saturating_sub(amount.amount));
+                    self.balance.set(self.balance.get().saturating_add(amount.amount));
                     continue;
                 }
             }
