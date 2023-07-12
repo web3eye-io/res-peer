@@ -17,7 +17,7 @@ pub struct Credit {
     pub amount_alive_ms: RegisterView<u64>,
     pub balances: MapView<Owner, AgeAmounts>,
     pub spendables: MapView<Owner, Amount>,
-    pub reward_callers: SetView<ApplicationId>
+    pub reward_callers: SetView<ApplicationId>,
 }
 
 #[allow(dead_code)]
@@ -135,62 +135,70 @@ impl Credit {
             .for_each(|application_id| self.reward_callers.insert(application_id).unwrap())
     }
 
-    pub(crate) async fn transfer(&mut self, from: Owner, to: Owner, amount: Amount) -> Result<(), StateError> {
+    pub(crate) async fn transfer(
+        &mut self,
+        from: Owner,
+        to: Owner,
+        amount: Amount,
+    ) -> Result<(), StateError> {
         match self.spendables.get(&from).await {
-            Ok(Some(spendable)) => {
-                match spendable.cmp(&amount) {
-                    Ordering::Less => Err(StateError::InsufficientAccountBalance),
-                    _ => {
-                        self.spendables.insert(&from, spendable.saturating_sub(amount))?;
-                        let mut amounts = self.balances.get(&from).await.unwrap().unwrap();
-                        let mut total: Amount = Amount::zero();
-                        let mut remain: Option<AgeAmount> = None;
-                        amounts.amounts.retain(|_amount| {
-                            if total.ge(&amount) {
-                                return true
-                            }
-                            total = total.saturating_add(_amount.amount);
-                            if total.ge(&amount) {
-                                match total.try_sub(amount) {
-                                    Ok(result) => {
-                                        remain = Some(AgeAmount {
-                                            amount: result,
-                                            expired: Timestamp::from(
-                                                current_system_time()
-                                                    .micros()
-                                                    .saturating_add(*self.amount_alive_ms.get())),
-                                        })
-                                    },
-                                    _ => {},
+            Ok(Some(spendable)) => match spendable.cmp(&amount) {
+                Ordering::Less => Err(StateError::InsufficientAccountBalance),
+                _ => {
+                    self.spendables
+                        .insert(&from, spendable.saturating_sub(amount))?;
+                    let mut amounts = self.balances.get(&from).await.unwrap().unwrap();
+                    let mut total: Amount = Amount::zero();
+                    let mut remain: Option<AgeAmount> = None;
+                    amounts.amounts.retain(|_amount| {
+                        if total.ge(&amount) {
+                            return true;
+                        }
+                        total = total.saturating_add(_amount.amount);
+                        if total.ge(&amount) {
+                            match total.try_sub(amount) {
+                                Ok(result) => {
+                                    remain = Some(AgeAmount {
+                                        amount: result,
+                                        expired: Timestamp::from(
+                                            current_system_time()
+                                                .micros()
+                                                .saturating_add(*self.amount_alive_ms.get()),
+                                        ),
+                                    })
                                 }
-                                return false;
+                                _ => {}
                             }
                             return false;
-                        });
-                        match remain {
-                            Some(result) => amounts.amounts.push(result),
-                            _ => {},
                         }
-                        self.balances.insert(&from, amounts).unwrap();
-                        match self.balances.get(&to).await {
-                            Ok(Some(mut amounts)) => {
-                                amounts.amounts.push(AgeAmount {
-                                    amount,
-                                    expired: Timestamp::from(
-                                        current_system_time()
-                                            .micros()
-                                            .saturating_add(*self.amount_alive_ms.get())),
-                                });
-                                self.balances.insert(&to, amounts).unwrap();
-                            },
-                            _ => {},
-                        }
-                        match self.spendables.get(&to).await {
-                            Ok(Some(spendable)) => self.spendables.insert(&to, spendable.saturating_add(amount))?,
-                            _ => self.spendables.insert(&to, amount)?,
-                        }
-                        Ok(())
+                        return false;
+                    });
+                    match remain {
+                        Some(result) => amounts.amounts.push(result),
+                        _ => {}
                     }
+                    self.balances.insert(&from, amounts).unwrap();
+                    match self.balances.get(&to).await {
+                        Ok(Some(mut amounts)) => {
+                            amounts.amounts.push(AgeAmount {
+                                amount,
+                                expired: Timestamp::from(
+                                    current_system_time()
+                                        .micros()
+                                        .saturating_add(*self.amount_alive_ms.get()),
+                                ),
+                            });
+                            self.balances.insert(&to, amounts).unwrap();
+                        }
+                        _ => {}
+                    }
+                    match self.spendables.get(&to).await {
+                        Ok(Some(spendable)) => self
+                            .spendables
+                            .insert(&to, spendable.saturating_add(amount))?,
+                        _ => self.spendables.insert(&to, amount)?,
+                    }
+                    Ok(())
                 }
             },
             _ => return Err(StateError::InsufficientAccountBalance),
