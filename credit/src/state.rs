@@ -101,17 +101,15 @@ impl Credit {
         for owner in owners {
             let mut amounts = self.balances.get(&owner).await.unwrap().unwrap();
             let mut spendable = self.spendables.get(&owner).await.unwrap().unwrap();
-            amounts
-                .amounts
-                .retain(|amount| {
-                    let expired = current_system_time().saturating_diff_micros(amount.expired) > 0;
-                    if expired {
-                        self.balance
+            amounts.amounts.retain(|amount| {
+                let expired = current_system_time().saturating_diff_micros(amount.expired) > 0;
+                if expired {
+                    self.balance
                         .set(self.balance.get().saturating_add(amount.amount));
-                        spendable = spendable.saturating_add(amount.amount);
-                    }
-                    expired
-                });
+                    spendable = spendable.saturating_add(amount.amount);
+                }
+                expired
+            });
             self.spendables.insert(&owner, spendable).unwrap();
             self.balances.insert(&owner, amounts).unwrap();
         }
