@@ -190,7 +190,22 @@ impl Credit {
                             });
                             self.balances.insert(&to, amounts).unwrap();
                         }
-                        _ => {}
+                        _ => self
+                            .balances
+                            .insert(
+                                &to,
+                                AgeAmounts {
+                                    amounts: vec![AgeAmount {
+                                        amount,
+                                        expired: Timestamp::from(
+                                            current_system_time()
+                                                .micros()
+                                                .saturating_add(*self.amount_alive_ms.get()),
+                                        ),
+                                    }],
+                                },
+                            )
+                            .unwrap(),
                     }
                     match self.spendables.get(&to).await {
                         Ok(Some(spendable)) => self

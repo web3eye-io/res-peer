@@ -43,9 +43,8 @@ impl MutationRoot {
         vec![0]
     }
 
-    async fn reward(&self, _owner: Owner, _amount: Amount) -> Vec<u8> {
-        // bcs::to_bytes(&Operation::Reward { owner, amount }).unwrap()
-        vec![0]
+    async fn reward(&self, owner: Owner, amount: Amount) -> Vec<u8> {
+        bcs::to_bytes(&Operation::Reward { owner, amount }).unwrap()
     }
 
     async fn set_callers(&self, application_ids: Vec<ApplicationId>) -> Vec<u8> {
