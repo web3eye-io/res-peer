@@ -24,7 +24,7 @@ impl ServiceAbi for CreditAbi {
 #[derive(Debug, Deserialize, Serialize, Clone, SimpleObject)]
 pub struct AgeAmount {
     pub amount: Amount,
-    pub timestamp: Timestamp,
+    pub expired: Timestamp,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, SimpleObject)]
