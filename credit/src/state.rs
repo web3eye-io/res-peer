@@ -3,6 +3,7 @@ use std::cmp::Ordering;
 use credit::{AgeAmount, AgeAmounts, InitialState};
 use linera_sdk::{
     base::{Amount, Owner, Timestamp},
+    contract::system_api::current_system_time,
     views::{MapView, RegisterView, ViewStorageContext},
 };
 use linera_views::views::{GraphQLView, RootView};
@@ -44,7 +45,9 @@ impl Credit {
                     .insert(&owner, spendable.saturating_add(amount))
                     .unwrap();
             }
-            _ => {}
+            _ => {
+                self.spendables.insert(&owner, amount).unwrap();
+            }
         }
 
         log::info!(
@@ -64,7 +67,7 @@ impl Credit {
                 amounts.amounts.push(AgeAmount {
                     amount,
                     expired: Timestamp::from(
-                        Timestamp::now()
+                        current_system_time()
                             .micros()
                             .saturating_add(*self.amount_alive_ms.get()),
                     ),
@@ -80,7 +83,7 @@ impl Credit {
                     amounts: vec![AgeAmount {
                         amount,
                         expired: Timestamp::from(
-                            Timestamp::now()
+                            current_system_time()
                                 .micros()
                                 .saturating_add(*self.amount_alive_ms.get()),
                         ),
@@ -98,15 +101,26 @@ impl Credit {
         for owner in owners {
             let mut amounts = self.balances.get(&owner).await.unwrap().unwrap();
             for (_, amount) in amounts.amounts.clone().into_iter().enumerate() {
-                if Timestamp::now().saturating_diff_micros(amount.expired) == 0 {
+                if current_system_time().saturating_diff_micros(amount.expired) == 0 {
                     self.balance
                         .set(self.balance.get().saturating_add(amount.amount));
+                    self.spendables
+                        .insert(
+                            &owner,
+                            self.spendables
+                                .get(&owner)
+                                .await
+                                .unwrap()
+                                .unwrap()
+                                .saturating_sub(amount.amount),
+                        )
+                        .unwrap();
                     continue;
                 }
             }
             amounts
                 .amounts
-                .retain(|amount| Timestamp::now().saturating_diff_micros(amount.expired) == 0);
+                .retain(|amount| current_system_time().saturating_diff_micros(amount.expired) == 0);
             self.balances.insert(&owner, amounts).unwrap();
         }
     }
