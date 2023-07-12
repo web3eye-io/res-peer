@@ -99,16 +99,29 @@ impl Credit {
     pub(crate) async fn liquidate(&mut self) {
         let owners = self.balances.indices().await.unwrap();
         for owner in owners {
-            let mut amounts = self.balances.get(&owner).await.unwrap().unwrap();
-            let mut spendable = self.spendables.get(&owner).await.unwrap().unwrap();
+            let mut amounts = match self.balances.get(&owner).await {
+                Ok(Some(amounts)) => amounts,
+                _ => continue,
+            };
+            let mut spendable = match self.spendables.get(&owner).await {
+                Ok(Some(spendable)) => spendable,
+                _ => continue,
+            };
             amounts.amounts.retain(|amount| {
                 let expired = current_system_time().saturating_diff_micros(amount.expired) > 0;
+                log::info!(
+                    "Current {:?} expired at {:?} expired {} amount {}",
+                    current_system_time(),
+                    amount.expired,
+                    expired,
+                    amount.amount
+                );
                 if expired {
                     self.balance
                         .set(self.balance.get().saturating_add(amount.amount));
-                    spendable = spendable.saturating_add(amount.amount);
+                    spendable = spendable.saturating_sub(amount.amount);
                 }
-                expired
+                !expired
             });
             self.spendables.insert(&owner, spendable).unwrap();
             self.balances.insert(&owner, amounts).unwrap();

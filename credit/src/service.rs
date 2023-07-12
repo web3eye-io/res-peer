@@ -5,7 +5,11 @@ mod state;
 use self::state::Credit;
 use async_graphql::{EmptySubscription, Object, Request, Response, Schema};
 use async_trait::async_trait;
-use linera_sdk::{base::WithServiceAbi, QueryContext, Service, ViewStateStorage};
+use credit::Operation;
+use linera_sdk::{
+    base::{Amount, Owner, WithServiceAbi},
+    QueryContext, Service, ViewStateStorage,
+};
 use std::sync::Arc;
 use thiserror::Error;
 
@@ -36,6 +40,11 @@ struct MutationRoot;
 #[Object]
 impl MutationRoot {
     async fn liquidate(&self) -> Vec<u8> {
+        vec![0]
+    }
+
+    async fn reward(&self, _owner: Owner, _amount: Amount) -> Vec<u8> {
+        // bcs::to_bytes(&Operation::Reward { owner, amount }).unwrap()
         vec![0]
     }
 }
