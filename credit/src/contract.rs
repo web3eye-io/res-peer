@@ -43,7 +43,7 @@ impl Contract for Credit {
             Operation::SetCallers { application_ids } => {
                 // Operation could be only created by chain owner, so here we don't need to verify owner
                 self.set_callers(application_ids).await
-            },
+            }
             _ => {}
         }
         Ok(ExecutionResult::default())
@@ -72,8 +72,12 @@ impl Contract for Credit {
                     amount,
                     context.authenticated_caller_id.unwrap()
                 );
-                match self.callers.contains(&context.authenticated_caller_id.unwrap()).await {
-                    Ok(_) => {},
+                match self
+                    .callers
+                    .contains(&context.authenticated_caller_id.unwrap())
+                    .await
+                {
+                    Ok(_) => {}
                     _ => return Err(ContractError::CallerNotAllowed),
                 }
                 match self.reward(owner, amount).await {

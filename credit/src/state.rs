@@ -2,9 +2,9 @@ use std::cmp::Ordering;
 
 use credit::{AgeAmount, AgeAmounts, InitialState};
 use linera_sdk::{
-    base::{Amount, Owner, Timestamp, ApplicationId},
+    base::{Amount, ApplicationId, Owner, Timestamp},
     contract::system_api::current_system_time,
-    views::{MapView, RegisterView, ViewStorageContext, SetView},
+    views::{MapView, RegisterView, SetView, ViewStorageContext},
 };
 use linera_views::views::{GraphQLView, RootView};
 use thiserror::Error;
@@ -130,9 +130,9 @@ impl Credit {
     }
 
     pub(crate) async fn set_callers(&mut self, application_ids: Vec<ApplicationId>) {
-        application_ids.iter().for_each(|application_id| {
-            self.callers.insert(application_id).unwrap()
-        })
+        application_ids
+            .iter()
+            .for_each(|application_id| self.callers.insert(application_id).unwrap())
     }
 }
 

@@ -7,7 +7,7 @@ use async_graphql::{EmptySubscription, Object, Request, Response, Schema};
 use async_trait::async_trait;
 use credit::Operation;
 use linera_sdk::{
-    base::{Amount, Owner, WithServiceAbi, ApplicationId},
+    base::{Amount, ApplicationId, Owner, WithServiceAbi},
     QueryContext, Service, ViewStateStorage,
 };
 use std::sync::Arc;
