@@ -51,6 +51,10 @@ impl MutationRoot {
     async fn set_callers(&self, application_ids: Vec<ApplicationId>) -> Vec<u8> {
         bcs::to_bytes(&Operation::SetCallers { application_ids }).unwrap()
     }
+
+    async fn transfer(&self, from: Owner, to: Owner, amount: Amount) -> Vec<u8> {
+        bcs::to_bytes(&Operation::Transfer { from, to, amount }).unwrap()
+    }
 }
 
 /// An error that can occur while querying the service.
