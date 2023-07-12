@@ -1,5 +1,5 @@
 use async_graphql::{Request, Response, SimpleObject};
-use linera_sdk::base::{Amount, ContractAbi, Owner, ServiceAbi, Timestamp};
+use linera_sdk::base::{Amount, ContractAbi, Owner, ServiceAbi, Timestamp, ApplicationId};
 use serde::{Deserialize, Serialize};
 
 pub struct CreditAbi;
@@ -60,6 +60,9 @@ pub enum Operation {
         to: Owner,
         amount: Amount,
     },
+    SetCallers {
+        application_ids: Vec<ApplicationId>,
+    }
 }
 
 #[derive(Debug, Deserialize, Serialize)]

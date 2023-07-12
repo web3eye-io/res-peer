@@ -2,9 +2,9 @@ use std::cmp::Ordering;
 
 use credit::{AgeAmount, AgeAmounts, InitialState};
 use linera_sdk::{
-    base::{Amount, Owner, Timestamp},
+    base::{Amount, Owner, Timestamp, ApplicationId},
     contract::system_api::current_system_time,
-    views::{MapView, RegisterView, ViewStorageContext},
+    views::{MapView, RegisterView, ViewStorageContext, SetView},
 };
 use linera_views::views::{GraphQLView, RootView};
 use thiserror::Error;
@@ -17,6 +17,7 @@ pub struct Credit {
     pub amount_alive_ms: RegisterView<u64>,
     pub balances: MapView<Owner, AgeAmounts>,
     pub spendables: MapView<Owner, Amount>,
+    pub callers: SetView<ApplicationId>,
 }
 
 #[allow(dead_code)]
@@ -126,6 +127,12 @@ impl Credit {
             self.spendables.insert(&owner, spendable).unwrap();
             self.balances.insert(&owner, amounts).unwrap();
         }
+    }
+
+    pub(crate) async fn set_callers(&mut self, application_ids: Vec<ApplicationId>) {
+        application_ids.iter().for_each(|application_id| {
+            self.callers.insert(application_id).unwrap()
+        })
     }
 }
 

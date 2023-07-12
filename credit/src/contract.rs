@@ -40,6 +40,10 @@ impl Contract for Credit {
         match operation {
             Operation::Liquidate => self.liquidate().await,
             Operation::Reward { owner, amount } => self.reward(owner, amount).await?,
+            Operation::SetCallers { application_ids } => {
+                // Operation could be only created by chain owner, so here we don't need to verify owner
+                self.set_callers(application_ids).await
+            },
             _ => {}
         }
         Ok(ExecutionResult::default())
@@ -68,6 +72,10 @@ impl Contract for Credit {
                     amount,
                     context.authenticated_caller_id.unwrap()
                 );
+                match self.callers.contains(&context.authenticated_caller_id.unwrap()).await {
+                    Ok(_) => {},
+                    _ => return Err(ContractError::CallerNotAllowed),
+                }
                 match self.reward(owner, amount).await {
                     Ok(_) => return Ok(ApplicationCallResult::default()),
                     Err(err) => return Err(ContractError::StateError(err)),
@@ -105,4 +113,7 @@ pub enum ContractError {
 
     #[error("NOT IMPLEMENTED")]
     NotImplemented,
+
+    #[error("Caller not allowed")]
+    CallerNotAllowed,
 }
