@@ -1,4 +1,6 @@
-use async_graphql::SimpleObject;
+use std::collections::HashMap;
+
+use async_graphql::{Request, Response, SimpleObject};
 use linera_sdk::base::{Amount, ContractAbi, ServiceAbi};
 use serde::{Deserialize, Serialize};
 
@@ -7,7 +9,7 @@ pub struct MallAbi;
 impl ContractAbi for MallAbi {
     type Parameters = ();
     type InitializationArgument = InitialState;
-    type Operation = ();
+    type Operation = Operation;
     type Message = ();
     type ApplicationCall = ();
     type SessionCall = ();
@@ -17,19 +19,64 @@ impl ContractAbi for MallAbi {
 
 impl ServiceAbi for MallAbi {
     type Parameters = ();
-    type Query = ();
-    type QueryResponse = ();
+    type Query = Request;
+    type QueryResponse = Response;
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, SimpleObject, Eq, PartialEq)]
 pub struct NFT {
+    /// Sequence ID of NFT in collections
+    pub token_id: u16,
     /// Storage location of http or ipfs
     pub uri: String,
     /// Price in Linera Token
-    pub price: Amount,
+    pub price: Option<Amount>,
+    pub on_sale: bool,
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone, SimpleObject, Eq, PartialEq)]
+pub struct Collection {
+    pub collection_id: u64,
+    pub base_uri: String,
+    pub nfts: HashMap<u64, NFT>,
+    pub price: Option<Amount>,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
 pub struct InitialState {
     pub credits_per_linera: Amount,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub enum Operation {
+    OnSaleCollection {
+        base_uri: String,
+        price: Option<Amount>,
+    },
+    MintNFT {
+        collection_id: u64,
+        uri: Option<String>,
+        price: Option<Amount>,
+    },
+    BuyNFT {
+        collection_id: u64,
+        token_id: u64,
+        credits: Amount,
+    },
+    UpdateCreditsPerLinera {
+        credits_per_linera: Amount,
+    },
+    UpdateNFTPrice {
+        collection_id: u64,
+        token_id: Option<u64>,
+        price: Amount,
+    },
+    OnSaleNFT {
+        collection_id: u64,
+        token_id: u64,
+    },
+    OffSaleNFT {
+        collection_id: u64,
+        token_id: u64,
+    },
 }
