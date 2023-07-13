@@ -28,7 +28,7 @@ pub struct NFT {
     /// Sequence ID of NFT in collections
     pub token_id: u16,
     /// Storage location of http or ipfs
-    pub uri: String,
+    pub uri: Option<String>,
     /// Price in Linera Token
     pub price: Option<Amount>,
     pub on_sale: bool,
@@ -38,7 +38,7 @@ pub struct NFT {
 pub struct Collection {
     pub collection_id: u64,
     pub base_uri: String,
-    pub nfts: HashMap<u64, NFT>,
+    pub nfts: HashMap<u16, NFT>,
     pub price: Option<Amount>,
 }
 

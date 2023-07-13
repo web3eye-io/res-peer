@@ -9,6 +9,7 @@ use linera_sdk::{
     ApplicationCallResult, CalleeContext, Contract, ExecutionResult, MessageContext,
     OperationContext, SessionCallResult, ViewStateStorage,
 };
+use mall::Operation;
 use thiserror::Error;
 
 linera_sdk::contract!(Mall);
@@ -33,9 +34,34 @@ impl Contract for Mall {
 
     async fn execute_operation(
         &mut self,
-        _context: &OperationContext,
-        _operation: Self::Operation,
+        context: &OperationContext,
+        operation: Self::Operation,
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
+        match operation {
+            Operation::OnSaleCollection { base_uri, price } => {
+                self.create_collection(context.authenticated_signer.unwrap(), base_uri, price)
+                    .await
+            }
+            Operation::MintNFT {
+                collection_id,
+                uri,
+                price,
+            } => {
+                self.validate_collection_owner(
+                    collection_id,
+                    context.authenticated_signer.unwrap(),
+                )
+                .await?;
+                self.mint_nft(
+                    context.authenticated_signer.unwrap(),
+                    collection_id,
+                    uri,
+                    price,
+                )
+                .await;
+            }
+            _ => return Err(ContractError::NotImplemented),
+        }
         Ok(ExecutionResult::default())
     }
 
@@ -80,4 +106,9 @@ pub enum ContractError {
     #[error("Failed to deserialize JSON string")]
     JsonError(#[from] serde_json::Error),
     // Add more error variants here.
+    #[error("NOT IMPLEMENTED")]
+    NotImplemented,
+
+    #[error(transparent)]
+    StateError(#[from] state::StateError),
 }
