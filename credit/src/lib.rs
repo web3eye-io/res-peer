@@ -60,7 +60,14 @@ pub enum Operation {
         to: Owner,
         amount: Amount,
     },
-    SetCallers {
+    TransferExt {
+        to: Owner,
+        amount: Amount,
+    },
+    SetRewardCallers {
+        application_ids: Vec<ApplicationId>,
+    },
+    SetTransferCallers {
         application_ids: Vec<ApplicationId>,
     },
 }

@@ -7,6 +7,7 @@ use async_trait::async_trait;
 use credit::{ApplicationCall, Operation};
 use linera_sdk::{
     base::{SessionId, WithContractAbi},
+    contract::system_api,
     ApplicationCallResult, CalleeContext, Contract, ExecutionResult, MessageContext,
     OperationContext, SessionCallResult, ViewStateStorage,
 };
@@ -34,17 +35,33 @@ impl Contract for Credit {
 
     async fn execute_operation(
         &mut self,
-        _context: &OperationContext,
+        context: &OperationContext,
         operation: Self::Operation,
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
         match operation {
             Operation::Liquidate => self.liquidate().await,
             Operation::Reward { owner, amount } => self.reward(owner, amount).await?,
-            Operation::SetCallers { application_ids } => {
+            Operation::SetRewardCallers { application_ids } => {
                 // Operation could be only created by chain owner, so here we don't need to verify owner
-                self.set_callers(application_ids).await
+                if context.chain_id != system_api::current_application_id().creation.chain_id {
+                    return Err(ContractError::OperationNotAllowed);
+                }
+                self.set_reward_callers(application_ids).await
             }
-            Operation::Transfer { from, to, amount } => self.transfer(from, to, amount).await?,
+            Operation::SetTransferCallers { application_ids } => {
+                // Operation could be only created by chain owner, so here we don't need to verify owner
+                if context.chain_id != system_api::current_application_id().creation.chain_id {
+                    return Err(ContractError::OperationNotAllowed);
+                }
+                self.set_transfer_callers(application_ids).await
+            }
+            Operation::Transfer { from, to, amount } => {
+                self.transfer(from, to, amount).await?;
+            }
+            Operation::TransferExt { to, amount } => {
+                self.transfer(context.authenticated_signer.unwrap(), to, amount)
+                    .await?
+            }
         }
         Ok(ExecutionResult::default())
     }
@@ -84,6 +101,21 @@ impl Contract for Credit {
                 Ok(ApplicationCallResult::default())
             }
             ApplicationCall::Transfer { from, to, amount } => {
+                log::info!(
+                    "Transfer {} from {} to {} caller {}",
+                    amount,
+                    from,
+                    to,
+                    context.authenticated_caller_id.unwrap()
+                );
+                match self
+                    .transfer_callers
+                    .contains(&context.authenticated_caller_id.unwrap())
+                    .await
+                {
+                    Ok(_) => {}
+                    _ => return Err(ContractError::CallerNotAllowed),
+                }
                 self.transfer(from, to, amount).await?;
                 Ok(ApplicationCallResult::default())
             }
@@ -121,4 +153,7 @@ pub enum ContractError {
 
     #[error("Caller not allowed")]
     CallerNotAllowed,
+
+    #[error("Operation not allowed")]
+    OperationNotAllowed,
 }

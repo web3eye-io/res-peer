@@ -18,6 +18,7 @@ pub struct Credit {
     pub balances: MapView<Owner, AgeAmounts>,
     pub spendables: MapView<Owner, Amount>,
     pub reward_callers: SetView<ApplicationId>,
+    pub transfer_callers: SetView<ApplicationId>,
 }
 
 #[allow(dead_code)]
@@ -129,10 +130,16 @@ impl Credit {
         }
     }
 
-    pub(crate) async fn set_callers(&mut self, application_ids: Vec<ApplicationId>) {
+    pub(crate) async fn set_reward_callers(&mut self, application_ids: Vec<ApplicationId>) {
         application_ids
             .iter()
             .for_each(|application_id| self.reward_callers.insert(application_id).unwrap())
+    }
+
+    pub(crate) async fn set_transfer_callers(&mut self, application_ids: Vec<ApplicationId>) {
+        application_ids
+            .iter()
+            .for_each(|application_id| self.transfer_callers.insert(application_id).unwrap())
     }
 
     pub(crate) async fn transfer(

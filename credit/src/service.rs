@@ -47,12 +47,20 @@ impl MutationRoot {
         bcs::to_bytes(&Operation::Reward { owner, amount }).unwrap()
     }
 
-    async fn set_callers(&self, application_ids: Vec<ApplicationId>) -> Vec<u8> {
-        bcs::to_bytes(&Operation::SetCallers { application_ids }).unwrap()
+    async fn set_reward_callers(&self, application_ids: Vec<ApplicationId>) -> Vec<u8> {
+        bcs::to_bytes(&Operation::SetRewardCallers { application_ids }).unwrap()
+    }
+
+    async fn set_transfer_callers(&self, application_ids: Vec<ApplicationId>) -> Vec<u8> {
+        bcs::to_bytes(&Operation::SetTransferCallers { application_ids }).unwrap()
     }
 
     async fn transfer(&self, from: Owner, to: Owner, amount: Amount) -> Vec<u8> {
         bcs::to_bytes(&Operation::Transfer { from, to, amount }).unwrap()
+    }
+
+    async fn transfer_ext(&self, to: Owner, amount: Amount) -> Vec<u8> {
+        bcs::to_bytes(&Operation::TransferExt { to, amount }).unwrap()
     }
 }
 
