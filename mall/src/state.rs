@@ -19,6 +19,8 @@ pub struct Mall {
     pub credits_per_linera: RegisterView<Amount>,
     pub collection_id: RegisterView<u64>,
     /// Linera token balance
+    /// If user want to buy asset here, they should deposit balance firstly, then buy
+    /// They balance could be withdrawed
     pub balances: MapView<Owner, Amount>,
     pub token_ids: MapView<u64, u16>,
     pub collections: MapView<u64, Collection>,
@@ -202,6 +204,99 @@ impl Mall {
         let owner = token_owners.get(&collection_id).unwrap();
         Ok(*owner)
     }
+
+    pub(crate) async fn update_nft_price(
+        &mut self,
+        owner: Owner,
+        collection_id: u64,
+        token_id: Option<u16>,
+        price: Amount,
+    ) -> Result<(), StateError> {
+        match token_id {
+            Some(token_id) => {
+                if self.nft_owner(collection_id, token_id).await.unwrap() != owner {
+                    return Err(StateError::NotTokenOwner);
+                }
+                match self.collections.get(&collection_id).await {
+                    Ok(Some(mut collection)) => match collection.nfts.get(&token_id) {
+                        Some(nft) => {
+                            let mut _nft = nft.clone();
+                            _nft.price = Some(price);
+                            collection.nfts.insert(nft.token_id, _nft);
+                            self.collections.insert(&collection_id, collection)?
+                        }
+                        _ => return Err(StateError::TokenIDNotExists),
+                    },
+                    _ => return Err(StateError::CollectionNotExists),
+                }
+            }
+            _ => {
+                if self
+                    .validate_collection_owner(collection_id, owner)
+                    .await
+                    .is_err()
+                {
+                    return Err(StateError::NotCollectionOwner);
+                }
+                match self.collections.get(&collection_id).await {
+                    Ok(Some(mut collection)) => {
+                        collection.price = Some(price);
+                        self.collections.insert(&collection_id, collection)?
+                    }
+                    _ => return Err(StateError::CollectionNotExists),
+                }
+            }
+        }
+        Ok(())
+    }
+
+    pub(crate) async fn on_sale_nft(
+        &mut self,
+        owner: Owner,
+        collection_id: u64,
+        token_id: u16,
+    ) -> Result<(), StateError> {
+        if self.nft_owner(collection_id, token_id).await.unwrap() != owner {
+            return Err(StateError::NotTokenOwner);
+        }
+        match self.collections.get(&collection_id).await {
+            Ok(Some(mut collection)) => match collection.nfts.get(&token_id) {
+                Some(nft) => {
+                    let mut _nft = nft.clone();
+                    _nft.on_sale = true;
+                    collection.nfts.insert(nft.token_id, _nft);
+                    self.collections.insert(&collection_id, collection)?
+                }
+                _ => return Err(StateError::TokenIDNotExists),
+            },
+            _ => return Err(StateError::CollectionNotExists),
+        }
+        Ok(())
+    }
+
+    pub(crate) async fn off_sale_nft(
+        &mut self,
+        owner: Owner,
+        collection_id: u64,
+        token_id: u16,
+    ) -> Result<(), StateError> {
+        if self.nft_owner(collection_id, token_id).await.unwrap() != owner {
+            return Err(StateError::NotTokenOwner);
+        }
+        match self.collections.get(&collection_id).await {
+            Ok(Some(mut collection)) => match collection.nfts.get(&token_id) {
+                Some(nft) => {
+                    let mut _nft = nft.clone();
+                    _nft.on_sale = false;
+                    collection.nfts.insert(nft.token_id, _nft);
+                    self.collections.insert(&collection_id, collection)?
+                }
+                _ => return Err(StateError::TokenIDNotExists),
+            },
+            _ => return Err(StateError::CollectionNotExists),
+        }
+        Ok(())
+    }
 }
 
 #[derive(Debug, Error)]
@@ -211,6 +306,9 @@ pub enum StateError {
 
     #[error("Owner is not collection owner")]
     NotCollectionOwner,
+
+    #[error("Owner is not token owner")]
+    NotTokenOwner,
 
     #[error("Base uri already exists")]
     BaseURIALreadyExists,

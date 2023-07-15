@@ -7,6 +7,7 @@ use async_trait::async_trait;
 use credit::CreditAbi;
 use linera_sdk::{
     base::{Amount, ApplicationId, Owner, SessionId, WithContractAbi},
+    contract::system_api,
     ApplicationCallResult, CalleeContext, Contract, ExecutionResult, MessageContext,
     OperationContext, SessionCallResult, ViewStateStorage,
 };
@@ -82,7 +83,47 @@ impl Contract for Mall {
                 )
                 .await?
             }
-            _ => return Err(ContractError::NotImplemented),
+            Operation::UpdateCreditsPerLinera { credits_per_linera } => {
+                if context.chain_id != system_api::current_application_id().creation.chain_id {
+                    return Err(ContractError::OperationNotAllowed);
+                }
+                self.credits_per_linera.set(credits_per_linera)
+            }
+            Operation::UpdateNFTPrice {
+                collection_id,
+                token_id,
+                price,
+            } => {
+                self.update_nft_price(
+                    context.authenticated_signer.unwrap(),
+                    collection_id,
+                    token_id,
+                    price,
+                )
+                .await?
+            }
+            Operation::OnSaleNFT {
+                collection_id,
+                token_id,
+            } => {
+                self.on_sale_nft(
+                    context.authenticated_signer.unwrap(),
+                    collection_id,
+                    token_id,
+                )
+                .await?
+            }
+            Operation::OffSaleNFT {
+                collection_id,
+                token_id,
+            } => {
+                self.off_sale_nft(
+                    context.authenticated_signer.unwrap(),
+                    collection_id,
+                    token_id,
+                )
+                .await?
+            }
         }
         Ok(ExecutionResult::default())
     }
@@ -153,4 +194,7 @@ pub enum ContractError {
 
     #[error(transparent)]
     StateError(#[from] state::StateError),
+
+    #[error("Operation not allowed")]
+    OperationNotAllowed,
 }
