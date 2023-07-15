@@ -56,7 +56,7 @@ module.exports = configure(function (ctx) {
 
     // Full list of options: https://quasar.dev/quasar-cli/quasar-conf-js#Property%3A-build
     build: {
-      vueRouterMode: 'hash', // available values: 'hash', 'history'
+      vueRouterMode: 'history', // available values: 'hash', 'history'
 
       // transpile: false,
       // publicPath: '/',
@@ -84,20 +84,10 @@ module.exports = configure(function (ctx) {
 
     // Full list of options: https://quasar.dev/quasar-cli/quasar-conf-js#Property%3A-devServer
     devServer: {
-      proxy: {
-        '/api': {
-          target: 'https://api.development.npool.top',
-          pathRewrite: {
-            '^/api': '/api'
-          },
-          secure: false,
-          changeOrigin: true
-        }
-      },
-
       https: false,
       port: 8080,
-      open: true // opens browser window automatically
+      open: true, // opens browser window automatically
+      historyApiFallback: true
     },
 
     // https://quasar.dev/quasar-cli/quasar-conf-js#Property%3A-framework

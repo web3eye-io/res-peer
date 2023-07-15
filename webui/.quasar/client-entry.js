@@ -49,7 +49,7 @@ console.info('[Quasar] Running SPA.')
 
 
 
-const publicPath = ``
+const publicPath = `/`
 
 
 async function start ({ app, router }, bootFiles) {
@@ -78,7 +78,7 @@ async function start ({ app, router }, bootFiles) {
     // continue if we didn't fail to resolve the url
     if (href !== null) {
       window.location.href = href
-      window.location.reload()
+      
     }
   }
 
