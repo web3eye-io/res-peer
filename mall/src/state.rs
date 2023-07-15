@@ -192,6 +192,16 @@ impl Mall {
         }
         Ok(())
     }
+
+    pub(crate) async fn nft_owner(
+        &self,
+        collection_id: u64,
+        token_id: u16,
+    ) -> Result<Owner, StateError> {
+        let token_owners = self.token_owners.get(&token_id).await.unwrap().unwrap();
+        let owner = token_owners.get(&collection_id).unwrap();
+        Ok(*owner)
+    }
 }
 
 #[derive(Debug, Error)]

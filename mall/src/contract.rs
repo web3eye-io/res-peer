@@ -4,8 +4,9 @@ mod state;
 
 use self::state::Mall;
 use async_trait::async_trait;
+use credit::CreditAbi;
 use linera_sdk::{
-    base::{SessionId, WithContractAbi},
+    base::{Amount, ApplicationId, Owner, SessionId, WithContractAbi},
     ApplicationCallResult, CalleeContext, Contract, ExecutionResult, MessageContext,
     OperationContext, SessionCallResult, ViewStateStorage,
 };
@@ -65,6 +66,14 @@ impl Contract for Mall {
                 token_id,
                 credits,
             } => {
+                let owner = self.nft_owner(collection_id, token_id).await?;
+                self.transfer_credits(
+                    context,
+                    context.authenticated_signer.unwrap(),
+                    owner,
+                    credits,
+                )
+                .await?;
                 self.buy_nft(
                     context.authenticated_signer.unwrap(),
                     collection_id,
@@ -105,6 +114,26 @@ impl Contract for Mall {
     ) -> Result<SessionCallResult<Self::Message, Self::Response, Self::SessionState>, Self::Error>
     {
         Ok(SessionCallResult::default())
+    }
+}
+
+impl Mall {
+    fn credit_id() -> Result<ApplicationId<CreditAbi>, ContractError> {
+        Self::parameters()
+    }
+
+    async fn transfer_credits(
+        &mut self,
+        _context: &OperationContext,
+        from: Owner,
+        to: Owner,
+        amount: Amount,
+    ) -> Result<(), ContractError> {
+        log::info!("Transfer {:?} credits from {:?} to {:?}", amount, from, to);
+        let call = credit::ApplicationCall::Transfer { from, to, amount };
+        self.call_application(true, Self::credit_id()?, &call, vec![])
+            .await?;
+        Ok(())
     }
 }
 
