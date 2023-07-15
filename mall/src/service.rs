@@ -57,7 +57,7 @@ impl MutationRoot {
         .unwrap()
     }
 
-    async fn buy_nft(&self, collection_id: u64, token_id: u64, credits: Amount) -> Vec<u8> {
+    async fn buy_nft(&self, collection_id: u64, token_id: u16, credits: Amount) -> Vec<u8> {
         bcs::to_bytes(&Operation::BuyNFT {
             collection_id,
             token_id,
@@ -73,7 +73,7 @@ impl MutationRoot {
     async fn update_nft_price(
         &self,
         collection_id: u64,
-        token_id: Option<u64>,
+        token_id: Option<u16>,
         price: Amount,
     ) -> Vec<u8> {
         bcs::to_bytes(&Operation::UpdateNFTPrice {
@@ -84,7 +84,7 @@ impl MutationRoot {
         .unwrap()
     }
 
-    async fn on_sale_nft(&self, collection_id: u64, token_id: u64) -> Vec<u8> {
+    async fn on_sale_nft(&self, collection_id: u64, token_id: u16) -> Vec<u8> {
         bcs::to_bytes(&Operation::OnSaleNFT {
             collection_id,
             token_id,
@@ -92,7 +92,7 @@ impl MutationRoot {
         .unwrap()
     }
 
-    async fn off_sale_nft(&self, collection_id: u64, token_id: u64) -> Vec<u8> {
+    async fn off_sale_nft(&self, collection_id: u64, token_id: u16) -> Vec<u8> {
         bcs::to_bytes(&Operation::OffSaleNFT {
             collection_id,
             token_id,

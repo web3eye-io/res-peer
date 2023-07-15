@@ -60,7 +60,7 @@ pub enum Operation {
     },
     BuyNFT {
         collection_id: u64,
-        token_id: u64,
+        token_id: u16,
         credits: Amount,
     },
     UpdateCreditsPerLinera {
@@ -68,15 +68,15 @@ pub enum Operation {
     },
     UpdateNFTPrice {
         collection_id: u64,
-        token_id: Option<u64>,
+        token_id: Option<u16>,
         price: Amount,
     },
     OnSaleNFT {
         collection_id: u64,
-        token_id: u64,
+        token_id: u16,
     },
     OffSaleNFT {
         collection_id: u64,
-        token_id: u64,
+        token_id: u16,
     },
 }

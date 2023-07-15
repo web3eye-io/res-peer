@@ -40,7 +40,7 @@ impl Contract for Mall {
         match operation {
             Operation::OnSaleCollection { base_uri, price } => {
                 self.create_collection(context.authenticated_signer.unwrap(), base_uri, price)
-                    .await
+                    .await?
             }
             Operation::MintNFT {
                 collection_id,
@@ -58,7 +58,20 @@ impl Contract for Mall {
                     uri,
                     price,
                 )
-                .await;
+                .await?;
+            }
+            Operation::BuyNFT {
+                collection_id,
+                token_id,
+                credits,
+            } => {
+                self.buy_nft(
+                    context.authenticated_signer.unwrap(),
+                    collection_id,
+                    token_id,
+                    credits,
+                )
+                .await?
             }
             _ => return Err(ContractError::NotImplemented),
         }
