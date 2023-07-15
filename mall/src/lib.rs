@@ -49,7 +49,7 @@ pub struct InitialState {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub enum Operation {
-    OnSaleCollection {
+    CreateCollection {
         base_uri: String,
         price: Option<Amount>,
     },
