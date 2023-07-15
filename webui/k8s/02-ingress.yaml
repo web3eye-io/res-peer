@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: respeer-webui-ingress
+  namespace: kube-system
+  annotations:
+    k8s.kuboard.cn/displayName: respeer-webui
+    k8s.kuboard.cn/workload: respeer-webui
+    kubernetes.io/ingress.class: "traefik-internet"
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure, web
+    traefik.ingress.kubernetes.io/router.middlewares:
+      kube-system-http-redirect-https@kubernetescrd,
+      kube-system-http-redirect-https-testing@kubernetescrd,
+      kube-system-common-headers@kubernetescrd
+
+spec:
+  rules:
+    - host: respeer.io
+      http: &http_ruless
+        paths:
+          - path: /
+            backend:
+              serviceName: respeer-webui
+              servicePort: 80
+    - host: www.respeer.io
+      http: *http_rules

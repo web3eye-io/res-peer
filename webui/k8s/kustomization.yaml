@@ -1,0 +1,6 @@
+commonLabels:
+  # app: respeer-webui
+
+resources:
+  - 01-respeer-webui.yaml
+  - 02-ingress.yaml
