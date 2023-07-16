@@ -1,20 +1,42 @@
 import type { ApolloClientOptions } from '@apollo/client/core'
-import { createHttpLink, InMemoryCache } from '@apollo/client/core'
+import { createHttpLink, InMemoryCache, split } from '@apollo/client/core'
 // import type { BootFileParams } from '@quasar/app'
+import { GraphQLWsLink } from '@apollo/client/link/subscriptions'
+import { createClient } from 'graphql-ws'
+import { getMainDefinition } from '@apollo/client/utilities'
 
 export /* async */ function getClientOptions(
   /* {app, router, ...} */ /* options?: Partial<BootFileParams<any>> */
 ) {
+  const wsLink = new GraphQLWsLink(
+    createClient({
+      url: 'ws://localhost:8080/ws',
+    })
+  )
+
+  const httpLink = createHttpLink({
+    uri:
+      process.env.GRAPHQL_URI ||
+      // Change to your graphql endpoint.
+      'http://localhost:8080/applications/e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65b10000000000000000000000e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65b30000000000000000000000',
+  })
+
+  const splitLink = split(
+    ({ query }) => {
+      const definition = getMainDefinition(query);
+      return (
+        definition.kind === 'OperationDefinition' &&
+        definition.operation === 'subscription'
+      );
+    },
+    wsLink,
+    httpLink
+  );
+
   return <ApolloClientOptions<unknown>>Object.assign(
     // General options.
     <ApolloClientOptions<unknown>>{
-      link: createHttpLink({
-        uri:
-          process.env.GRAPHQL_URI ||
-          // Change to your graphql endpoint.
-          'http://localhost:8080/applications/e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65b10000000000000000000000e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65b30000000000000000000000',
-      }),
-
+      link: splitLink,
       cache: new InMemoryCache(),
     },
 
