@@ -12,8 +12,8 @@
     <div>
       variables... {{ variables }}
     </div>
-    <button @click="refetch()">Refresh</button>
-    <!-- button @click="fetchMore()">Refresh</button -->
+    <button @click='refetch()'>Refresh</button>
+    <!-- button @click='fetchMore()'>Refresh</button -->
   </q-page>
 </template>
 
@@ -26,10 +26,10 @@ import { watch } from 'vue'
 const { result, loading, error, variables, refetch, /* fetchMore, subscribeToMore, */ onResult, onError } = useQuery(gql`
   query {
     balancesKeys
-    spendables(owner:"b975c98d6921a2beb1d974d83a29304eb5f5ad301a55e56e7984079607fcb633")
+    spendables(owner:'b975c98d6921a2beb1d974d83a29304eb5f5ad301a55e56e7984079607fcb633')
     spendablesKeys
     balance
-    balances(owner:"b975c98d6921a2beb1d974d83a29304eb5f5ad301a55e56e7984079607fcb633") {
+    balances(owner:'b975c98d6921a2beb1d974d83a29304eb5f5ad301a55e56e7984079607fcb633') {
       amounts {
         amount
         expired
