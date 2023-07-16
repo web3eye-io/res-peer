@@ -1,81 +1,42 @@
 {
-  "name": "respeer-webui",
-  "version": "0.0.1",
-  "description": "Peer-to-Peer content publishing application on Linera",
-  "productName": "ResPeer WebUI",
-  "author": "web3eye.io Team <kikakkz@hotmail.com>",
+  "name": "web-frontend",
+  "version": "0.1.0",
   "private": true,
-  "scripts": {
-    "start": "quasar dev",
-    "build": "quasar build",
-    "lint": "eslint --ext .js,.ts,.vue ./",
-    "test:unit": "jest --updateSnapshot",
-    "test:ci": "yarn run lint && yarn run test:unit",
-    "test:unit:ui": "majestic",
-    "test": "echo \"See package.json => scripts for available tests.\" && exit 0",
-    "test:unit:ci": "jest --ci",
-    "test:unit:coverage": "jest --coverage",
-    "test:unit:watch": "jest --watch",
-    "test:unit:watchAll": "jest --watchAll",
-    "serve:test:coverage": "quasar serve test/jest/coverage/lcov-report/ --port 8788",
-    "concurrently:dev:jest": "concurrently \"quasar dev\" \"jest --watch\""
-  },
-  "pre-commit": [
-    "lint",
-    "test:unit:ci"
-  ],
   "dependencies": {
-    "@quasar/extras": "^1.0.0",
-    "axios": "^0.26.1",
-    "core-js": "^3.6.5",
-    "pinia": "^2.0.36",
-    "quasar": "^2.0.0",
-    "vue": "^3.0.0",
-    "vue-i18n": "^9.0.0",
-    "vue-router": "4.0.11"
+    "@apollo/client": "^3.7.10",
+    "graphql": "^16.6.0",
+    "graphql-ws": "^5.12.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.9.0",
+    "react-scripts": "^5.0.1",
+    "tailwind-styled-components": "^2.2.0"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   },
   "devDependencies": {
-    "@babel/core": "^7.17.5",
-    "@babel/eslint-parser": "^7.13.14",
-    "@babel/preset-env": "^7.16.11",
-    "@babel/preset-typescript": "^7.16.7",
-    "@pinia/testing": "^0.0.9",
-    "@quasar/app": "^3.0.0",
-    "@quasar/quasar-app-extension-testing": "^2.0.2",
-    "@quasar/quasar-app-extension-testing-unit-jest": "^3.0.0-alpha.8",
-    "@types/jest": "^27.4.1",
-    "@types/node": "^12.20.21",
-    "@typescript-eslint/eslint-plugin": "^5.10.0",
-    "@typescript-eslint/parser": "^5.10.0",
-    "@vue/test-utils": "^2.0.0-rc.17",
-    "@vue/vue3-jest": "^27.0.0-alpha.4",
-    "babel-jest": "^27.5.1",
-    "eslint": "^7.14.0",
-    "eslint-config-standard": "^16.0.2",
-    "eslint-plugin-import": "^2.19.1",
-    "eslint-plugin-jest": "^25.2.2",
-    "eslint-plugin-node": "^11.0.0",
-    "eslint-plugin-promise": "^5.1.0",
-    "eslint-plugin-vue": "^7.0.0",
-    "jest": "^27.5.1",
-    "majestic": "^1.7.0",
-    "pre-commit": "^1.2.2",
-    "ts-jest": "^27.1.3"
-  },
-  "browserslist": [
-    "last 10 Chrome versions",
-    "last 10 Firefox versions",
-    "last 4 Edge versions",
-    "last 7 Safari versions",
-    "last 8 Android versions",
-    "last 8 ChromeAndroid versions",
-    "last 8 FirefoxAndroid versions",
-    "last 10 iOS versions",
-    "last 5 Opera versions"
-  ],
-  "engines": {
-    "node": ">= 12.22.1",
-    "npm": ">= 6.13.4",
-    "yarn": ">= 1.21.1"
+    "prettier": "2.8.4",
+    "tailwindcss": "^3.2.7"
   }
 }
