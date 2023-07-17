@@ -19,16 +19,18 @@
 import { useQuery } from '@vue/apollo-composable'
 // import { ApolloQuery } from '@vue/apollo-components'
 import gql from 'graphql-tag'
-import { watch } from 'vue'
+import { useBlockStore } from 'src/stores/block'
+import { computed, watch } from 'vue'
 
 const {
   result,
   loading,
   error,
   variables,
-  refetch,
-  /* fetchMore, subscribeToMore, */ onResult,
-  onError
+  refetch
+  // fetchMore, subscribeToMore
+  // onResult,
+  // onError
 } = useQuery(gql`
   query credit {
     balancesKeys
@@ -48,15 +50,10 @@ const {
   }
 `)
 
-watch(result, () => {
-  console.log('Query result: ', result.value)
+const block = useBlockStore()
+const blockHeight = computed(() => block.blockHeight)
+watch(blockHeight, () => {
+  void refetch()
 })
 
-onResult((res) => {
-  console.log('Query result: ', res)
-})
-
-onError((error) => {
-  console.log('Query error: ', error)
-})
 </script>
