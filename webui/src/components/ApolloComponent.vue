@@ -18,7 +18,7 @@
 </template>
 
 <script setup lang='ts'>
-import { useQuery } from '@vue/apollo-composable'
+import { useQuery, useSubscription } from '@vue/apollo-composable'
 // import { ApolloQuery } from '@vue/apollo-components'
 import gql from 'graphql-tag'
 import { watch } from 'vue'
@@ -37,6 +37,16 @@ const { result, loading, error, variables, refetch, /* fetchMore, subscribeToMor
     }
   }
 `)
+
+useSubscription(gql`
+  subscription {
+    notifications
+  }
+`, {
+  onData: (options: unknown) => {
+    console.log(options)
+  }
+})
 
 watch(result, () => {
   console.log(1, result.value)
