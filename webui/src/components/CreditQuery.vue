@@ -30,7 +30,7 @@ const {
   /* fetchMore, subscribeToMore, */ onResult,
   onError
 } = useQuery(gql`
-  query {
+  query credit {
     balancesKeys
     spendables(
       owner: "b975c98d6921a2beb1d974d83a29304eb5f5ad301a55e56e7984079607fcb633"

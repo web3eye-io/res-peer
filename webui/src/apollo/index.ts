@@ -14,10 +14,18 @@ export /* async */ function getClientOptions /* options?: Partial<BootFileParams
   )
 
   const httpLink = createHttpLink({
-    uri:
-      process.env.GRAPHQL_URI ||
-      // Change to your graphql endpoint.
-      'http://localhost:8080/applications/e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65b10000000000000000000000e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65b30000000000000000000000'
+    uri: (operation) => {
+      switch (operation.operationName) {
+        case 'feed':
+          return 'http://localhost:8080/applications/e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65b40000000000000000000000e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65b60000000000000000000000'
+        case 'credit':
+          return 'http://localhost:8080/applications/e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65b10000000000000000000000e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65b30000000000000000000000'
+        case 'mall':
+          return 'http://localhost:8080/applications/e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a653e0000000000000000000000e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65400000000000000000000000'
+        default:
+          return 'http://localhost:8080/applications/e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65b40000000000000000000000e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65b60000000000000000000000'
+      }
+    }
   })
 
   const splitLink = split(
