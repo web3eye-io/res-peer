@@ -26,6 +26,9 @@ wasmtime = "1.0"
 wit-bindgen-guest-rust = { version = "0.2.0", package = "linera-wit-bindgen-guest-rust" }
 wit-bindgen-host-wasmer-rust = { version = "0.2.0", package = "linera-wit-bindgen-host-wasmer-rust" }
 wit-bindgen-host-wasmtime-rust = { version = "0.2.0", package = "linera-wit-bindgen-host-wasmtime-rust" }
+tokio-stream = "0.1.14"
+tokio = "1.29.1"
+futures-util = "0.3.28"
 credit = { path = "./credit" }
 
 [profile.release]

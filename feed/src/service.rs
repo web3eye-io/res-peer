@@ -3,14 +3,15 @@
 mod state;
 
 use self::state::Feed;
-use async_graphql::{EmptySubscription, Object, Request, Response, Schema};
+use async_graphql::{Object, Request, Response, Schema, Subscription};
 use async_trait::async_trait;
 use feed::Operation;
+use futures_util::stream::{Stream, StreamExt};
 use linera_sdk::{
     base::{Amount, WithServiceAbi},
     QueryContext, Service, ViewStateStorage,
 };
-use std::sync::Arc;
+use std::{sync::Arc, time::Duration};
 use thiserror::Error;
 
 linera_sdk::service!(Feed);
@@ -29,7 +30,7 @@ impl Service for Feed {
         _context: &QueryContext,
         request: Request,
     ) -> Result<Response, Self::Error> {
-        let schema = Schema::build(self.clone(), MutationRoot {}, EmptySubscription).finish();
+        let schema = Schema::build(self.clone(), MutationRoot {}, SubscriptionRoot {}).finish();
         let response = schema.execute(request).await;
         Ok(response)
     }
@@ -67,6 +68,20 @@ impl MutationRoot {
     async fn tip(&self, ccid: String, amount: Amount) -> Vec<u8> {
         cid::Cid::try_from(ccid.clone()).expect("Invalid content cid");
         bcs::to_bytes(&Operation::Tip { cid: ccid, amount }).unwrap()
+    }
+}
+
+struct SubscriptionRoot;
+
+#[Subscription]
+impl SubscriptionRoot {
+    async fn integers(&self, #[graphql(default = 1)] step: i32) -> impl Stream<Item = i32> {
+        let mut value: i32 = 0;
+        tokio_stream::wrappers::IntervalStream::new(tokio::time::interval(Duration::from_secs(1)))
+            .map(move |_| {
+                value += step;
+                value
+            })
     }
 }
 

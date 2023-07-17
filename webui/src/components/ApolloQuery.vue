@@ -1,5 +1,5 @@
 <template>
-  <q-page>
+  <div>
     <!-- when the query response is not received yet, data from it is undefined,
     so before referring to it we need to use v-if -->
     <div v-if='result'>
@@ -12,7 +12,7 @@
       Refresh
     </button>
     <!-- button @click='fetchMore()'>Refresh</button -->
-  </q-page>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -49,14 +49,14 @@ const {
 `)
 
 watch(result, () => {
-  console.log(1, result.value)
+  console.log('Query result: ', result.value)
 })
 
 onResult((res) => {
-  console.log(2, res)
+  console.log('Query result: ', res)
 })
 
 onError((error) => {
-  console.log(3, error)
+  console.log('Query error: ', error)
 })
 </script>

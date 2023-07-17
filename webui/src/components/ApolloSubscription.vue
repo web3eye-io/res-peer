@@ -1,5 +1,5 @@
 <template>
-  <q-page>
+  <div>
     <!-- when the query response is not received yet, data from it is undefined,
     so before referring to it we need to use v-if -->
     <div v-if='result'>
@@ -8,7 +8,7 @@
     <div>error... {{ error }}</div>
     <div>loading... {{ loading }}</div>
     <div>variables... {{ variables }}</div>
-  </q-page>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -22,7 +22,7 @@ const {
   loading,
   error,
   variables,
-  /* fetchMore, subscribeToMore, */ onResult,
+  onResult,
   onError
 } = useSubscription(gql`
   subscription {
@@ -31,14 +31,14 @@ const {
 `)
 
 watch(result, () => {
-  console.log(1, result.value)
+  console.log('Subscrption result: ', result.value)
 })
 
 onResult((res) => {
-  console.log(2, res)
+  console.log('Subscription result: ', res)
 })
 
 onError((error) => {
-  console.log(3, error)
+  console.log('Subscription error: ', error)
 })
 </script>

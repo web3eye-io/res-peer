@@ -16,6 +16,9 @@ thiserror = "1.0.38"
 cid = "0.10.1"
 log = { workspace = true }
 credit = { workspace = true }
+tokio-stream = { workspace = true }
+tokio = { workspace = true }
+futures-util = { workspace = true }
 
 [dev-dependencies]
 linera-sdk = { workspace = true, features = ["test"] }
