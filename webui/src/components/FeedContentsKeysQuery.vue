@@ -18,6 +18,7 @@
 import { useQuery } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
 import { useBlockStore } from 'src/stores/block'
+import { useContentStore } from 'src/stores/content'
 import { computed, watch } from 'vue'
 
 const {
@@ -25,33 +26,30 @@ const {
   loading,
   error,
   variables,
-  refetch
+  refetch,
   // fetchMore, subscribeToMore
-  // onResult,
+  onResult
   // onError
 } = useQuery(gql`
-  query credit {
-    balancesKeys
-    spendables(
-      owner: "b975c98d6921a2beb1d974d83a29304eb5f5ad301a55e56e7984079607fcb633"
-    )
-    spendablesKeys
-    balance
-    balances(
-      owner: "b975c98d6921a2beb1d974d83a29304eb5f5ad301a55e56e7984079607fcb633"
-    ) {
-      amounts {
-        amount
-        expired
-      }
-    }
+  query getContentsKeys {
+    contentsKeys
   }
-`)
+`, {
+  endpoint: 'feed'
+})
 
 const block = useBlockStore()
 const blockHeight = computed(() => block.blockHeight)
 watch(blockHeight, () => {
   void refetch()
+})
+
+const content = useContentStore()
+onResult((res) => {
+  if (res.loading) {
+    return
+  }
+  content.contentsKeys = (res.data as Record<string, Array<string>>).contentsKeys
 })
 
 </script>

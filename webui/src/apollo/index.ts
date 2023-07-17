@@ -15,7 +15,7 @@ export /* async */ function getClientOptions /* options?: Partial<BootFileParams
 
   const httpLink = createHttpLink({
     uri: (operation) => {
-      switch (operation.operationName) {
+      switch (operation.variables.endpoint) {
         case 'feed':
           return 'http://localhost:8080/applications/e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65b40000000000000000000000e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65b60000000000000000000000'
         case 'credit':
