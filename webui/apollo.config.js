@@ -3,10 +3,10 @@
 module.exports = {
   client: {
     service: {
-      name: 'my-service',
-      url: 'http://localhost:3000/graphql',
+      name: 'respeer-webui',
+      url: 'http://localhost:3000/graphql'
     },
     // Files processed by the extension
-    includes: ['src/**/*.vue', 'src/**/*.js', 'src/**/*.ts'],
-  },
+    includes: ['src/**/*.vue', 'src/**/*.js', 'src/**/*.ts']
+  }
 }

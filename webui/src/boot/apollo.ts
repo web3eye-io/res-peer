@@ -22,7 +22,7 @@ export default boot(
     // const clientB = new ApolloClient(optionsB)
 
     const apolloClients: Record<string, ApolloClient<unknown>> = {
-      default: apolloClient,
+      default: apolloClient
       // clientA,
       // clientB,
     }

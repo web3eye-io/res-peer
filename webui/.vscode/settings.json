@@ -3,7 +3,7 @@
   "editor.guides.bracketPairs": true,
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": [
-    "source.fixAll.eslint"
+    "source.fixAll.eslint": true
   ],
   "eslint.validate": [
     "javascript",

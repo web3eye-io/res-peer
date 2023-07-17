@@ -12,9 +12,9 @@
   </q-layout>
 </template>
 
-<script setup lang='ts'></script>
+<script setup lang="ts"></script>
 
-<style scoped lang='sass'>
+<style scoped lang="sass">
 .q-layout__section--marginal
   background-color: white
 </style>
