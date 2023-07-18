@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use async_graphql::{Request, Response, SimpleObject};
-use linera_sdk::base::{Amount, ApplicationId, ContractAbi, Owner, ServiceAbi};
+use linera_sdk::base::{Amount, ApplicationId, ContractAbi, Owner, ServiceAbi, Timestamp};
 use serde::{Deserialize, Serialize};
 
 pub struct FeedAbi;
@@ -27,9 +27,13 @@ impl ServiceAbi for FeedAbi {
 pub struct Content {
     /// Here cid is the content cid::Cid store in ipfs
     pub cid: String,
+    pub author: String,
+    pub title: String,
+    pub content: String,
     pub likes: u64,
     pub dislikes: u64,
     pub accounts: HashMap<Owner, bool>,
+    pub created_at: Timestamp,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]

@@ -7,9 +7,25 @@
   >
     <q-space />
     <div :style='{width: "540px"}'>
-      <div>{{ _content.cid }}</div>
-      <div>{{ _content.title }}</div>
-      <div v-html='_content.content' />
+      <div :style='{fontWeight: "bold", fontSize: "28px"}'>
+        {{ _content.title?.length ? _content.title : 'You should have a title!' }}
+      </div>
+      <div>
+        By
+        <span class='text-grey-6 text-bold'>
+          {{ _content.author?.length ? _content.author : 'Anonymous' }}
+        </span>
+      </div>
+      <div>
+        Cid
+        <span class='text-grey-6 text-bold'>
+          {{ _content.cid }}
+        </span>
+      </div>
+      <div
+        :style='{margin: "24px 0 24px 0", fontSize: "16px"}'
+        v-html='_content.content?.length ? _content.content : "You should have some content!"'
+      />
       <div>{{ _content.likes }}</div>
       <div>{{ _content.dislikes }}</div>
     </div>
