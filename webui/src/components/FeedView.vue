@@ -32,11 +32,11 @@
         v-html='_content.content?.length ? _content.content : "You should have some content!"'
       />
       <div class='row'>
-        <div class='row cursor-pointer'>
+        <div class='row cursor-pointer' @click='onLikeClick(_content.cid)'>
           <q-icon name='thumb_up' size='20px' :style='{marginRight: "6px"}' />
           {{ _content.likes }}
         </div>
-        <div class='row cursor-pointer' :style='{marginLeft: "16px"}'>
+        <div class='row cursor-pointer' :style='{marginLeft: "16px"}' @click='onDislikeClick(_content.cid)'>
           <q-icon name='thumb_down' size='20px' :style='{marginRight: "6px"}' />
           {{ _content.dislikes }}
         </div>
@@ -49,8 +49,51 @@
 <script setup lang='ts'>
 import { Content, useContentStore } from 'src/stores/content'
 import { computed } from 'vue'
+import { provideApolloClient, useMutation } from '@vue/apollo-composable'
+import { ApolloClient } from '@apollo/client/core'
+import gql from 'graphql-tag'
+import { getClientOptions } from 'src/apollo'
 
 const content = useContentStore()
 const contents = computed(() => Array.from(content.contents.values()).sort((a: Content, b: Content) => a.createdAt < b.createdAt ? 1 : -1))
+
+const options = /* await */ getClientOptions(/* {app, router ...} */)
+const apolloClient = new ApolloClient(options)
+
+const onLikeClick = async (cid: string) => {
+  const { mutate, onDone, onError } = provideApolloClient(apolloClient)(() => useMutation(gql`
+    mutation Like ($cid: String!) {
+      like(ccid: $cid)
+    }
+  `))
+  onDone(() => {
+    content.mutateKeys.push(cid)
+  })
+  onError((error) => {
+    console.log(error)
+  })
+  await mutate({
+    cid,
+    endpoint: 'feed'
+  })
+}
+
+const onDislikeClick = async (cid: string) => {
+  const { mutate, onDone, onError } = provideApolloClient(apolloClient)(() => useMutation(gql`
+    mutation Dislike ($cid: String!) {
+      dislike(ccid: $cid)
+    }
+  `))
+  onDone(() => {
+    content.mutateKeys.push(cid)
+  })
+  onError((error) => {
+    console.log(error)
+  })
+  await mutate({
+    cid,
+    endpoint: 'feed'
+  })
+}
 
 </script>

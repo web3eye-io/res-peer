@@ -15,7 +15,8 @@ export const useContentStore = defineStore('content', {
   state: () => ({
     contentsKeys: [] as Array<string>,
     contents: new Map<string, Content>(),
-    queryKeys: false
+    queryKeys: false,
+    mutateKeys: [] as Array<string>
   }),
   getters: {},
   actions: {}
