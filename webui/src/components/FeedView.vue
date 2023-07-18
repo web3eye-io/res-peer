@@ -1,12 +1,12 @@
 <template>
   <div
-    v-for='([key, _content], index) in contents'
-    :key='key'
+    v-for='(_content, index) in contents'
+    :key='_content.cid'
     :style='{width: "100%", margin: "16px 0 16px 0"}'
     class='row'
   >
     <q-space />
-    <div :style='{width: "720px", borderBottom: index < contents.size - 1 ? "1px solid gray" : "", paddingBottom: "48px"}'>
+    <div :style='{width: "720px", borderBottom: index < contents.length - 1 ? "1px solid gray" : "", paddingBottom: "48px"}'>
       <div :style='{fontWeight: "bold", fontSize: "28px", wordBreak: "break-word"}'>
         {{ _content.title?.length ? _content.title : 'You should have a title!' }}
       </div>
@@ -16,6 +16,10 @@
           {{ _content.author?.length ? _content.author : 'Anonymous' }}
         </span>
         <q-icon name='account_circle' size='20px' :style='{marginLeft: "8px"}' class='cursor-pointer' />
+      </div>
+      <div>
+        At
+        <span class='text-grey-6 text-bold'>{{ new Date(_content.createdAt / 1000) }}</span>
       </div>
       <div>
         Cid
@@ -43,10 +47,10 @@
 </template>
 
 <script setup lang='ts'>
-import { useContentStore } from 'src/stores/content'
+import { Content, useContentStore } from 'src/stores/content'
 import { computed } from 'vue'
 
 const content = useContentStore()
-const contents = computed(() => content.contents)
+const contents = computed(() => Array.from(content.contents.values()).sort((a: Content, b: Content) => a.createdAt < b.createdAt ? 1 : -1))
 
 </script>

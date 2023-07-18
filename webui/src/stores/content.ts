@@ -8,13 +8,14 @@ export interface Content {
   likes: number
   dislikes: number
   accounts: Map<string, boolean>
-  created_at: number
+  createdAt: number
 }
 
 export const useContentStore = defineStore('content', {
   state: () => ({
     contentsKeys: [] as Array<string>,
-    contents: new Map<string, Content>()
+    contents: new Map<string, Content>(),
+    queryKeys: false
   }),
   getters: {},
   actions: {}
