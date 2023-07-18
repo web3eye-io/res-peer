@@ -32,6 +32,8 @@ const creditAmounts = computed(() => Array.from(user.amounts).sort((a, b) => a.e
 
 <style scoped lang='sass'>
 table, th, td
-  border: 1px solid black
   border-collapse: collapse
+
+tr:nth-child(even)
+  background-color: #dddddd
 </style>
