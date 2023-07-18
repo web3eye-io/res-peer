@@ -10,6 +10,7 @@ use credit::CreditAbi;
 use feed::{Content, Operation};
 use linera_sdk::{
     base::{Amount, ApplicationId, Owner, SessionId, WithContractAbi},
+    contract::system_api::current_system_time,
     ApplicationCallResult, CalleeContext, Contract, ExecutionResult, MessageContext,
     OperationContext, SessionCallResult, ViewStateStorage,
 };
@@ -41,7 +42,20 @@ impl Contract for Feed {
         operation: Self::Operation,
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
         match operation {
-            Operation::Publish { cid } => self.publish(context, cid).await?,
+            Operation::Publish {
+                cid,
+                title,
+                content,
+            } => {
+                self.publish(
+                    context,
+                    cid,
+                    title,
+                    content,
+                    context.authenticated_signer.unwrap(),
+                )
+                .await?
+            }
             Operation::Like { cid } => self.like(context, cid).await?,
             Operation::Dislike { cid } => self.dislike(context, cid).await?,
             Operation::Comment {
@@ -121,6 +135,9 @@ impl Feed {
         &mut self,
         context: &OperationContext,
         cid: String,
+        title: String,
+        content: String,
+        author: Owner,
     ) -> Result<(), ContractError> {
         log::info!(
             "Publish cid {:?} sender {:?} chain {:?}",
@@ -134,9 +151,13 @@ impl Feed {
                     .create_content(
                         Content {
                             cid,
+                            title,
+                            content,
+                            author,
                             likes: 0,
                             dislikes: 0,
                             accounts: HashMap::default(),
+                            created_at: current_system_time(),
                         },
                         owner,
                     )

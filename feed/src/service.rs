@@ -30,7 +30,8 @@ impl Service for Feed {
         _context: &QueryContext,
         request: Request,
     ) -> Result<Response, Self::Error> {
-        let schema = Schema::build(self.clone(), MutationRoot {}, SubscriptionRoot {}).finish();
+        let schema: Schema<Arc<Feed>, MutationRoot, SubscriptionRoot> =
+            Schema::build(self.clone(), MutationRoot {}, SubscriptionRoot {}).finish();
         let response = schema.execute(request).await;
         Ok(response)
     }
@@ -40,9 +41,14 @@ struct MutationRoot;
 
 #[Object]
 impl MutationRoot {
-    async fn publish(&self, ccid: String) -> Vec<u8> {
+    async fn publish(&self, ccid: String, title: String, content: String) -> Vec<u8> {
         cid::Cid::try_from(ccid.clone()).expect("Invalid content cid");
-        bcs::to_bytes(&Operation::Publish { cid: ccid }).unwrap()
+        bcs::to_bytes(&Operation::Publish {
+            cid: ccid,
+            title,
+            content,
+        })
+        .unwrap()
     }
 
     async fn like(&self, ccid: String) -> Vec<u8> {

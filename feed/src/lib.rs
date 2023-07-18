@@ -27,7 +27,7 @@ impl ServiceAbi for FeedAbi {
 pub struct Content {
     /// Here cid is the content cid::Cid store in ipfs
     pub cid: String,
-    pub author: String,
+    pub author: Owner,
     pub title: String,
     pub content: String,
     pub likes: u64,
@@ -45,6 +45,8 @@ pub struct InitialState {
 pub enum Operation {
     Publish {
         cid: String,
+        title: String,
+        content: String,
     },
     Comment {
         comment_cid: String,

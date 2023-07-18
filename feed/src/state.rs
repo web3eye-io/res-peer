@@ -14,6 +14,7 @@ pub struct Feed {
     pub publishes: MapView<Owner, Vec<String>>,
     pub react_interval_ms: RegisterView<u64>,
     pub react_accounts: MapView<Owner, Timestamp>,
+    pub avatars: MapView<Owner, String>,
 }
 
 #[allow(dead_code)]
