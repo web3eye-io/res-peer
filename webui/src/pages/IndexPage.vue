@@ -4,7 +4,9 @@
     <block-subscription />
     <feed-contents-keys-query />
     <feed-contents-query />
-    <feed-view />
+    <div :style='{margin: "32px auto 64px auto"}'>
+      <feed-view />
+    </div>
   </q-page>
 </template>
 
