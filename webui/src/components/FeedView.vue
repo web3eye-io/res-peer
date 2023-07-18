@@ -12,14 +12,14 @@
       </div>
       <div>
         By
-        <span class='text-grey-6 text-bold'>
+        <span class='text-grey-6 text-bold cursor-pointer'>
           {{ _content.author?.length ? _content.author : 'Anonymous' }}
         </span>
         <q-icon name='account_circle' size='20px' :style='{marginLeft: "8px"}' class='cursor-pointer' />
       </div>
       <div>
         Cid
-        <span class='text-grey-6 text-bold'>
+        <span class='text-grey-6 text-bold cursor-pointer'>
           {{ _content.cid }}
         </span>
       </div>
