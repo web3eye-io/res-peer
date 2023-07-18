@@ -1,12 +1,12 @@
 <template>
   <div
-    v-for='[key, _content] in contents'
+    v-for='([key, _content], index) in contents'
     :key='key'
     :style='{width: "100%", margin: "16px 0 16px 0"}'
     class='row'
   >
     <q-space />
-    <div :style='{width: "720px", borderBottom: "1px solid gray", paddingBottom: "48px"}'>
+    <div :style='{width: "720px", borderBottom: index < contents.size - 1 ? "1px solid gray" : "", paddingBottom: "48px"}'>
       <div :style='{fontWeight: "bold", fontSize: "28px"}'>
         {{ _content.title?.length ? _content.title : 'You should have a title!' }}
       </div>
