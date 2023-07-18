@@ -7,7 +7,7 @@
   >
     <q-space />
     <div :style='{width: "720px", borderBottom: index < contents.size - 1 ? "1px solid gray" : "", paddingBottom: "48px"}'>
-      <div :style='{fontWeight: "bold", fontSize: "28px"}'>
+      <div :style='{fontWeight: "bold", fontSize: "28px", wordBreak: "break-word"}'>
         {{ _content.title?.length ? _content.title : 'You should have a title!' }}
       </div>
       <div>
@@ -24,7 +24,7 @@
         </span>
       </div>
       <div
-        :style='{margin: "24px 0 24px 0", fontSize: "16px"}'
+        :style='{margin: "24px 0 24px 0", fontSize: "16px", wordBreak: "break-word"}'
         v-html='_content.content?.length ? _content.content : "You should have some content!"'
       />
       <div class='row'>

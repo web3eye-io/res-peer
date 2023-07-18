@@ -53,20 +53,18 @@ const onPublishClick = async () => {
       publish(ccid: $cid, title: $title, content: $content)
     }
   `))
-  onDone((res) => {
-    console.log(res)
+  onDone(() => {
     editing.value = !editing.value
   })
   onError((error) => {
     console.log(error)
   })
-  const res = await mutate({
+  await mutate({
     cid,
     title: title.value,
     content: content.value,
     endpoint: 'feed'
   })
-  console.log(res)
 }
 
 </script>

@@ -28,8 +28,12 @@ watch(contentKey, () => {
       contents(string: $contentKey) {
         accounts
         cid
+        title
+        content
+        author
         likes
         dislikes
+        createdAt
       }
     }
   `, {
