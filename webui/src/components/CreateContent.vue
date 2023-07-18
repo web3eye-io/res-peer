@@ -24,13 +24,49 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { provideApolloClient, useMutation } from '@vue/apollo-composable'
+import gql from 'graphql-tag'
+import { CID } from 'multiformats/cid'
+import * as json from 'multiformats/codecs/json'
+import { sha256 } from 'multiformats/hashes/sha2'
+import { getClientOptions } from 'src/apollo'
+import { ApolloClient } from '@apollo/client/core'
 
 const title = ref('')
 const content = ref('')
 const editing = ref(false)
 
-const onPublishClick = () => {
-  editing.value = !editing.value
+const onPublishClick = async () => {
+  if (title.value.length <= 0 || content.value.length <= 0) {
+    return
+  }
+
+  const bytes = json.encode({ content })
+  const hash = await sha256.digest(bytes)
+  const cid = CID.create(1, json.code, hash).toString()
+
+  const options = /* await */ getClientOptions(/* {app, router ...} */)
+  const apolloClient = new ApolloClient(options)
+
+  const { mutate, onDone, onError } = provideApolloClient(apolloClient)(() => useMutation(gql`
+    mutation Publish ($cid: String!, $title: String!, $content: String!) {
+      publish(ccid: $cid, title: $title, content: $content)
+    }
+  `))
+  onDone((res) => {
+    console.log(res)
+    editing.value = !editing.value
+  })
+  onError((error) => {
+    console.log(error)
+  })
+  const res = await mutate({
+    cid,
+    title: title.value,
+    content: content.value,
+    endpoint: 'feed'
+  })
+  console.log(res)
 }
 
 </script>
