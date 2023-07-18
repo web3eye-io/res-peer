@@ -2,14 +2,14 @@
 import { useQuery } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
 import { useBlockStore } from 'src/stores/block'
-import { useUserStore } from 'src/stores/user'
+import { AgeAmount, useUserStore } from 'src/stores/user'
 import { computed, watch } from 'vue'
 
 const user = useUserStore()
 
 const account = computed(() => user.account)
 
-const { refetch } = useQuery(gql`
+const { result, refetch } = useQuery(gql`
   query getBalance($owner: String!) {
     spendables(
       owner: $owner
@@ -26,6 +26,14 @@ const { refetch } = useQuery(gql`
 `, {
   owner: account.value,
   endpoint: 'credit'
+})
+
+watch(result, () => {
+  if (!result.value) {
+    return
+  }
+  user.spendable = (result.value as Record<string, string>).spendables
+  user.balances = (result.value as Record<string, Record<string, Array<AgeAmount>>>).balances.amounts
 })
 
 const block = useBlockStore()
