@@ -57,7 +57,7 @@ impl MutationRoot {
 
     async fn dislike(&self, ccid: String) -> Vec<u8> {
         cid::Cid::try_from(ccid.clone()).expect("Invalid content cid");
-        bcs::to_bytes(&Operation::Like { cid: ccid }).unwrap()
+        bcs::to_bytes(&Operation::Dislike { cid: ccid }).unwrap()
     }
 
     async fn comment(&self, ccid: String, comment_cid: String) -> Vec<u8> {
