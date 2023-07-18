@@ -9,8 +9,20 @@
           />
           <q-space />
           <q-icon
+            v-if='!account?.length'
+            name='login' size='24px' color='black' class='cursor-pointer'
+            @click='onLoginClick'
+          />
+          <q-icon
+            v-if='account?.length'
             name='dashboard' size='24px' color='black' class='cursor-pointer'
             @click='onDashboardClick'
+          />
+          <q-icon
+            v-if='account?.length'
+            name='logout' size='24px' color='black' class='cursor-pointer'
+            :style='{marginLeft: "8px"}'
+            @click='onLogoutClick'
           />
         </div>
       </q-toolbar>
@@ -52,11 +64,33 @@
         />
       </div>
     </q-footer>
+    <q-dialog
+      v-model='logining'
+      @hide='onHide'
+      position='standard'
+    >
+      <q-card :style='{padding: "32px", width: "100%"}'>
+        <q-card-section>
+          <div class='text-h5'>
+            Login
+          </div>
+        </q-card-section>
+        <q-card-section>
+          <q-input :style='{width: "100%"}' label='Linera Address' v-model='account' />
+        </q-card-section>
+        <q-card-section>
+          <q-btn label='Login' @click='onLoginConfirmClick' />
+        </q-card-section>
+      </q-card>
+    </q-dialog>
   </q-layout>
 </template>
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
+import { onMounted, ref } from 'vue'
+import { Cookies } from 'quasar'
+import { useUserStore } from 'src/stores/user'
 
 import CreditQuery from 'src/components/CreditQuery.vue'
 import BlockSubscription from 'src/components/BlockSubscription.vue'
@@ -64,6 +98,9 @@ import FeedContentsKeysQuery from 'src/components/FeedContentsKeysQuery.vue'
 import FeedContentsQuery from 'src/components/FeedContentsQuery.vue'
 
 const router = useRouter()
+const account = ref('')
+const logining = ref(false)
+const user = useUserStore()
 
 const onGithubClick = (uri: string) => {
   window.open(uri)
@@ -73,6 +110,29 @@ const onDashboardClick = () => {
 }
 const onLogoClick = () => {
   void router.push({ path: '/' })
+}
+const onLoginClick = () => {
+  logining.value = true
+}
+const onHide = () => {
+  logining.value = false
+}
+const onLoginConfirmClick = () => {
+  if (account.value.length === 0) {
+    return
+  }
+  onHide()
+  Cookies.set('account', account.value)
+  user.account = account.value
+}
+onMounted(() => {
+  account.value = Cookies.get('account')
+  user.account = account.value
+})
+const onLogoutClick = () => {
+  Cookies.remove('account')
+  user.account = undefined as unknown as string
+  account.value = undefined as unknown as string
 }
 </script>
 
