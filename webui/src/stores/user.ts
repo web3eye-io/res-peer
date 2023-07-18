@@ -9,7 +9,7 @@ export const useUserStore = defineStore('user', {
   state: () => ({
     account: undefined as unknown as string,
     spendable: '0.',
-    balances: [] as Array<AgeAmount>
+    amounts: [] as Array<AgeAmount>
   }),
   getters: {},
   actions: {}

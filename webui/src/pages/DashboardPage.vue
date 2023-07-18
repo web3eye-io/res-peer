@@ -28,9 +28,7 @@
             <create-content />
           </q-tab-panel>
           <q-tab-panel name='credits'>
-            <div>
-              TODO
-            </div>
+            <user-balance />
           </q-tab-panel>
           <q-tab-panel name='assets'>
             <div>
@@ -47,6 +45,7 @@
 import { ref } from 'vue'
 
 import CreateContent from 'src/components/CreateContent.vue'
+import UserBalance from 'src/components/UserBalance.vue'
 
 const splitterModel = ref(20)
 const tab = ref('contents')
