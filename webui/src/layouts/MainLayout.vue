@@ -21,18 +21,32 @@
         <span class='text-grey-6'>Peer-to-Peer content publishing application on Linera</span>
         <q-space />
         <q-img
+          src='https://avatars.githubusercontent.com/u/107513858?s=48&v=4'
+          width='24px'
+          height='24px'
+          :style='{marginLeft: "8px", marginTop: "4px"}'
+          class='cursor-pointer'
+          @click='onGithubClick("https://github.com/linera-io/linera-protocol.git")'
+        />
+        <q-img
           src='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSAPxlNRQziXOi61fD4jtkxAm-v6pPbT_UIF5IL1_PqCQ&s=10'
           width='24px'
           height='24px'
           :style='{marginLeft: "8px", marginTop: "4px"}'
           class='cursor-pointer'
+
+          @click='onGithubClick("https://github.com/web3eye-io/res-peer.git")'
         />
       </div>
     </q-footer>
   </q-layout>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+const onGithubClick = (uri: string) => {
+  window.open(uri)
+}
+</script>
 
 <style scoped lang="sass">
 .q-layout__section--marginal
