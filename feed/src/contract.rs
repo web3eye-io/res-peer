@@ -166,7 +166,7 @@ impl Feed {
                     Ok(_) => {
                         return self
                             .reward_credits(context, owner, Amount::from_tokens(500))
-                            .await
+                            .await;
                     }
                     Err(err) => return Err(ContractError::StateError(err)),
                 }
@@ -183,15 +183,14 @@ impl Feed {
             context.chain_id
         );
         match context.authenticated_signer {
-            Some(owner) => {
-                match self.like_content(cid, owner, true).await {
-                    Ok(_) => {
-                        // TODO: here we call credit application to reward author
-                        return Ok(());
-                    }
-                    Err(err) => return Err(ContractError::StateError(err)),
+            Some(owner) => match self.like_content(cid, owner, true).await {
+                Ok(_) => {
+                    return self
+                        .reward_credits(context, owner, Amount::from_tokens(100))
+                        .await;
                 }
-            }
+                Err(err) => return Err(ContractError::StateError(err)),
+            },
             _ => return Err(ContractError::InvalidPublisher),
         }
     }
@@ -208,15 +207,14 @@ impl Feed {
             context.chain_id
         );
         match context.authenticated_signer {
-            Some(owner) => {
-                match self.like_content(cid, owner, false).await {
-                    Ok(_) => {
-                        // TODO: here we call credit application to reward author
-                        return Ok(());
-                    }
-                    Err(err) => return Err(ContractError::StateError(err)),
+            Some(owner) => match self.like_content(cid, owner, false).await {
+                Ok(_) => {
+                    return self
+                        .reward_credits(context, owner, Amount::from_tokens(100))
+                        .await;
                 }
-            }
+                Err(err) => return Err(ContractError::StateError(err)),
+            },
             _ => return Err(ContractError::InvalidPublisher),
         }
     }
