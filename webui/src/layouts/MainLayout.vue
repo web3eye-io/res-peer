@@ -17,6 +17,10 @@
     </q-header>
 
     <q-page-container>
+      <credit-query />
+      <block-subscription />
+      <feed-contents-keys-query />
+      <feed-contents-query />
       <router-view />
     </q-page-container>
 
@@ -53,6 +57,11 @@
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
+
+import CreditQuery from 'src/components/CreditQuery.vue'
+import BlockSubscription from 'src/components/BlockSubscription.vue'
+import FeedContentsKeysQuery from 'src/components/FeedContentsKeysQuery.vue'
+import FeedContentsQuery from 'src/components/FeedContentsQuery.vue'
 
 const router = useRouter()
 
