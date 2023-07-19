@@ -52,6 +52,7 @@ impl Contract for Mall {
                 collection_id,
                 uri,
                 price,
+                name,
             } => {
                 self.validate_collection_owner(
                     collection_id,
@@ -63,6 +64,7 @@ impl Contract for Mall {
                     collection_id,
                     uri,
                     price,
+                    name,
                 )
                 .await?;
             }

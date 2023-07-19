@@ -106,6 +106,7 @@ impl Mall {
         collection_id: u64,
         uri: Option<String>,
         price: Option<Amount>,
+        name: String,
     ) -> Result<(), StateError> {
         match self.collections.get(&collection_id).await {
             Ok(Some(mut collection)) => {
@@ -122,6 +123,7 @@ impl Mall {
                                 price,
                                 on_sale: true,
                                 minted_at: system_api::current_system_time(),
+                                name,
                             },
                         );
                         self.collections.insert(&collection_id, collection)?;

@@ -33,6 +33,7 @@ pub struct NFT {
     pub price: Option<Amount>,
     pub on_sale: bool,
     pub minted_at: Timestamp,
+    pub name: String,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, SimpleObject, Eq, PartialEq)]
@@ -62,6 +63,7 @@ pub enum Operation {
         collection_id: u64,
         uri: Option<String>,
         price: Option<Amount>,
+        name: String,
     },
     BuyNFT {
         collection_id: u64,

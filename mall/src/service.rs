@@ -58,11 +58,13 @@ impl MutationRoot {
         collection_id: u64,
         uri: Option<String>,
         price: Option<Amount>,
+        name: String,
     ) -> Vec<u8> {
         bcs::to_bytes(&Operation::MintNFT {
             collection_id,
             uri,
             price,
+            name,
         })
         .unwrap()
     }
