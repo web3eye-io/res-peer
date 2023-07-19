@@ -47,7 +47,7 @@ const columns = computed(() => [
   }, {
     name: 'Minted At',
     label: 'Minted At',
-    field: (row: NFTExt) => new Date(row.minted_at / 1000).toString()
+    field: (row: NFTExt) => new Date(row.minted_at / 1000).toDateString()
   }
 ])
 
