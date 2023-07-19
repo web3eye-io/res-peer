@@ -44,6 +44,7 @@
               <mint-nft />
             </div>
             <collection-list :style='{margin: "32px 0"}' />
+            <nft-list :style='{margin: "32px 0"}' />
           </q-tab-panel>
         </q-tab-panels>
       </template>
@@ -61,6 +62,7 @@ import ArticleList from 'src/components/ArticleList.vue'
 import CreateCollection from 'src/components/CreateCollection.vue'
 import MintNft from 'src/components/MintNFT.vue'
 import CollectionList from 'src/components/CollectionList.vue'
+import NftList from 'src/components/NftList.vue'
 
 const user = useUserStore()
 const account = computed(() => user.account)
