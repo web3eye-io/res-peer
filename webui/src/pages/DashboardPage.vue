@@ -39,9 +39,7 @@
             <user-balance />
           </q-tab-panel>
           <q-tab-panel name='assets'>
-            <div>
-              TODO
-            </div>
+            <create-collection />
           </q-tab-panel>
         </q-tab-panels>
       </template>
@@ -56,6 +54,7 @@ import { useUserStore } from 'src/stores/user'
 import CreateContent from 'src/components/CreateContent.vue'
 import UserBalance from 'src/components/UserBalance.vue'
 import ArticleList from 'src/components/ArticleList.vue'
+import CreateCollection from 'src/components/CreateCollection.vue'
 
 const user = useUserStore()
 const account = computed(() => user.account)

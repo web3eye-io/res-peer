@@ -7,7 +7,7 @@
   >
     <q-space />
     <div :style='{width: "720px", borderBottom: index < contents.length - 1 ? "1px solid gray" : "", paddingBottom: "48px"}'>
-      <div :style='{fontWeight: "bold", fontSize: "28px", wordBreak: "break-word"}'>
+      <div :style='{fontWeight: "bold", fontSize: "28px", wordBreak: "break-word", marginBottom: "16px"}'>
         {{ _content.title?.length ? _content.title : 'You should have a title!' }}
       </div>
       <div>
