@@ -2,7 +2,7 @@
   <div class='text-h4' :style='{margin: "32px auto", textAlign: "center", fontWeight: 600}'>
     All Collections
   </div>
-  <div class='nfts' :style='{width: "100%", display: "inline-block", overflowX: "scroll", padding: "32px 16px 48px 16px"}'>
+  <div class='nfts' :style='{width: "1080px", overflowX: "scroll", padding: "32px 16px 48px 16px", margin: "0 auto"}'>
     <div class='row justify-center q-gutter-sm no-wrap inline'>
       <q-card
         :style='{width: "400px", height: "520px"}'

@@ -47,7 +47,7 @@
           {{ props.row.name }}
         </q-td>
         <q-td class='text-center' :style='{fontWeight: 600, fontSize: "16px"}'>
-          {{ props.row.price }} Linera
+          {{ props.row.price ? props.row.price + ' Linera' : 'Price in NFT' }}
         </q-td>
         <q-td class='text-center' :style='{fontWeight: 600, fontSize: "16px"}'>
           {{ props.row.baseUri }}
