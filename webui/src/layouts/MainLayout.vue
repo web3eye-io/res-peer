@@ -145,7 +145,7 @@ const onLogoutClick = () => {
   account.value = undefined as unknown as string
 }
 const onNFTMarketClick = () => {
-  void router.push({ path: '/market' })
+  void router.push({ path: '/mall' })
 }
 </script>
 
