@@ -6,6 +6,7 @@ export interface NFT {
   price?: string
   on_sale: boolean
   minted_at: number
+  name: string
 }
 
 export interface NFTExt extends NFT {

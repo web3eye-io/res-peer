@@ -28,9 +28,12 @@ const columns = computed(() => [
     align: 'left',
     field: (row: NFTExt) => row.token_id
   }, {
+    name: 'Name',
+    label: 'Name',
+    field: (row: NFTExt) => row.name
+  }, {
     name: 'Collection ID',
     label: 'Collection ID',
-    align: 'left',
     field: (row: NFTExt) => row.collectionId
   }, {
     name: 'Collection Name',
