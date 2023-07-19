@@ -21,6 +21,7 @@
     :style='{marginTop: "16px"}' label='Collection ID'
   />
   <q-input v-if='editing' dense label='NFT data storage uri without collection baseUri' v-model='uri' />
+  <q-input v-if='editing' dense label='NFT name you like' v-model='name' />
   <q-toggle v-if='editing' v-model='ownPrice' />
   <q-input
     v-if='editing && ownPrice' v-model='price' type='number' filled
@@ -40,6 +41,7 @@ const editing = ref(false)
 const uri = ref('')
 const price = ref(0)
 const ownPrice = ref(false)
+const name = ref('')
 const collectionId = ref(-1)
 const collection = useCollectionStore()
 
@@ -53,10 +55,13 @@ const onMintlick = async () => {
   if (collectionId.value < 0) {
     return
   }
+  if (!name.value.length) {
+    return
+  }
 
   const { mutate, onDone, onError } = provideApolloClient(apolloClient)(() => useMutation(gql`
-    mutation mintNft ($collectionId: Int!, $uri: String!, $price: String) {
-      mintNft(collectionId: $collectionId, uri: $uri, price: $price)
+    mutation mintNft ($collectionId: Int!, $uri: String!, $price: String, $name: String!) {
+      mintNft(collectionId: $collectionId, uri: $uri, price: $price, name: $name)
     }
   `))
   onDone(() => {
@@ -70,6 +75,7 @@ const onMintlick = async () => {
     collectionId: parseInt(collectionId.value.toString()),
     uri: uri.value,
     price: ownPrice.value ? price.value : undefined,
+    name: name.value,
     endpoint: 'mall'
   })
 }

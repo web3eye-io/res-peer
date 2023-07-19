@@ -174,7 +174,10 @@ impl Mall {
                     if !nft.on_sale {
                         return Err(StateError::TokenNotOnSale);
                     }
-                    let buyer_balance = self.balances.get(&buyer).await.unwrap().unwrap();
+                    let buyer_balance = match self.balances.get(&buyer).await {
+                        Ok(Some(balance)) => balance,
+                        _ => Amount::zero(),
+                    };
                     let mut discount_amount = Amount::zero();
                     if self.credits_per_linera.get().ge(&Amount::zero()) {
                         discount_amount = credits
@@ -191,9 +194,15 @@ impl Mall {
                     if price.gt(&buyer_balance) {
                         return Err(StateError::InsufficientBalance);
                     }
-                    let mut token_owners = self.token_owners.get(&token_id).await.unwrap().unwrap();
+                    let mut token_owners = match self.token_owners.get(&token_id).await {
+                        Ok(Some(owners)) => owners,
+                        _ => HashMap::default(),
+                    };
                     let owner = token_owners.get(&collection_id).unwrap();
-                    let owner_balance = self.balances.get(owner).await.unwrap().unwrap();
+                    let owner_balance = match self.balances.get(owner).await {
+                        Ok(Some(balance)) => balance,
+                        _ => Amount::zero(),
+                    };
                     self.balances
                         .insert(owner, owner_balance.saturating_add(price))?;
                     self.balances
@@ -213,9 +222,14 @@ impl Mall {
         collection_id: u64,
         token_id: u16,
     ) -> Result<Owner, StateError> {
-        let token_owners = self.token_owners.get(&token_id).await.unwrap().unwrap();
-        let owner = token_owners.get(&collection_id).unwrap();
-        Ok(*owner)
+        let token_owners = match self.token_owners.get(&token_id).await {
+            Ok(Some(owners)) => owners,
+            _ => HashMap::default(),
+        };
+        match token_owners.get(&collection_id) {
+            Some(owner) => Ok(*owner),
+            _ => Err(StateError::NotCollectionOwner),
+        }
     }
 
     pub(crate) async fn update_nft_price(
