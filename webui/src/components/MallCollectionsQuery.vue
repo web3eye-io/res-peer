@@ -18,9 +18,9 @@ const blockHeight = computed(() => block.blockHeight)
 const options = /* await */ getClientOptions(/* {app, router ...} */)
 const apolloClient = new ApolloClient(options)
 
-const getCollection = (collectionKey: string, force: boolean, done?: () => void) => {
+const getCollection = (collectionKey: number, force: boolean, done?: () => void) => {
   const { result /*, fetchMore, onResult, onError */ } = provideApolloClient(apolloClient)(() => useQuery(gql`
-    query getCollection($collectionKey: String!) {
+    query getCollection($collectionKey: Int!) {
       collections(u64: $collectionKey) {
         price
         baseUri
@@ -30,7 +30,7 @@ const getCollection = (collectionKey: string, force: boolean, done?: () => void)
       }
     }
   `, {
-    collectionKey: `${collectionKey}`,
+    collectionKey: parseInt(collectionKey.toString()),
     endpoint: 'mall'
   }, {
     fetchPolicy: force ? 'network-only' : 'cache-and-network'

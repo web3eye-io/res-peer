@@ -1,24 +1,24 @@
 import { defineStore } from 'pinia'
 
 export interface NFT {
-  tokenId: string
+  tokenId: number
   uri: string
   price?: string
   onSale: boolean
 }
 
 export interface Collection {
-  collectionId: string
+  collectionId: number
   baseUri: string
-  nfts: Map<string, NFT>
+  nfts: Map<number, NFT>
   price?: string
   name: string
 }
 
 export const useCollectionStore = defineStore('collection', {
   state: () => ({
-    collectionsKeys: [] as Array<string>,
-    collections: new Map<string, Collection>()
+    collectionsKeys: [] as Array<number>,
+    collections: new Map<number, Collection>()
   }),
   getters: {},
   actions: {}
