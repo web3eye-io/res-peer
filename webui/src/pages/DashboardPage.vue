@@ -1,5 +1,9 @@
 <template>
   <div :style='{width: "1080px", margin: "32px auto"}'>
+    <div class='row'>
+      <q-space />
+      Account: {{ account }}
+    </div>
     <q-splitter
       v-model='splitterModel'
     >
@@ -26,6 +30,10 @@
         >
           <q-tab-panel name='contents'>
             <create-content />
+            <q-separator :style='{margin: "32px 0"}' />
+            <article-list article-type='MY_ARTICLE' :style='{margin: "32px 0"}' />
+            <article-list article-type='MY_LIKE' :style='{margin: "32px 0"}' />
+            <article-list article-type='MY_DISLIKE' :style='{margin: "32px 0"}' />
           </q-tab-panel>
           <q-tab-panel name='credits'>
             <user-balance />
@@ -42,10 +50,15 @@
 </template>
 
 <script setup lang='ts'>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
+import { useUserStore } from 'src/stores/user'
 
 import CreateContent from 'src/components/CreateContent.vue'
 import UserBalance from 'src/components/UserBalance.vue'
+import ArticleList from 'src/components/ArticleList.vue'
+
+const user = useUserStore()
+const account = computed(() => user.account)
 
 const splitterModel = ref(20)
 const tab = ref('contents')

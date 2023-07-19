@@ -1,5 +1,6 @@
 <template>
   <div class='row'>
+    <span class='text-h5'>Create Post</span>
     <q-space />
     <q-btn
       dense flat v-if='!editing' label='Create'

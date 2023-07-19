@@ -7,7 +7,7 @@ export interface Content {
   title: string
   likes: number
   dislikes: number
-  accounts: Map<string, boolean>
+  accounts: Record<string, boolean>
   createdAt: number
 }
 
