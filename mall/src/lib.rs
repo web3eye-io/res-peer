@@ -86,4 +86,7 @@ pub enum Operation {
         collection_id: u64,
         token_id: u16,
     },
+    Deposit {
+        amount: Amount,
+    },
 }

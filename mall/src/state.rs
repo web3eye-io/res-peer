@@ -324,6 +324,20 @@ impl Mall {
         }
         Ok(())
     }
+
+    pub(crate) async fn deposit(&mut self, owner: Owner, amount: Amount) -> Result<(), StateError> {
+        match self.balances.get(&owner).await {
+            Ok(Some(balance)) => match self.balances.insert(&owner, balance.saturating_add(amount))
+            {
+                Ok(_) => Ok(()),
+                Err(err) => Err(StateError::ViewError(err)),
+            },
+            _ => match self.balances.insert(&owner, amount) {
+                Ok(_) => Ok(()),
+                Err(err) => Err(StateError::ViewError(err)),
+            },
+        }
+    }
 }
 
 #[derive(Debug, Error)]

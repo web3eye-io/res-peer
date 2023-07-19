@@ -134,6 +134,10 @@ impl Contract for Mall {
                 )
                 .await?
             }
+            Operation::Deposit { amount } => {
+                self.deposit(context.authenticated_signer.unwrap(), amount)
+                    .await?
+            }
         }
         Ok(ExecutionResult::default())
     }

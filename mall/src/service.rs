@@ -111,6 +111,10 @@ impl MutationRoot {
         })
         .unwrap()
     }
+
+    async fn deposit(&self, amount: Amount) -> Vec<u8> {
+        bcs::to_bytes(&Operation::Deposit { amount }).unwrap()
+    }
 }
 
 /// An error that can occur while querying the service.
