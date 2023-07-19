@@ -9,7 +9,6 @@
           />
           <q-space />
           <q-icon
-            v-if='!account?.length'
             name='store' size='24px' color='black' class='cursor-pointer'
             @click='onNFTMarketClick'
           />
