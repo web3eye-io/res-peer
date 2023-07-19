@@ -5,7 +5,7 @@
   >
     <template #top-left>
       <div class='text-h5'>
-        Collections
+        My Collections
       </div>
     </template>
   </q-table>
@@ -47,7 +47,7 @@ const columns = computed(() => [
   }, {
     name: 'Publisher',
     label: 'Publisher',
-    field: (row: Collection) => row.publisher
+    field: (row: Collection) => row.publisher.substring(0, 5) + '...' + row.publisher.substring(row.publisher.length - 5)
   }
 ])
 
