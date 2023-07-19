@@ -2,7 +2,7 @@
   <div class='text-h4' :style='{margin: "32px auto", textAlign: "center", fontWeight: 600}'>
     All Collections
   </div>
-  <div class='nfts' :style='{width: "100%", display: "inline-block", overflowX: "scroll", padding: "16px 16px"}'>
+  <div class='nfts' :style='{width: "100%", display: "inline-block", overflowX: "scroll", padding: "32px 16px 48px 16px"}'>
     <div class='row justify-center q-gutter-sm no-wrap inline'>
       <q-card
         :style='{width: "400px", height: "520px"}'
@@ -12,8 +12,13 @@
       >
         <q-img
           :src='collectionBanners.get(_collection.collectionId)'
-          @error='onBannerError(_collection)'
-        />
+          width='100%'
+          height='400px'
+        >
+          <template #error>
+            <div class='absolute-full flex flex-center error' />
+          </template>
+        </q-img>
         <div :style='{padding: "16px 32px"}'>
           <div :style='{fontWeight: 600, fontSize: "16px", marginBottom: "8px"}' class='text-cyan-8'>
             {{ _collection.name }}
@@ -53,10 +58,6 @@ const collectionBanner = (_collection: Collection) => {
   return _collection.baseUri + nfts[0].uri
 }
 
-const onBannerError = (_collection: Collection) => {
-  collectionBanners.value.set(_collection.collectionId, defaultBanner.value)
-}
-
 </script>
 
 <style scoped lang='sass'>
@@ -75,4 +76,10 @@ const onBannerError = (_collection: Collection) => {
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover
   background: #555
+
+.error
+  background-image: url(../assets/DefaultNFTBanner.png)
+  border-radius: 8px
+  background-size: cover
+  background-repeat: no-repeat
 </style>

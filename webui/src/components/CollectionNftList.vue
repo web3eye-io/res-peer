@@ -1,0 +1,91 @@
+<template>
+  <q-table
+    flat
+    :rows='collections'
+    :rows-per-page-options='[6]'
+    :style='{width: "1080px", margin: "0px auto"}'
+  >
+    <template #header>
+      <q-tr>
+        <q-th class='text-grey-7' :style='{fontSize: "16px"}'>
+          Rank
+        </q-th>
+        <q-th class='text-grey-7' :style='{fontSize: "16px"}'>
+          Collection
+        </q-th>
+        <Q-th />
+        <q-th class='text-grey-7' :style='{fontSize: "16px"}'>
+          Price
+        </q-th>
+        <q-th class='text-grey-7' :style='{fontSize: "16px"}'>
+          URI
+        </q-th>
+      </q-tr>
+    </template>
+    <template #top-left>
+      <div class='text-h4' :style='{margin: "32px auto"}'>
+        Collection Gallery
+      </div>
+    </template>
+    <template #body='props'>
+      <q-tr :props='props' class='cursor-pointer'>
+        <q-td class='text-center' :style='{fontWeight: 600, fontSize: "16px"}'>
+          {{ props.rowIndex + 1 }}
+        </q-td>
+        <q-td class='text-right'>
+          <q-img
+            :src='collectionBanner(props.row)'
+            width='120px'
+            height='130px'
+          >
+            <template #error>
+              <div class='absolute-full flex flex-center error' />
+            </template>
+          </q-img>
+        </q-td>
+        <q-td :style='{fontWeight: 600, fontSize: "16px"}'>
+          {{ props.row.name }}
+        </q-td>
+        <q-td class='text-center' :style='{fontWeight: 600, fontSize: "16px"}'>
+          {{ props.row.price }} Linera
+        </q-td>
+        <q-td class='text-center' :style='{fontWeight: 600, fontSize: "16px"}'>
+          {{ props.row.baseUri }}
+        </q-td>
+      </q-tr>
+    </template>
+  </q-table>
+</template>
+
+<script setup lang='ts'>
+import { useCollectionStore, Collection } from 'src/stores/collection'
+import { computed, ref, watch } from 'vue'
+
+const collection = useCollectionStore()
+const collections = computed(() => Array.from(collection.collections.values()))
+const collectionBanners = ref(new Map<number, string>())
+const defaultBanner = ref('images/DefaultNFTBanner.png')
+
+watch(collections, () => {
+  collections.value.forEach((el) => {
+    collectionBanners.value.set(el.collectionId, collectionBanner(el))
+  })
+})
+
+const collectionBanner = (_collection: Collection) => {
+  const nfts = collection.nftsByCollections(_collection.collectionId)
+  if (nfts.length === 0) {
+    return defaultBanner.value
+  }
+  return _collection.baseUri + nfts[0].uri
+}
+
+</script>
+
+<style scoped lang='sass'>
+.error
+  background-image: url(../assets/DefaultNFTBanner.png)
+  border-radius: 8px
+  background-size: cover
+  background-repeat: no-repeat
+</style>
