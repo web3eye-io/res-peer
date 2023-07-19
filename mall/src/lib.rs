@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use async_graphql::{Request, Response, SimpleObject};
-use linera_sdk::base::{Amount, ApplicationId, ContractAbi, ServiceAbi};
+use linera_sdk::base::{Amount, ApplicationId, ContractAbi, ServiceAbi, Timestamp};
 use serde::{Deserialize, Serialize};
 
 pub struct MallAbi;
@@ -32,6 +32,7 @@ pub struct NFT {
     /// Price in Linera Token
     pub price: Option<Amount>,
     pub on_sale: bool,
+    pub minted_at: Timestamp,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, SimpleObject, Eq, PartialEq)]
@@ -41,6 +42,7 @@ pub struct Collection {
     pub nfts: HashMap<u16, NFT>,
     pub price: Option<Amount>,
     pub name: String,
+    pub created_at: Timestamp,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]

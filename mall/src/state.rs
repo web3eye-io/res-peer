@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use linera_sdk::{
     base::{Amount, Owner},
+    contract::system_api,
     views::{MapView, RegisterView, ViewStorageContext},
 };
 use linera_views::views::{GraphQLView, RootView};
@@ -63,6 +64,7 @@ impl Mall {
             price,
             name,
             nfts: HashMap::new(),
+            created_at: system_api::current_system_time(),
         };
         match self.publisher_collections.get(&owner).await {
             Ok(Some(mut collections)) => {
@@ -114,6 +116,7 @@ impl Mall {
                             uri,
                             price,
                             on_sale: true,
+                            minted_at: system_api::current_system_time(),
                         },
                     );
                     self.collections.insert(&collection_id, collection)?;

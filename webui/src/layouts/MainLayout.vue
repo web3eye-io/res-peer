@@ -16,11 +16,13 @@
           <q-icon
             v-if='!account?.length'
             name='login' size='24px' color='black' class='cursor-pointer'
+            :style='{marginLeft: "8px"}'
             @click='onLoginClick'
           />
           <q-icon
             v-if='account?.length'
             name='dashboard' size='24px' color='black' class='cursor-pointer'
+            :style='{marginLeft: "8px"}'
             @click='onDashboardClick'
           />
           <q-icon
@@ -38,6 +40,8 @@
       <block-subscription />
       <feed-contents-keys-query />
       <feed-contents-query />
+      <mall-collection-keys-query />
+      <mall-collections-query />
       <router-view />
     </q-page-container>
 
@@ -101,6 +105,8 @@ import CreditQuery from 'src/components/CreditQuery.vue'
 import BlockSubscription from 'src/components/BlockSubscription.vue'
 import FeedContentsKeysQuery from 'src/components/FeedContentsKeysQuery.vue'
 import FeedContentsQuery from 'src/components/FeedContentsQuery.vue'
+import MallCollectionKeysQuery from 'src/components/MallCollectionsKeysQuery.vue'
+import MallCollectionsQuery from 'src/components/MallCollectionsQuery.vue'
 
 const router = useRouter()
 const account = ref('')

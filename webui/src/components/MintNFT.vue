@@ -53,7 +53,7 @@ const onMintlick = async () => {
   }
 
   const { mutate, onDone, onError } = provideApolloClient(apolloClient)(() => useMutation(gql`
-    mutation MintNFT ($collectionId: Number!, $uri: String!, $price: String) {
+    mutation mintNft ($collectionId: Number!, $uri: String!, $price: String) {
       mintNft(collectionId: $collectionId, uri: $uri, price: $price)
     }
   `))

@@ -19,9 +19,10 @@
   <q-input v-if='editing' dense label='Base uri for your collection storage (https or ipfs)' v-model='baseUri' />
   <q-toggle v-if='editing' label='Unique Price' v-model='uniquePrice' />
   <q-input
-    v-if='editing && uniquePrice' v-model='price' type='number' filled
+    v-if='editing && uniquePrice' v-model='price' type='number'
     label='Price' :style='{marginTop: "16px"}'
   />
+  <q-input v-if='editing' v-model='name' label='Collection name' />
 </template>
 
 <script setup lang="ts">
@@ -35,6 +36,7 @@ const editing = ref(false)
 const baseUri = ref('')
 const price = ref(0)
 const uniquePrice = ref(false)
+const name = ref('')
 
 const options = /* await */ getClientOptions(/* {app, router ...} */)
 const apolloClient = new ApolloClient(options)
@@ -43,10 +45,13 @@ const onCreateClick = async () => {
   if (!baseUri.value.length) {
     return
   }
+  if (!name.value.length) {
+    return
+  }
 
   const { mutate, onDone, onError } = provideApolloClient(apolloClient)(() => useMutation(gql`
-    mutation CreateCollection ($baseUri: String!, $price: String) {
-      createCollection(baseUri: $baseUri, price: $price)
+    mutation createCollection ($baseUri: String!, $price: String, $name: String!) {
+      createCollection(baseUri: $baseUri, price: $price, name: $name)
     }
   `))
   onDone(() => {
@@ -58,6 +63,7 @@ const onCreateClick = async () => {
   await mutate({
     baseUri: baseUri.value,
     price: uniquePrice.value ? price : undefined,
+    name: name.value,
     endpoint: 'mall'
   })
 }

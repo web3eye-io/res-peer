@@ -62,7 +62,7 @@ const apolloClient = new ApolloClient(options)
 
 const onLikeClick = async (cid: string) => {
   const { mutate, onDone, onError } = provideApolloClient(apolloClient)(() => useMutation(gql`
-    mutation Like ($cid: String!) {
+    mutation like ($cid: String!) {
       like(ccid: $cid)
     }
   `))
@@ -80,7 +80,7 @@ const onLikeClick = async (cid: string) => {
 
 const onDislikeClick = async (cid: string) => {
   const { mutate, onDone, onError } = provideApolloClient(apolloClient)(() => useMutation(gql`
-    mutation Dislike ($cid: String!) {
+    mutation dislike ($cid: String!) {
       dislike(ccid: $cid)
     }
   `))
