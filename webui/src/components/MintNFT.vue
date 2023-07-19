@@ -3,7 +3,7 @@
     <span class='text-h5'>Mint NFT</span>
     <q-space />
     <q-btn
-      dense flat v-if='!editing' label='Create'
+      dense flat v-if='!editing' label='Mint'
       color='blue'
       @click='editing = !editing'
     />
@@ -11,7 +11,7 @@
   <div class='row'>
     <q-space />
     <q-btn
-      dense flat v-if='editing' label='Create'
+      dense flat v-if='editing' label='Mint'
       color='blue'
       @click='onMintlick'
     />
@@ -34,12 +34,14 @@ import { getClientOptions } from 'src/apollo'
 import { ApolloClient } from '@apollo/client/core'
 import { provideApolloClient, useMutation } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
+import { useCollectionStore } from 'src/stores/collection'
 
 const editing = ref(false)
 const uri = ref('')
 const price = ref(0)
 const ownPrice = ref(false)
 const collectionId = ref(-1)
+const collection = useCollectionStore()
 
 const options = /* await */ getClientOptions(/* {app, router ...} */)
 const apolloClient = new ApolloClient(options)
@@ -53,20 +55,21 @@ const onMintlick = async () => {
   }
 
   const { mutate, onDone, onError } = provideApolloClient(apolloClient)(() => useMutation(gql`
-    mutation mintNft ($collectionId: Number!, $uri: String!, $price: String) {
+    mutation mintNft ($collectionId: Int!, $uri: String!, $price: String) {
       mintNft(collectionId: $collectionId, uri: $uri, price: $price)
     }
   `))
   onDone(() => {
     editing.value = !editing.value
+    collection.mutateKeys.push(collectionId.value)
   })
   onError((error) => {
     console.log(error)
   })
   await mutate({
-    collectionId: collectionId.value,
+    collectionId: parseInt(collectionId.value.toString()),
     uri: uri.value,
-    price: ownPrice.value ? price : undefined,
+    price: ownPrice.value ? price.value : undefined,
     endpoint: 'mall'
   })
 }

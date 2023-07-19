@@ -28,7 +28,8 @@ export interface Collection {
 export const useCollectionStore = defineStore('collection', {
   state: () => ({
     collectionsKeys: [] as Array<number>,
-    collections: new Map<number, Collection>()
+    collections: new Map<number, Collection>(),
+    mutateKeys: [] as Array<number>
   }),
   getters: {
     nfts (): (publisher?: string) => Array<NFTExt> {

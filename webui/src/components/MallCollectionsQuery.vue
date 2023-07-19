@@ -47,12 +47,13 @@ watch(collectionKey, () => {
   if (!collectionKey.value) {
     return
   }
-  if (collections.value.get(collectionKey.value)) {
+  const index = collection.mutateKeys.findIndex((el) => el === collectionKey.value)
+  if (collections.value.get(collectionKey.value) && index < 0) {
     collectionIndex.value++
     return
   }
 
-  getCollection(collectionKey.value, false, () => {
+  getCollection(collectionKey.value, index >= 0, () => {
     collectionIndex.value++
   })
 })
