@@ -39,7 +39,7 @@
       <block-subscription />
       <feed-contents-keys-query />
       <feed-contents-query />
-      <mall-collection-keys-query />
+      <mall-info-query />
       <mall-collections-query />
       <router-view />
     </q-page-container>
@@ -104,7 +104,7 @@ import CreditQuery from 'src/components/CreditQuery.vue'
 import BlockSubscription from 'src/components/BlockSubscription.vue'
 import FeedContentsKeysQuery from 'src/components/FeedContentsKeysQuery.vue'
 import FeedContentsQuery from 'src/components/FeedContentsQuery.vue'
-import MallCollectionKeysQuery from 'src/components/MallCollectionsKeysQuery.vue'
+import MallInfoQuery from 'src/components/MallInfoQuery.vue'
 import MallCollectionsQuery from 'src/components/MallCollectionsQuery.vue'
 
 const router = useRouter()

@@ -4,7 +4,11 @@
       <q-space />
       <div :style='{textAlign: "end"}'>
         <div>{{ account }}</div>
-        <div>1 Linera = {{ creditsPerLinera }} Credits</div>
+        <div>
+          <span>{{ spendableCredits?.length ? spendableCredits + ' Credits' : '0 Credits' }}</span>
+          <span>{{ lineraBalance?.length ? ', ' + lineraBalance + ' Linera' : ', 0 Linera' }}</span>
+          <span> (1 Linera = {{ creditsPerLinera }} Credits)</span>
+        </div>
       </div>
     </div>
     <q-splitter
@@ -46,6 +50,9 @@
             <div :style='{margin: "32px 0"}'>
               <mint-nft />
             </div>
+            <div :style='{margin: "32px 0"}'>
+              <deposit-balance />
+            </div>
             <collection-list :style='{margin: "32px 0"}' />
             <nft-list :style='{margin: "32px 0"}' />
           </q-tab-panel>
@@ -67,11 +74,14 @@ import CreateCollection from 'src/components/CreateCollection.vue'
 import MintNft from 'src/components/MintNFT.vue'
 import CollectionList from 'src/components/CollectionList.vue'
 import NftList from 'src/components/NftList.vue'
+import DepositBalance from 'src/components/DepositBalance.vue'
 
 const user = useUserStore()
 const account = computed(() => user.account)
 const collection = useCollectionStore()
 const creditsPerLinera = computed(() => collection.creditsPerLinera)
+const spendableCredits = computed(() => user.spendable)
+const lineraBalance = computed(() => collection.lineraBalance)
 
 const splitterModel = ref(20)
 const tab = ref('contents')
