@@ -1,7 +1,7 @@
 <template>
   <div class='row q-gutter-sm' :style='{width: "1080px", margin: "32px auto"}'>
     <q-card
-      :style='{width: "400px", height: "545px"}'
+      :style='{width: "400px"}'
       v-for='_nft in nfts'
       :key='_nft.token_id'
       class='cursor-pointer q-hoverable'
@@ -33,10 +33,17 @@
           <strong class='text-positive' :style='{fontWeight: 600, fontSize: "16px"}'>{{ nftPrice(_nft) }}</strong> Linera
         </div>
       </div>
-      <q-btn
-        v-if='_nft.showBuy' flat label='Buy' :style='{width: "100%"}'
-        class='text-white bg-primary text-bold'
-      />
+      <div class='row'>
+        <q-btn
+          flat label='Buy' :style='{width: "60%"}'
+          class='text-white bg-primary text-bold'
+          @click='onBuyClick(_nft)'
+        />
+        <q-input
+          dense filled label='Credits to use' v-model='creditsToUse'
+          type='number' :style='{width: "40%"}'
+        />
+      </div>
     </q-card>
   </div>
 </template>
@@ -46,6 +53,10 @@
 import { NFTExt, useCollectionStore } from 'src/stores/collection'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { getClientOptions } from 'src/apollo'
+import { ApolloClient } from '@apollo/client/core'
+import { provideApolloClient, useMutation } from '@vue/apollo-composable'
+import gql from 'graphql-tag'
 
 interface Query {
   collectionId: number
@@ -94,6 +105,30 @@ onMounted(() => {
     } as NFTAnother
   })
 })
+
+const creditsToUse = ref(0)
+const options = /* await */ getClientOptions(/* {app, router ...} */)
+const apolloClient = new ApolloClient(options)
+
+const onBuyClick = async (_nft: NFTAnother) => {
+  const { mutate, onDone, onError } = provideApolloClient(apolloClient)(() => useMutation(gql`
+    mutation buyNft ($collectionId: Int!, $tokenId: Int!, $credits: String) {
+      buyNft(collectionId: $collectionId, tokenId: $tokenId, credits: $credits)
+    }
+  `))
+  onDone(() => {
+    // TODO
+  })
+  onError((error) => {
+    console.log(error)
+  })
+  await mutate({
+    collectionId: _nft.collectionId,
+    tokenId: _nft.token_id,
+    credits: creditsToUse.value.toString(),
+    endpoint: 'mall'
+  })
+}
 
 </script>
 

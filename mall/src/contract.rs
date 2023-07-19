@@ -39,6 +39,10 @@ impl Contract for Mall {
         context: &OperationContext,
         operation: Self::Operation,
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
+        match context.authenticated_signer {
+            Some(_) => {}
+            _ => return Err(ContractError::InvalidOwner),
+        }
         match operation {
             Operation::CreateCollection {
                 base_uri,
@@ -203,4 +207,7 @@ pub enum ContractError {
 
     #[error("Operation not allowed")]
     OperationNotAllowed,
+
+    #[error("Invalid owner")]
+    InvalidOwner,
 }
