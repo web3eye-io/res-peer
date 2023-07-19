@@ -14,6 +14,7 @@ const { refetch, onResult } = useQuery(gql`
     collectionsKeys
     creditsPerLinera
     balances(owner: $account)
+    assets(owner: $account)
   }
 `, {
   account: `${account.value}`,

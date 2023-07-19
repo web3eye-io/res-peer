@@ -14,7 +14,7 @@ use thiserror::Error;
 pub struct Mall {
     pub publisher_collections: MapView<Owner, Vec<u64>>,
     /// owner, collection_id, token_id
-    pub assets: MapView<Owner, HashMap<u64, Vec<u64>>>,
+    pub assets: MapView<Owner, HashMap<u64, Vec<u16>>>,
     pub token_owners: MapView<u16, HashMap<u64, Owner>>,
     pub token_publishers: MapView<u16, HashMap<u64, Owner>>,
     pub credits_per_linera: RegisterView<Amount>,
@@ -43,7 +43,7 @@ impl Mall {
             .unwrap()
     }
 
-    pub(crate) async fn assets(&self, owner: Owner) -> HashMap<u64, Vec<u64>> {
+    pub(crate) async fn assets(&self, owner: Owner) -> HashMap<u64, Vec<u16>> {
         self.assets.get(&owner).await.unwrap().unwrap()
     }
 
@@ -194,7 +194,7 @@ impl Mall {
                     if price.gt(&buyer_balance) {
                         return Err(StateError::InsufficientBalance);
                     }
-                    let mut token_owners = match self.token_owners.get(&token_id).await {
+                    let token_owners = match self.token_owners.get(&token_id).await {
                         Ok(Some(owners)) => owners,
                         _ => HashMap::default(),
                     };
@@ -207,8 +207,33 @@ impl Mall {
                         .insert(owner, owner_balance.saturating_add(price))?;
                     self.balances
                         .insert(&buyer, buyer_balance.saturating_sub(price))?;
+                    let mut token_owners = token_owners.clone();
                     token_owners.insert(collection_id, buyer);
                     self.token_owners.insert(&token_id, token_owners)?;
+                    match self.assets.get(&owner).await {
+                        Ok(Some(collections)) => {
+                            let collections = collections.clone();
+                            match collections.get(&collection_id) {
+                                Some(token_ids) => {
+                                    let mut token_ids = token_ids.clone();
+                                    token_ids.push(token_id);
+                                    let mut collections = collections.clone();
+                                    collections.insert(collection_id, token_ids);
+                                    self.assets.insert(owner, collections)?;
+                                }
+                                None => {
+                                    let mut collections = collections.clone();
+                                    collections.insert(collection_id, vec![token_id]);
+                                    self.assets.insert(&owner, collections)?;
+                                }
+                            }
+                        }
+                        _ => {
+                            let mut collections = HashMap::default();
+                            collections.insert(collection_id, vec![token_id]);
+                            self.assets.insert(&owner, collections)?;
+                        }
+                    }
                 }
                 _ => return Err(StateError::TokenIDNotExists),
             },
