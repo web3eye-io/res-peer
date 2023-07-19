@@ -29,7 +29,7 @@ const columns = computed(() => [
   }, {
     name: 'Expired Date',
     label: 'Expired Date',
-    field: (row: AgeAmount) => new Date(row.expired / 1000).toString()
+    field: (row: AgeAmount) => new Date(row.expired / 1000).toDateString()
   }
 ])
 
