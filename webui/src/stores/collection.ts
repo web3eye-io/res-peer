@@ -14,6 +14,7 @@ export interface Collection {
   price?: string
   name: string
   createdAt: number
+  publisher: string
 }
 
 export const useCollectionStore = defineStore('collection', {

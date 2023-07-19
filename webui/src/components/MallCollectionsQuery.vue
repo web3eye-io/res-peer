@@ -27,6 +27,7 @@ const getCollection = (collectionKey: number, force: boolean, done?: () => void)
         nfts
         collectionId
         name
+        publisher
       }
     }
   `, {

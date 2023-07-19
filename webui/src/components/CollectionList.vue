@@ -44,6 +44,10 @@ const columns = computed(() => [
     name: 'Created At',
     label: 'Created At',
     field: (row: Collection) => new Date(row.createdAt / 1000).toString()
+  }, {
+    name: 'Publisher',
+    label: 'Publisher',
+    field: (row: Collection) => row.publisher
   }
 ])
 
