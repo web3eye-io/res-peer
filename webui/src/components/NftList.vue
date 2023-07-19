@@ -5,7 +5,7 @@
   >
     <template #top-left>
       <div class='text-h5'>
-        My NFTs
+        {{ label }}
       </div>
     </template>
   </q-table>
@@ -14,12 +14,27 @@
 <script setup lang='ts'>
 import { NFTExt, useCollectionStore } from 'src/stores/collection'
 import { useUserStore } from 'src/stores/user'
-import { computed } from 'vue'
+import { computed, toRef } from 'vue'
+
+interface Props {
+  nftType: string
+}
+
+const props = defineProps<Props>()
+const nftType = toRef(props, 'nftType')
 
 const user = useUserStore()
 const account = computed(() => user.account)
 const collection = useCollectionStore()
-const nfts = computed(() => collection.nftsByPublisher(account.value))
+const nfts = computed(() => {
+  switch (nftType.value) {
+    case 'MY_PUBLISHES':
+      return collection.nftsByPublisher(account.value)
+    case 'MY_ASSETS':
+      return collection.nftsByOwner(account.value)
+  }
+  return collection.nftsByPublisher(account.value)
+})
 
 const columns = computed(() => [
   {
@@ -53,5 +68,15 @@ const columns = computed(() => [
     field: (row: NFTExt) => new Date(row.minted_at / 1000).toDateString()
   }
 ])
+
+const label = computed(() => {
+  switch (nftType.value) {
+    case 'MY_PUBLISHES':
+      return 'My Publishes'
+    case 'MY_ASSETS':
+      return 'My Assets'
+  }
+  return 'My NFTs'
+})
 
 </script>

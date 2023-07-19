@@ -54,7 +54,8 @@
               <deposit-balance />
             </div>
             <collection-list :style='{margin: "32px 0"}' />
-            <nft-list :style='{margin: "32px 0"}' />
+            <nft-list nft-type='MY_PUBLISHES' :style='{margin: "32px 0"}' />
+            <nft-list nft-type='MY_ASSETS' :style='{margin: "32px 0"}' />
           </q-tab-panel>
         </q-tab-panels>
       </template>

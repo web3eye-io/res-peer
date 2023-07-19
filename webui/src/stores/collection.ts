@@ -32,7 +32,7 @@ export const useCollectionStore = defineStore('collection', {
     collections: new Map<number, Collection>(),
     creditsPerLinera: '0.',
     lineraBalance: '0.',
-    assets: new Map<string, number>(),
+    assets: new Map<number, Array<number>>(),
     mutateKeys: [] as Array<number>
   }),
   getters: {
@@ -61,7 +61,7 @@ export const useCollectionStore = defineStore('collection', {
         return nfts.sort((a, b) => a.token_id > b.token_id ? 1 : -1)
       }
     },
-    nftsByCollections (): (collectionId?: number) => Array<NFTExt> {
+    nftsByCollectionID (): (collectionId?: number) => Array<NFTExt> {
       return (collectionId?: number) => {
         const nfts = [] as Array<NFTExt>
         let collections = [] as Array<Collection>
@@ -87,6 +87,21 @@ export const useCollectionStore = defineStore('collection', {
           })
         })
         return nfts.sort((a, b) => a.token_id > b.token_id ? 1 : -1)
+      }
+    },
+    nftsByOwner (): (owner?: string) => Array<NFTExt> {
+      return (owner?: string) => {
+        return this.nftsByCollectionID().filter((el) => {
+          const collection = this.collections.get(el.collectionId)
+          if (!collection) {
+            return false
+          }
+          const assets = this.assets.get(el.collectionId)
+          if (owner && collection.publisher !== owner && assets && assets.findIndex((tokenId) => tokenId === el.token_id) < 0) {
+            return false
+          }
+          return true
+        }).sort((a, b) => a.token_id > b.token_id ? 1 : -1)
       }
     },
     nftBanner (): (nft: NFTExt) => string {

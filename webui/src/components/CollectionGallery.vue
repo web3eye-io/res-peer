@@ -43,7 +43,7 @@ const collection = useCollectionStore()
 const collections = computed(() => Array.from(collection.collections.values()))
 
 const collectionBanner = (_collection: Collection) => {
-  const nfts = collection.nftsByCollections(_collection.collectionId)
+  const nfts = collection.nftsByCollectionID(_collection.collectionId)
   if (nfts.length === 0) {
     return 'images/DefaultNFTBanner.png'
   }

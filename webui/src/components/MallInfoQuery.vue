@@ -50,6 +50,10 @@ onResult((res) => {
   if (typeof (balance) === 'string') {
     collection.lineraBalance = (res.data as Record<string, string>).balances
   }
+  const assets = (res.data as Record<string, Record<number, Array<number>>>).assets
+  Object.keys(assets).forEach((key, index) => {
+    collection.assets.set(parseInt(key), Object.values(assets)[index])
+  })
 })
 
 onMounted(() => {

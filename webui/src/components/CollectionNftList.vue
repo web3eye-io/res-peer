@@ -69,7 +69,7 @@ import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 const collection = useCollectionStore()
-const collections = computed(() => Array.from(collection.collections.values()).filter((el) => collection.nftsByCollections(el.collectionId).length > 0))
+const collections = computed(() => Array.from(collection.collections.values()).filter((el) => collection.nftsByCollectionID(el.collectionId).length > 0))
 const collectionBanners = ref(new Map<number, string>())
 const defaultBanner = ref('images/DefaultNFTBanner.png')
 
@@ -80,7 +80,7 @@ watch(collections, () => {
 })
 
 const collectionBanner = (_collection: Collection) => {
-  const nfts = collection.nftsByCollections(_collection.collectionId)
+  const nfts = collection.nftsByCollectionID(_collection.collectionId)
   if (nfts.length === 0) {
     return defaultBanner.value
   }
