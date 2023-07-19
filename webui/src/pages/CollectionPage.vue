@@ -70,7 +70,7 @@ interface NFTAnother extends NFTExt {
 }
 
 const collection = useCollectionStore()
-const collections = computed(() => collection.nftsByCollectionID(parseInt(query.value.collectionId.toString())))
+const collections = computed(() => collection.nftsByCollectionID(parseInt(query.value.collectionId?.toString())))
 const nfts = ref([] as Array<NFTAnother>)
 watch(collections, () => {
   nfts.value = collections.value.map((el) => {
