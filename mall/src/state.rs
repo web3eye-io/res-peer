@@ -107,47 +107,52 @@ impl Mall {
         price: Option<Amount>,
     ) -> Result<(), StateError> {
         match self.collections.get(&collection_id).await {
-            Ok(Some(mut collection)) => match self.token_ids.get(&collection_id).await {
-                Ok(Some(token_id)) => {
-                    collection.nfts.insert(
-                        token_id,
-                        NFT {
-                            token_id,
-                            uri,
-                            price,
-                            on_sale: true,
-                            minted_at: system_api::current_system_time(),
-                        },
-                    );
-                    self.collections.insert(&collection_id, collection)?;
-                    self.token_ids.insert(&collection_id, token_id + 1)?;
-                    match self.token_owners.get(&token_id).await {
-                        Ok(Some(mut collection_owners)) => {
-                            collection_owners.insert(collection_id, owner);
-                            self.token_owners.insert(&token_id, collection_owners)?;
-                        }
-                        _ => {
-                            let mut collection_owners = HashMap::new();
-                            collection_owners.insert(collection_id, owner);
-                            self.token_owners.insert(&token_id, collection_owners)?;
-                        }
-                    }
-                    match self.token_publishers.get(&token_id).await {
-                        Ok(Some(mut collection_publisher)) => {
-                            collection_publisher.insert(collection_id, owner);
-                            self.token_publishers
-                                .insert(&token_id, collection_publisher)?;
-                        }
-                        _ => {
-                            let mut collection_publisher = HashMap::new();
-                            collection_publisher.insert(collection_id, owner);
-                            self.token_publishers
-                                .insert(&token_id, collection_publisher)?;
-                        }
-                    }
+            Ok(Some(mut collection)) => {
+                if collection.price.is_none() && price.is_none() {
+                    return Err(StateError::InvalidPrice);
                 }
-                _ => return Err(StateError::TokenIDNotExists),
-            },
+                match self.token_ids.get(&collection_id).await {
+                    Ok(Some(token_id)) => {
+                        collection.nfts.insert(
+                            token_id,
+                            NFT {
+                                token_id,
+                                uri,
+                                price,
+                                on_sale: true,
+                                minted_at: system_api::current_system_time(),
+                            },
+                        );
+                        self.collections.insert(&collection_id, collection)?;
+                        self.token_ids.insert(&collection_id, token_id + 1)?;
+                        match self.token_owners.get(&token_id).await {
+                            Ok(Some(mut collection_owners)) => {
+                                collection_owners.insert(collection_id, owner);
+                                self.token_owners.insert(&token_id, collection_owners)?;
+                            }
+                            _ => {
+                                let mut collection_owners = HashMap::new();
+                                collection_owners.insert(collection_id, owner);
+                                self.token_owners.insert(&token_id, collection_owners)?;
+                            }
+                        }
+                        match self.token_publishers.get(&token_id).await {
+                            Ok(Some(mut collection_publisher)) => {
+                                collection_publisher.insert(collection_id, owner);
+                                self.token_publishers
+                                    .insert(&token_id, collection_publisher)?;
+                            }
+                            _ => {
+                                let mut collection_publisher = HashMap::new();
+                                collection_publisher.insert(collection_id, owner);
+                                self.token_publishers
+                                    .insert(&token_id, collection_publisher)?;
+                            }
+                        }
+                    }
+                    _ => return Err(StateError::TokenIDNotExists),
+                }
+            }
             _ => return Err(StateError::CollectionNotExists),
         };
         Ok(())
@@ -329,4 +334,7 @@ pub enum StateError {
 
     #[error("Insufficient balance")]
     InsufficientBalance,
+
+    #[error("Invalid price")]
+    InvalidPrice,
 }
