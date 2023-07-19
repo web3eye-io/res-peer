@@ -40,7 +40,9 @@
           </q-tab-panel>
           <q-tab-panel name='assets'>
             <create-collection />
-            <mint-nft :style='{margin: "32px 0"}' />
+            <div :style='{margin: "32px 0"}'>
+              <mint-nft />
+            </div>
             <collection-list :style='{margin: "32px 0"}' />
           </q-tab-panel>
         </q-tab-panels>

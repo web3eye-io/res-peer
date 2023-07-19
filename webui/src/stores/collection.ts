@@ -13,6 +13,7 @@ export interface Collection {
   nfts: Map<number, NFT>
   price?: string
   name: string
+  createdAt: number
 }
 
 export const useCollectionStore = defineStore('collection', {

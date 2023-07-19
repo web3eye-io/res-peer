@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use async_graphql::{Request, Response, SimpleObject};
-use linera_sdk::base::{Amount, ApplicationId, ContractAbi, ServiceAbi, Timestamp};
+use linera_sdk::base::{Amount, ApplicationId, ContractAbi, Owner, ServiceAbi, Timestamp};
 use serde::{Deserialize, Serialize};
 
 pub struct MallAbi;
@@ -43,6 +43,7 @@ pub struct Collection {
     pub price: Option<Amount>,
     pub name: String,
     pub created_at: Timestamp,
+    pub publisher: Owner,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]

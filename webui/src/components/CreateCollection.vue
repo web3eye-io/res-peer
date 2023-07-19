@@ -62,7 +62,7 @@ const onCreateClick = async () => {
   })
   await mutate({
     baseUri: baseUri.value,
-    price: uniquePrice.value ? price : undefined,
+    price: uniquePrice.value ? price.value : undefined,
     name: name.value,
     endpoint: 'mall'
   })

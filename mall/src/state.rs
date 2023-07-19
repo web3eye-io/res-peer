@@ -65,6 +65,7 @@ impl Mall {
             name,
             nfts: HashMap::new(),
             created_at: system_api::current_system_time(),
+            publisher: owner,
         };
         match self.publisher_collections.get(&owner).await {
             Ok(Some(mut collections)) => {
