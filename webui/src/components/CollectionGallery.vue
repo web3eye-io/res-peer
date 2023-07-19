@@ -11,7 +11,7 @@
         class='cursor-pointer'
       >
         <q-img
-          :src='collectionBanners.get(_collection.collectionId)'
+          :src='collectionBanner(_collection)'
           width='100%'
           height='400px'
         >
@@ -37,23 +37,15 @@
 
 <script setup lang='ts'>
 import { Collection, useCollectionStore } from 'src/stores/collection'
-import { computed, ref, watch } from 'vue'
+import { computed } from 'vue'
 
 const collection = useCollectionStore()
 const collections = computed(() => Array.from(collection.collections.values()))
-const collectionBanners = ref(new Map<number, string>())
-const defaultBanner = ref('images/DefaultNFTBanner.png')
-
-watch(collections, () => {
-  collections.value.forEach((el) => {
-    collectionBanners.value.set(el.collectionId, collectionBanner(el))
-  })
-})
 
 const collectionBanner = (_collection: Collection) => {
   const nfts = collection.nftsByCollections(_collection.collectionId)
   if (nfts.length === 0) {
-    return defaultBanner.value
+    return 'images/DefaultNFTBanner.png'
   }
   return _collection.baseUri + nfts[0].uri
 }

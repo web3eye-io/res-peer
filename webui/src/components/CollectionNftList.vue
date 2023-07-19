@@ -11,6 +11,9 @@
           Rank
         </q-th>
         <q-th class='text-grey-7' :style='{fontSize: "16px"}'>
+          Collection ID
+        </q-th>
+        <q-th class='text-grey-7' :style='{fontSize: "16px"}'>
           Collection
         </q-th>
         <Q-th />
@@ -28,9 +31,12 @@
       </div>
     </template>
     <template #body='props'>
-      <q-tr :props='props' class='cursor-pointer'>
+      <q-tr :props='props' class='cursor-pointer' @click='onCollectionClick(props.row)'>
         <q-td class='text-center' :style='{fontWeight: 600, fontSize: "16px"}'>
           {{ props.rowIndex + 1 }}
+        </q-td>
+        <q-td class='text-center' :style='{fontWeight: 600, fontSize: "16px"}'>
+          {{ props.row.collectionId }}
         </q-td>
         <q-td class='text-right'>
           <q-img
@@ -60,9 +66,10 @@
 <script setup lang='ts'>
 import { useCollectionStore, Collection } from 'src/stores/collection'
 import { computed, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 
 const collection = useCollectionStore()
-const collections = computed(() => Array.from(collection.collections.values()))
+const collections = computed(() => Array.from(collection.collections.values()).filter((el) => collection.nftsByCollections(el.collectionId).length > 0))
 const collectionBanners = ref(new Map<number, string>())
 const defaultBanner = ref('images/DefaultNFTBanner.png')
 
@@ -78,6 +85,11 @@ const collectionBanner = (_collection: Collection) => {
     return defaultBanner.value
   }
   return _collection.baseUri + nfts[0].uri
+}
+
+const router = useRouter()
+const onCollectionClick = (_collection: Collection) => {
+  void router.push({ path: '/collection', query: { collectionId: _collection.collectionId } })
 }
 
 </script>

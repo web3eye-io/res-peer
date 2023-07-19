@@ -68,6 +68,9 @@ export const useCollectionStore = defineStore('collection', {
         } else {
           collections = Array.from(this.collections.values())
         }
+        if (!collections) {
+          return []
+        }
         collections.forEach((el) => {
           if (!el || !el.nfts || !Object.keys(el.nfts).length) {
             return
@@ -82,6 +85,14 @@ export const useCollectionStore = defineStore('collection', {
           })
         })
         return nfts.sort((a, b) => a.token_id > b.token_id ? 1 : -1)
+      }
+    },
+    nftBanner (): (nft: NFTExt) => string {
+      return (nft: NFTExt) => {
+        if (nft.baseUri?.endsWith('/')) {
+          nft.baseUri = nft.baseUri.substring(0, nft.baseUri.length - 1)
+        }
+        return nft.baseUri + '/' + nft.uri
       }
     }
   },
