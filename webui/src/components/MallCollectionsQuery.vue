@@ -28,6 +28,7 @@ const getCollection = (collectionKey: number, force: boolean, done?: () => void)
         collectionId
         name
         publisher
+        createdAt
       }
     }
   `, {

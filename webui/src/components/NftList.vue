@@ -19,7 +19,7 @@ import { computed } from 'vue'
 const user = useUserStore()
 const account = computed(() => user.account)
 const collection = useCollectionStore()
-const nfts = computed(() => collection.nfts(account.value))
+const nfts = computed(() => collection.nftsByPublisher(account.value))
 
 const columns = computed(() => [
   {

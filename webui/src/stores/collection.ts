@@ -34,7 +34,7 @@ export const useCollectionStore = defineStore('collection', {
     mutateKeys: [] as Array<number>
   }),
   getters: {
-    nfts (): (publisher?: string) => Array<NFTExt> {
+    nftsByPublisher (): (publisher?: string) => Array<NFTExt> {
       return (publisher?: string) => {
         const nfts = [] as Array<NFTExt>
         let collections = [] as Array<Collection>
@@ -56,7 +56,32 @@ export const useCollectionStore = defineStore('collection', {
             } as NFTExt)
           })
         })
-        return nfts
+        return nfts.sort((a, b) => a.token_id > b.token_id ? 1 : -1)
+      }
+    },
+    nftsByCollections (): (collectionId?: number) => Array<NFTExt> {
+      return (collectionId?: number) => {
+        const nfts = [] as Array<NFTExt>
+        let collections = [] as Array<Collection>
+        if (collectionId) {
+          collections = [this.collections.get(collectionId) as Collection]
+        } else {
+          collections = Array.from(this.collections.values())
+        }
+        collections.forEach((el) => {
+          if (!el || !el.nfts || !Object.keys(el.nfts).length) {
+            return
+          }
+          Array.from(Object.values(el.nfts)).forEach((nft) => {
+            nfts.push({
+              collectionId: el.collectionId,
+              collectionName: el.name,
+              collectionPrice: el.price,
+              ...nft
+            } as NFTExt)
+          })
+        })
+        return nfts.sort((a, b) => a.token_id > b.token_id ? 1 : -1)
       }
     }
   },
