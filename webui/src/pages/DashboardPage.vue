@@ -40,6 +40,7 @@
           </q-tab-panel>
           <q-tab-panel name='assets'>
             <create-collection />
+            <mint-nft />
           </q-tab-panel>
         </q-tab-panels>
       </template>
@@ -55,6 +56,7 @@ import CreateContent from 'src/components/CreateContent.vue'
 import UserBalance from 'src/components/UserBalance.vue'
 import ArticleList from 'src/components/ArticleList.vue'
 import CreateCollection from 'src/components/CreateCollection.vue'
+import MintNft from 'src/components/MintNFT.vue'
 
 const user = useUserStore()
 const account = computed(() => user.account)

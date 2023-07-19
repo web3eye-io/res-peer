@@ -1,6 +1,6 @@
 <template>
   <div class='row'>
-    <span class='text-h5'>Create Collection</span>
+    <span class='text-h5'>Mint NFT</span>
     <q-space />
     <q-btn
       dense flat v-if='!editing' label='Create'
@@ -13,14 +13,18 @@
     <q-btn
       dense flat v-if='editing' label='Create'
       color='blue'
-      @click='onCreateClick'
+      @click='onMintlick'
     />
   </div>
-  <q-input v-if='editing' dense label='Base uri for your collection storage (https or ipfs)' v-model='baseUri' />
-  <q-toggle v-if='editing' label='Unique Price' v-model='uniquePrice' />
   <q-input
-    v-if='editing && uniquePrice' v-model='price' type='number' filled
-    label='Price' :style='{marginTop: "16px"}'
+    v-if='editing' v-model='collectionId' type='number' filled
+    :style='{marginTop: "16px"}' label='Collection ID'
+  />
+  <q-input v-if='editing' dense label='NFT data storage uri without collection baseUri' v-model='uri' />
+  <q-toggle v-if='editing' v-model='ownPrice' />
+  <q-input
+    v-if='editing && ownPrice' v-model='price' type='number' filled
+    :style='{marginTop: "16px"}' label='Price'
   />
 </template>
 
@@ -32,21 +36,25 @@ import { provideApolloClient, useMutation } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
 
 const editing = ref(false)
-const baseUri = ref('')
+const uri = ref('')
 const price = ref(0)
-const uniquePrice = ref(false)
+const ownPrice = ref(false)
+const collectionId = ref(-1)
 
 const options = /* await */ getClientOptions(/* {app, router ...} */)
 const apolloClient = new ApolloClient(options)
 
-const onCreateClick = async () => {
-  if (!baseUri.value.length) {
+const onMintlick = async () => {
+  if (!uri.value.length) {
+    return
+  }
+  if (collectionId.value < 0) {
     return
   }
 
   const { mutate, onDone, onError } = provideApolloClient(apolloClient)(() => useMutation(gql`
-    mutation CreateCollection ($baseUri: String!, $price: String) {
-      createCollection(baseUri: $baseUri, price: $price)
+    mutation MintNFT ($collectionId: Number!, $uri: String!, $price: String) {
+      mintNft(collectionId: $collectionId, uri: $uri, price: $price)
     }
   `))
   onDone(() => {
@@ -56,8 +64,9 @@ const onCreateClick = async () => {
     console.log(error)
   })
   await mutate({
-    baseUri: baseUri.value,
-    price: uniquePrice.value ? price : undefined,
+    collectionId: collectionId.value,
+    uri: uri.value,
+    price: ownPrice.value ? price : undefined,
     endpoint: 'mall'
   })
 }

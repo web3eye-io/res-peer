@@ -40,6 +40,7 @@ pub struct Collection {
     pub base_uri: String,
     pub nfts: HashMap<u16, NFT>,
     pub price: Option<Amount>,
+    pub name: String,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
@@ -52,6 +53,7 @@ pub enum Operation {
     CreateCollection {
         base_uri: String,
         price: Option<Amount>,
+        name: String,
     },
     MintNFT {
         collection_id: u64,

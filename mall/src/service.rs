@@ -39,8 +39,18 @@ struct MutationRoot;
 
 #[Object]
 impl MutationRoot {
-    async fn create_collection(&self, base_uri: String, price: Option<Amount>) -> Vec<u8> {
-        bcs::to_bytes(&Operation::CreateCollection { base_uri, price }).unwrap()
+    async fn create_collection(
+        &self,
+        base_uri: String,
+        price: Option<Amount>,
+        name: String,
+    ) -> Vec<u8> {
+        bcs::to_bytes(&Operation::CreateCollection {
+            base_uri,
+            price,
+            name,
+        })
+        .unwrap()
     }
 
     async fn mint_nft(

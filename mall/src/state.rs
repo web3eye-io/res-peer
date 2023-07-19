@@ -51,6 +51,7 @@ impl Mall {
         owner: Owner,
         base_uri: String,
         price: Option<Amount>,
+        name: String,
     ) -> Result<(), StateError> {
         if self.collection_uris.get().contains(&base_uri) {
             return Err(StateError::BaseURIALreadyExists);
@@ -60,6 +61,7 @@ impl Mall {
             collection_id,
             base_uri,
             price,
+            name,
             nfts: HashMap::new(),
         };
         match self.publisher_collections.get(&owner).await {

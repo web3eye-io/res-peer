@@ -40,8 +40,12 @@ impl Contract for Mall {
         operation: Self::Operation,
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
         match operation {
-            Operation::CreateCollection { base_uri, price } => {
-                self.create_collection(context.authenticated_signer.unwrap(), base_uri, price)
+            Operation::CreateCollection {
+                base_uri,
+                price,
+                name,
+            } => {
+                self.create_collection(context.authenticated_signer.unwrap(), base_uri, price, name)
                     .await?
             }
             Operation::MintNFT {

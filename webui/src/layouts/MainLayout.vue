@@ -10,6 +10,11 @@
           <q-space />
           <q-icon
             v-if='!account?.length'
+            name='store' size='24px' color='black' class='cursor-pointer'
+            @click='onNFTMarketClick'
+          />
+          <q-icon
+            v-if='!account?.length'
             name='login' size='24px' color='black' class='cursor-pointer'
             @click='onLoginClick'
           />
@@ -133,6 +138,9 @@ const onLogoutClick = () => {
   Cookies.remove('account')
   user.account = undefined as unknown as string
   account.value = undefined as unknown as string
+}
+const onNFTMarketClick = () => {
+  void router.push({ path: '/market' })
 }
 </script>
 
