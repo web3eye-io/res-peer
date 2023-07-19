@@ -2,7 +2,10 @@
   <div :style='{width: "1080px", margin: "32px auto"}'>
     <div class='row'>
       <q-space />
-      Account: {{ account }}
+      <div :style='{textAlign: "end"}'>
+        <div>{{ account }}</div>
+        <div>1 Linera = {{ creditsPerLinera }} Credits</div>
+      </div>
     </div>
     <q-splitter
       v-model='splitterModel'
@@ -55,6 +58,7 @@
 <script setup lang='ts'>
 import { computed, ref } from 'vue'
 import { useUserStore } from 'src/stores/user'
+import { useCollectionStore } from 'src/stores/collection'
 
 import CreateContent from 'src/components/CreateContent.vue'
 import UserBalance from 'src/components/UserBalance.vue'
@@ -66,6 +70,8 @@ import NftList from 'src/components/NftList.vue'
 
 const user = useUserStore()
 const account = computed(() => user.account)
+const collection = useCollectionStore()
+const creditsPerLinera = computed(() => collection.creditsPerLinera)
 
 const splitterModel = ref(20)
 const tab = ref('contents')

@@ -8,6 +8,7 @@ import { computed, watch } from 'vue'
 const { refetch, onResult } = useQuery(gql`
   query getCollectionsKeys {
     collectionsKeys
+    creditsPerLinera
   }
 `, {
   endpoint: 'mall'
@@ -25,7 +26,8 @@ onResult((res) => {
   if (res.loading) {
     return
   }
-  collection.collectionsKeys = (res.data as Record<string, Array<string>>).collectionsKeys
+  collection.collectionsKeys = (res.data as Record<string, Array<number>>).collectionsKeys
+  collection.creditsPerLinera = (res.data as Record<string, string>).creditsPerLinera
 })
 
 </script>

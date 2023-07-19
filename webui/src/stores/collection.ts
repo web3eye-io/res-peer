@@ -29,6 +29,7 @@ export const useCollectionStore = defineStore('collection', {
   state: () => ({
     collectionsKeys: [] as Array<number>,
     collections: new Map<number, Collection>(),
+    creditsPerLinera: '0.',
     mutateKeys: [] as Array<number>
   }),
   getters: {
