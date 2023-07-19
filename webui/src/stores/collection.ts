@@ -1,11 +1,11 @@
 import { defineStore } from 'pinia'
 
 export interface NFT {
-  tokenId: number
+  token_id: number
   uri: string
   price?: string
-  onSale: boolean
-  mintedAt: number
+  on_sale: boolean
+  minted_at: number
 }
 
 export interface NFTExt extends NFT {
@@ -42,10 +42,10 @@ export const useCollectionStore = defineStore('collection', {
           collections = Array.from(this.collections.values())
         }
         collections.forEach((el) => {
-          if (!el.nfts || !el.nfts?.size) {
+          if (!el.nfts || !Object.keys(el.nfts).length) {
             return
           }
-          Array.from(el.nfts.values()).forEach((nft) => {
+          Array.from(Object.values(el.nfts)).forEach((nft) => {
             nfts.push({
               collectionId: el.collectionId,
               collectionName: el.name,

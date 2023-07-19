@@ -26,7 +26,7 @@ const columns = computed(() => [
     name: 'Token ID',
     label: 'Token ID',
     align: 'left',
-    field: (row: NFTExt) => row.tokenId
+    field: (row: NFTExt) => row.token_id
   }, {
     name: 'Collection ID',
     label: 'Collection ID',
@@ -47,7 +47,7 @@ const columns = computed(() => [
   }, {
     name: 'Minted At',
     label: 'Minted At',
-    field: (row: NFTExt) => new Date(row.mintedAt / 1000).toString()
+    field: (row: NFTExt) => new Date(row.minted_at / 1000).toString()
   }
 ])
 
