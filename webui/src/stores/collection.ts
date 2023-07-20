@@ -82,6 +82,7 @@ export const useCollectionStore = defineStore('collection', {
               collectionId: el.collectionId,
               collectionName: el.name,
               collectionPrice: el.price,
+              baseUri: el.baseUri,
               ...nft
             } as NFTExt)
           })
@@ -109,7 +110,17 @@ export const useCollectionStore = defineStore('collection', {
         if (nft.baseUri?.endsWith('/')) {
           nft.baseUri = nft.baseUri.substring(0, nft.baseUri.length - 1)
         }
+        console.log(nft)
         return nft.baseUri + '/' + nft.uri
+      }
+    },
+    collectionBanner (): (collection: Collection) => string {
+      return (collection: Collection) => {
+        if (collection.baseUri?.endsWith('/')) {
+          collection.baseUri = collection.baseUri.substring(0, collection.baseUri.length - 1)
+        }
+        const nfts = this.nftsByCollectionID(collection.collectionId)
+        return collection.baseUri + '/' + nfts[0]?.uri
       }
     }
   },

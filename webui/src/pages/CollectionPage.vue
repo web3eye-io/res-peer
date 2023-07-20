@@ -1,7 +1,7 @@
 <template>
   <div class='row q-gutter-sm' :style='{width: "1080px", margin: "32px auto"}'>
     <q-card
-      :style='{width: "400px"}'
+      :style='{width: "350px", borderRadius: "16px"}'
       v-for='_nft in nfts'
       :key='_nft.token_id'
       class='cursor-pointer q-hoverable'
@@ -19,11 +19,11 @@
       </q-img>
       <div :style='{padding: "16px 32px"}'>
         <div class='row'>
-          <div :style='{fontWeight: 600, fontSize: "16px", marginBottom: "8px"}' class='text-cyan-8'>
-            {{ _nft.collectionName }} #{{ _nft.token_id }}
-          </div>
           <div v-if='_nft.name?.length' :style='{fontWeight: 600, fontSize: "16px", marginBottom: "8px"}' class='text-pink-9'>
-            {{ ' (' + _nft.name + ')' }}
+            {{ _nft.name }}
+          </div>
+          <div :style='{fontWeight: 600, fontSize: "16px", marginBottom: "8px", marginLeft: "8px"}' class='text-cyan-8'>
+            {{ _nft.collectionName }} #{{ _nft.token_id }}
           </div>
         </div>
         <div class='text-grey-6'>
@@ -35,13 +35,13 @@
       </div>
       <div class='row'>
         <q-btn
-          flat label='Buy' :style='{width: "60%"}'
+          flat label='Buy' :style='{width: "60%", borderRadius: "0 0 0 16px"}'
           class='text-white bg-primary text-bold'
           @click='onBuyClick(_nft)'
         />
         <q-input
           dense filled label='Credits to use' v-model='creditsToUse'
-          type='number' :style='{width: "40%"}'
+          type='number' :style='{width: "40%", borderRadius: "0 0 16px 0"}'
         />
       </div>
     </q-card>

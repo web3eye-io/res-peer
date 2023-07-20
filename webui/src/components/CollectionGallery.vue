@@ -5,7 +5,7 @@
   <div class='nfts' :style='{width: "1080px", overflowX: "scroll", padding: "32px 16px 48px 16px", margin: "0 auto"}'>
     <div class='row justify-center q-gutter-sm no-wrap inline'>
       <q-card
-        :style='{width: "400px", height: "520px"}'
+        :style='{width: "400px", height: "520px", borderRadius: "16px"}'
         v-for='_collection in collections'
         :key='_collection.collectionId'
         class='cursor-pointer'
@@ -43,11 +43,7 @@ const collection = useCollectionStore()
 const collections = computed(() => Array.from(collection.collections.values()))
 
 const collectionBanner = (_collection: Collection) => {
-  const nfts = collection.nftsByCollectionID(_collection.collectionId)
-  if (nfts.length === 0) {
-    return 'images/DefaultNFTBanner.png'
-  }
-  return _collection.baseUri + nfts[0].uri
+  return collection.collectionBanner(_collection)
 }
 
 </script>

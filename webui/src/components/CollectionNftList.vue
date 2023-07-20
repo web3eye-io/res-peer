@@ -43,6 +43,7 @@
             :src='collectionBanner(props.row)'
             width='120px'
             height='130px'
+            :style='{borderRadius: "8px"}'
           >
             <template #error>
               <div class='absolute-full flex flex-center error' />
@@ -71,7 +72,6 @@ import { useRouter } from 'vue-router'
 const collection = useCollectionStore()
 const collections = computed(() => Array.from(collection.collections.values()).filter((el) => collection.nftsByCollectionID(el.collectionId).length > 0))
 const collectionBanners = ref(new Map<number, string>())
-const defaultBanner = ref('images/DefaultNFTBanner.png')
 
 watch(collections, () => {
   collections.value.forEach((el) => {
@@ -80,11 +80,7 @@ watch(collections, () => {
 })
 
 const collectionBanner = (_collection: Collection) => {
-  const nfts = collection.nftsByCollectionID(_collection.collectionId)
-  if (nfts.length === 0) {
-    return defaultBanner.value
-  }
-  return _collection.baseUri + nfts[0].uri
+  return collection.collectionBanner(_collection)
 }
 
 const router = useRouter()
