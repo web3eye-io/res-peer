@@ -129,7 +129,14 @@ export const useCollectionStore = defineStore('collection', {
         if (!collection) {
           return undefined
         }
-        const nft = collection.nfts.get(tokenId)
+        const nfts = this.nftsByCollectionID(collectionId)
+        if (!nfts) {
+          return undefined
+        }
+        let nft = nfts.find((el) => el.token_id === tokenId)
+        if (!nft) {
+          nft = nfts.find((el) => el.token_id === 1000)
+        }
         if (!nft) {
           return undefined
         }

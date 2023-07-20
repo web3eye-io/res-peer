@@ -15,10 +15,19 @@
         <span class='text-grey-6 text-bold cursor-pointer'>
           {{ _content.author?.length ? _content.author : 'Anonymous' }}
         </span>
-        <q-icon
-          :name='userAvatar(_content.author) ? "img:" + userAvatar(_content.author) : "account_circle"'
-          size='32px' :style='{marginLeft: "8px"}' class='cursor-pointer'
-        />
+        <q-avatar :style='{marginLeft: "8px"}'>
+          <q-img
+            :src='userAvatar(_content.author) ? userAvatar(_content.author) : "~/assets/ResPeer.png"'
+            width='32px'
+            height='32px'
+            fit='cover'
+            :style='{borderRadius: "50%"}'
+          >
+            <template #error>
+              <div class='absolute-full flex flex-center error' />
+            </template>
+          </q-img>
+        </q-avatar>
       </div>
       <div>
         At
@@ -68,7 +77,7 @@ const apolloClient = new ApolloClient(options)
 const userAvatar = (account: string) => {
   const ids = collection.avatars.get(account)
   if (!ids) {
-    return undefined
+    return collection.nftBannerByID(1001, 1000)
   }
   return collection.nftBannerByID(ids[0], ids[1])
 }
@@ -95,6 +104,7 @@ const getContentAvatar = (index: number) => {
   watch(result, () => {
     const res = result.value as Record<string, Array<number>>
     collection.avatars.set(account, res.avatars)
+    getContentAvatar(index + 1)
   })
 }
 
@@ -139,3 +149,11 @@ const onDislikeClick = async (cid: string) => {
 }
 
 </script>
+
+<style scoped lang='sass'>
+.error
+  background-image: url(../assets/ResPeer.png)
+  border-radius: 50%
+  background-size: cover
+  background-repeat: no-repeat
+</style>
