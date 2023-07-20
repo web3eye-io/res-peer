@@ -15,7 +15,10 @@
         <span class='text-grey-6 text-bold cursor-pointer'>
           {{ _content.author?.length ? _content.author : 'Anonymous' }}
         </span>
-        <q-icon name='account_circle' size='20px' :style='{marginLeft: "8px"}' class='cursor-pointer' />
+        <q-icon
+          :name='userAvatar(_content.author) ? "img:" + userAvatar(_content.author) : "account_circle"'
+          size='32px' :style='{marginLeft: "8px"}' class='cursor-pointer'
+        />
       </div>
       <div>
         At
@@ -48,17 +51,56 @@
 
 <script setup lang='ts'>
 import { Content, useContentStore } from 'src/stores/content'
-import { computed } from 'vue'
-import { provideApolloClient, useMutation } from '@vue/apollo-composable'
+import { computed, watch } from 'vue'
+import { provideApolloClient, useMutation, useQuery } from '@vue/apollo-composable'
 import { ApolloClient } from '@apollo/client/core'
 import gql from 'graphql-tag'
 import { getClientOptions } from 'src/apollo'
+import { useCollectionStore } from 'src/stores/collection'
 
 const content = useContentStore()
 const contents = computed(() => Array.from(content.contents.values()).sort((a: Content, b: Content) => a.createdAt < b.createdAt ? 1 : -1))
+const collection = useCollectionStore()
 
 const options = /* await */ getClientOptions(/* {app, router ...} */)
 const apolloClient = new ApolloClient(options)
+
+const userAvatar = (account: string) => {
+  const ids = collection.avatars.get(account)
+  if (!ids) {
+    return undefined
+  }
+  return collection.nftBannerByID(ids[0], ids[1])
+}
+
+const getContentAvatar = (index: number) => {
+  if (index <= contents.value.length) {
+    return
+  }
+  const account = contents.value[index].author
+  if (collection.avatars.get(account)) {
+    getContentAvatar(index + 1)
+    return
+  }
+
+  const { result /*, fetchMore, onResult, onError */ } = provideApolloClient(apolloClient)(() => useQuery(gql`
+    query getMallInfo($account: String!) {
+        avatars(owner: $account)
+      }
+    `, {
+    account: `${account}`,
+    endpoint: 'mall'
+  }))
+
+  watch(result, () => {
+    const res = result.value as Record<string, Array<number>>
+    collection.avatars.set(account, res.avatars)
+  })
+}
+
+watch(contents, () => {
+  getContentAvatar(0)
+})
 
 const onLikeClick = async (cid: string) => {
   const { mutate, onDone, onError } = provideApolloClient(apolloClient)(() => useMutation(gql`

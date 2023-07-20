@@ -20,6 +20,7 @@
           vertical
           class='text-black'
         >
+          <q-tab name='settings' label='Settings' />
           <q-tab name='contents' label='Contents' />
           <q-tab name='credits' label='Credits' />
           <q-tab name='assets' label='Assets' />
@@ -35,6 +36,9 @@
           transition-next='jump-up'
           class='text-black'
         >
+          <q-tab-panel name='settings'>
+            <avatar-setting />
+          </q-tab-panel>
           <q-tab-panel name='contents'>
             <create-content />
             <q-separator :style='{margin: "32px 0"}' />
@@ -76,6 +80,7 @@ import MintNft from 'src/components/MintNFT.vue'
 import CollectionList from 'src/components/CollectionList.vue'
 import NftList from 'src/components/NftList.vue'
 import DepositBalance from 'src/components/DepositBalance.vue'
+import AvatarSetting from 'src/components/AvatarSetting.vue'
 
 const user = useUserStore()
 const account = computed(() => user.account)

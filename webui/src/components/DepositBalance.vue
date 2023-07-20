@@ -13,7 +13,7 @@
     <q-btn
       dense flat v-if='editing' label='Deposit'
       color='blue'
-      @click='onDepositlick'
+      @click='onDepositClick'
     />
   </div>
   <q-input
@@ -35,7 +35,7 @@ const amount = ref(0)
 const options = /* await */ getClientOptions(/* {app, router ...} */)
 const apolloClient = new ApolloClient(options)
 
-const onDepositlick = async () => {
+const onDepositClick = async () => {
   if (amount.value < 0) {
     return
   }

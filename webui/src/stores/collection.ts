@@ -33,7 +33,8 @@ export const useCollectionStore = defineStore('collection', {
     creditsPerLinera: '0.',
     lineraBalance: '0.',
     assets: new Map<number, Array<number>>(),
-    mutateKeys: [] as Array<number>
+    mutateKeys: [] as Array<number>,
+    avatars: new Map<string, Array<number>>()
   }),
   getters: {
     nftsByPublisher (): (publisher?: string) => Array<NFTExt> {
@@ -110,7 +111,6 @@ export const useCollectionStore = defineStore('collection', {
         if (nft.baseUri?.endsWith('/')) {
           nft.baseUri = nft.baseUri.substring(0, nft.baseUri.length - 1)
         }
-        console.log(nft)
         return nft.baseUri + '/' + nft.uri
       }
     },
@@ -121,6 +121,19 @@ export const useCollectionStore = defineStore('collection', {
         }
         const nfts = this.nftsByCollectionID(collection.collectionId)
         return collection.baseUri + '/' + nfts[0]?.uri
+      }
+    },
+    nftBannerByID (): (collectionId: number, tokenId: number) => string | undefined {
+      return (collectionId: number, tokenId: number) => {
+        const collection = this.collections.get(collectionId)
+        if (!collection) {
+          return undefined
+        }
+        const nft = collection.nfts.get(tokenId)
+        if (!nft) {
+          return undefined
+        }
+        return collection.baseUri + '/' + nft.uri
       }
     }
   },
