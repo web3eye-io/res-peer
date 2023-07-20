@@ -66,7 +66,7 @@ const onMintlick = async () => {
   `))
   onDone(() => {
     editing.value = !editing.value
-    collection.mutateKeys.push(collectionId.value)
+    collection.mutateKeys.push(parseInt(collectionId.value.toString()))
   })
   onError((error) => {
     console.log(error)

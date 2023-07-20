@@ -54,7 +54,6 @@ watch(collectionKey, () => {
     collectionIndex.value++
     return
   }
-
   getCollection(collectionKey.value, index >= 0, () => {
     collectionIndex.value++
   })
