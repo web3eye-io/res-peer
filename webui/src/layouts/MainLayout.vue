@@ -35,6 +35,7 @@
     </q-header>
 
     <q-page-container>
+      <request-application />
       <credit-query />
       <block-subscription />
       <feed-contents-keys-query />
@@ -106,6 +107,7 @@ import FeedContentsKeysQuery from 'src/components/FeedContentsKeysQuery.vue'
 import FeedContentsQuery from 'src/components/FeedContentsQuery.vue'
 import MallInfoQuery from 'src/components/MallInfoQuery.vue'
 import MallCollectionsQuery from 'src/components/MallCollectionsQuery.vue'
+import RequestApplication from 'src/components/RequestApplication.vue'
 
 const router = useRouter()
 const account = ref('')

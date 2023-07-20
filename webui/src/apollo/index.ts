@@ -4,17 +4,12 @@ import { createHttpLink, InMemoryCache, split } from '@apollo/client/core'
 import { GraphQLWsLink } from '@apollo/client/link/subscriptions'
 import { createClient } from 'graphql-ws'
 import { getMainDefinition } from '@apollo/client/utilities'
-
-export const feedAppID = 'e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65210000000000000000000000e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65230000000000000000000000'
-export const creditAppID = 'e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65010000000000000001000000e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65030000000000000000000000'
-export const mallAppID = 'e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a659c0000000000000000000000e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a659e0000000000000000000000'
+import * as constants from 'src/const'
 
 export /* async */ function getClientOptions (/* {app, router, ...}, options?: Partial<BootFileParams<unknown>> */) {
-  const port = '8080'
-
   const wsLink = new GraphQLWsLink(
     createClient({
-      url: 'ws://localhost:' + port + '/ws'
+      url: 'ws://localhost:' + constants.port + '/ws'
     })
   )
 
@@ -22,15 +17,15 @@ export /* async */ function getClientOptions (/* {app, router, ...}, options?: P
     uri: (operation) => {
       switch (operation.variables.endpoint) {
         case 'feed':
-          return 'http://localhost:' + port + '/applications/' + feedAppID
+          return 'http://localhost:' + constants.port + '/applications/' + constants.feedAppID
         case 'credit':
-          return 'http://localhost:' + port + '/applications/' + creditAppID
+          return 'http://localhost:' + constants.port + '/applications/' + constants.creditAppID
         case 'mall':
-          return 'http://localhost:' + port + '/applications/' + mallAppID
+          return 'http://localhost:' + constants.port + '/applications/' + constants.mallAppID
         case 'main':
-          return 'http://localhost:' + port
+          return 'http://localhost:' + constants.port
         default:
-          return 'http://localhost:' + port
+          return 'http://localhost:' + constants.port
       }
     }
   })
