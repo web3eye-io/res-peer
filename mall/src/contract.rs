@@ -138,6 +138,17 @@ impl Contract for Mall {
                 self.deposit(context.authenticated_signer.unwrap(), amount)
                     .await?
             }
+            Operation::SetAvatar {
+                collection_id,
+                token_id,
+            } => {
+                self.set_avatar(
+                    context.authenticated_signer.unwrap(),
+                    collection_id,
+                    token_id,
+                )
+                .await?
+            }
         }
         Ok(ExecutionResult::default())
     }

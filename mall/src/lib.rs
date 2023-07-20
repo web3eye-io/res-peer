@@ -91,4 +91,8 @@ pub enum Operation {
     Deposit {
         amount: Amount,
     },
+    SetAvatar {
+        collection_id: u64,
+        token_id: u16,
+    },
 }

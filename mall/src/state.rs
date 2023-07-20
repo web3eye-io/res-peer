@@ -28,6 +28,7 @@ pub struct Mall {
     pub collection_uris: RegisterView<Vec<String>>,
     pub max_credits_percent: RegisterView<u8>,
     pub trade_fee_percent: RegisterView<u8>,
+    pub avatars: MapView<Owner, Vec<u64>>,
 }
 
 #[allow(dead_code)]
@@ -389,6 +390,30 @@ impl Mall {
                 Ok(_) => Ok(()),
                 Err(err) => Err(StateError::ViewError(err)),
             },
+        }
+    }
+
+    pub(crate) async fn set_avatar(
+        &mut self,
+        owner: Owner,
+        collection_id: u64,
+        token_id: u16,
+    ) -> Result<(), StateError> {
+        match self.nft_owner(collection_id, token_id).await {
+            Ok(_owner) => {
+                if _owner == owner {
+                    Err(StateError::NotTokenOwner)
+                } else {
+                    match self
+                        .avatars
+                        .insert(&owner, vec![collection_id, token_id as u64])
+                    {
+                        Ok(_) => Ok(()),
+                        Err(err) => Err(StateError::ViewError(err)),
+                    }
+                }
+            }
+            _ => Err(StateError::NotTokenOwner),
         }
     }
 }
