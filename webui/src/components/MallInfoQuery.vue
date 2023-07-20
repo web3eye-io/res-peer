@@ -1,66 +1,83 @@
 <script setup lang="ts">
-import { useQuery } from '@vue/apollo-composable'
+import { provideApolloClient, useQuery } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
 import { useBlockStore } from 'src/stores/block'
 import { useCollectionStore } from 'src/stores/collection'
 import { useUserStore } from 'src/stores/user'
 import { computed, onMounted, watch } from 'vue'
+import { getClientOptions } from 'src/apollo'
+import { ApolloClient } from '@apollo/client/core'
 
 const user = useUserStore()
 const account = computed(() => user.account)
-
-const { refetch, onResult } = useQuery(gql`
-  query getMallInfo($account: String!) {
-    collectionsKeys
-    creditsPerLinera
-    balances(owner: $account)
-    assets(owner: $account)
-  }
-`, {
-  account: `${account.value}`,
-  endpoint: 'mall'
-})
+const options = /* await */ getClientOptions(/* {app, router ...} */)
+const apolloClient = new ApolloClient(options)
 
 const block = useBlockStore()
 const blockHeight = computed(() => block.blockHeight)
 watch(blockHeight, () => {
-  void refetch({
-    account: `${account.value}`,
-    endpoint: 'mall'
-  })
+  getMallInfo()
 })
 
 watch(account, () => {
-  void refetch({
-    account: `${account.value}`,
-    endpoint: 'mall'
-  })
+  getMallInfo()
 })
 
 const collection = useCollectionStore()
 
-onResult((res) => {
-  if (res.loading || !res.data) {
-    return
-  }
+const onResult = (res: Record<string, unknown>) => {
   // TODO: a bug here will cause balances to be another value from credits, don't know why
-  collection.collectionsKeys = (res.data as Record<string, Array<number>>).collectionsKeys
-  collection.creditsPerLinera = (res.data as Record<string, string>).creditsPerLinera
-  const balance = (res.data as Record<string, string>).balances
-  if (typeof (balance) === 'string') {
-    collection.lineraBalance = (res.data as Record<string, string>).balances
+  collection.collectionsKeys = (res as Record<string, Array<number>>).collectionsKeys
+  collection.creditsPerLinera = (res as Record<string, string>).creditsPerLinera
+  const balance = (res as Record<string, string>).balances
+  if (balance) {
+    if (typeof (balance) === 'string') {
+      collection.lineraBalance = (res as Record<string, string>).balances
+    }
   }
-  const assets = (res.data as Record<string, Record<number, Array<number>>>).assets
-  Object.keys(assets).forEach((key, index) => {
-    collection.assets.set(parseInt(key), Object.values(assets)[index])
+  const assets = (res as Record<string, Record<number, Array<number>>>).assets
+  if (assets) {
+    Object.keys(assets).forEach((key, index) => {
+      collection.assets.set(parseInt(key), Object.values(assets)[index])
+    })
+  }
+}
+
+const getMallInfo = () => {
+  const { result /*, fetchMore, onResult, onError */ } = provideApolloClient(apolloClient)(() => {
+    if (account.value) {
+      return useQuery(gql`
+        query getMallInfo($account: String!) {
+          collectionsKeys
+          creditsPerLinera
+          balances(owner: $account)
+          assets(owner: $account)
+          avatars(owner: $account)
+        }
+      `, {
+        account: `${account.value}`,
+        endpoint: 'mall'
+      })
+    }
+    return useQuery(gql`
+        query getMallInfo {
+          collectionsKeys
+          creditsPerLinera
+        }
+      `, {
+      account: `${account.value}`,
+      endpoint: 'mall'
+    })
   })
-})
+
+  watch(result, () => {
+    const res = result.value as Record<string, unknown>
+    onResult(res)
+  })
+}
 
 onMounted(() => {
-  void refetch({
-    account: `${account.value}`,
-    endpoint: 'mall'
-  })
+  getMallInfo()
 })
 
 </script>
