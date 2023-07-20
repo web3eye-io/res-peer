@@ -35,8 +35,8 @@ impl Mall {
     pub(crate) async fn initialize(&mut self, state: InitialState) {
         self.credits_per_linera.set(state.credits_per_linera);
         self.collection_id.set(1000);
-        self.max_credits_percent.set(20);
-        self.trade_fee_percent.set(3);
+        self.max_credits_percent.set(state.max_credits_percent);
+        self.trade_fee_percent.set(state.trade_fee_percent);
     }
 
     pub(crate) async fn collections(&self, owner: Owner) -> Vec<u64> {

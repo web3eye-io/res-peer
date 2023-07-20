@@ -50,6 +50,8 @@ pub struct Collection {
 #[derive(Clone, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
 pub struct InitialState {
     pub credits_per_linera: Amount,
+    pub max_credits_percent: u8,
+    pub trade_fee_percent: u8,
 }
 
 #[derive(Debug, Deserialize, Serialize)]

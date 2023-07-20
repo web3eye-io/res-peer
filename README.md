@@ -35,3 +35,18 @@ Each credits amount has its alive time. User's balance will only contain amounts
 
 ResPeer provides a mall to producers. Beside publishing content, producer can also put their works on shelves with Linera token price. Exchange rate between credits and Linera token will be set through DAO. After that when user want to buy assets from the mall, they can pay with Linera token, combined with credits if they already earn some.
 
+## Compiling and Deployment
+```
+cargo build
+linera --wallet "$LINERA_WALLET" --storage "$LINERA_STORAGE" publish-bytecode ../res-peer/target/wasm32-unknown-unknown/release/credit_{contract,service}.wasm
+linera --wallet "$LINERA_WALLET" --storage "$LINERA_STORAGE" create-application e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65010000000000000001000000 --json-argument '{"initial_supply":"999999999999999.","amount_alive_ms":70}'
+linera --wallet "$LINERA_WALLET" --storage "$LINERA_STORAGE" publish-bytecode ../res-peer/target/wasm32-unknown-unknown/release/feed_{contract,service}.wasm
+linera --wallet "$LINERA_WALLET" --storage "$LINERA_STORAGE" create-application e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65040000000000000000000000 --json-argument '{"react_interval_ms":600000}' --json-parameters='"e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65d30000000000000000000000e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65d50000000000000000000000"' --required-application-ids e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65d30000000000000000000000e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65d50000000000000000000000
+linera --wallet "$LINERA_WALLET" --storage "$LINERA_STORAGE" publish-bytecode ../res-peer/target/wasm32-unknown-unknown/release/mall_{contract,service}.wasm
+linera --wallet "$LINERA_WALLET" --storage "$LINERA_STORAGE" create-application 
+e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65920000000000000000000000 --json-argument '{"credits_per_linera":"30.", "max_credits_percent":13, "trade_fee_percent": 3}' --json-parameters='"e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65010000000000000001000000e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65030000000000000000000000"' --required-application-ids e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65010000000000000001000000e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65030000000000000000000000
+cd webui
+yarn
+yarn start
+```
+
