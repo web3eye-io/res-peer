@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{cmp::Ordering, collections::HashMap};
 
 use linera_sdk::{
     base::{Amount, Owner},
@@ -26,6 +26,8 @@ pub struct Mall {
     pub token_ids: MapView<u64, u16>,
     pub collections: MapView<u64, Collection>,
     pub collection_uris: RegisterView<Vec<String>>,
+    pub max_credits_percent: RegisterView<u8>,
+    pub trade_fee_percent: RegisterView<u8>,
 }
 
 #[allow(dead_code)]
@@ -33,6 +35,8 @@ impl Mall {
     pub(crate) async fn initialize(&mut self, state: InitialState) {
         self.credits_per_linera.set(state.credits_per_linera);
         self.collection_id.set(1000);
+        self.max_credits_percent.set(20);
+        self.trade_fee_percent.set(3);
     }
 
     pub(crate) async fn collections(&self, owner: Owner) -> Vec<u64> {
@@ -178,18 +182,25 @@ impl Mall {
                         Ok(Some(balance)) => balance,
                         _ => Amount::zero(),
                     };
-                    let mut discount_amount = Amount::zero();
-                    if self.credits_per_linera.get().ge(&Amount::zero()) {
-                        discount_amount = credits
-                            .saturating_div(*self.credits_per_linera.get())
-                            .into();
-                    }
-                    let mut price = Amount::zero();
-                    if nft.price.is_some() {
-                        price = nft.price.unwrap();
+                    let mut price = if nft.price.is_some() {
+                        nft.price.unwrap()
                     } else if collection.price.is_some() {
-                        price = collection.price.unwrap();
-                    }
+                        collection.price.unwrap()
+                    } else {
+                        return Err(StateError::InvalidPrice);
+                    };
+                    let discount_amount = if self.credits_per_linera.get().ge(&Amount::zero()) {
+                        let d1 = credits.saturating_div(*self.credits_per_linera.get());
+                        let d2 = price
+                            .saturating_mul(*self.max_credits_percent.get() as u128)
+                            .saturating_div(Amount::from_atto(100));
+                        Amount::from(match d1.cmp(&d2) {
+                            Ordering::Less => d1,
+                            _ => d2,
+                        })
+                    } else {
+                        Amount::zero()
+                    };
                     price = price.saturating_sub(discount_amount);
                     if price.gt(&buyer_balance) {
                         return Err(StateError::InsufficientBalance);
@@ -207,6 +218,16 @@ impl Mall {
                         .insert(owner, owner_balance.saturating_add(price))?;
                     self.balances
                         .insert(&buyer, buyer_balance.saturating_sub(price))?;
+                    log::info!(
+                        "{} buy {}-{} from {} with {} Lineras and {} Credits {} discount",
+                        buyer,
+                        owner,
+                        collection_id,
+                        token_id,
+                        price,
+                        credits,
+                        discount_amount
+                    );
                     let mut token_owners = token_owners.clone();
                     token_owners.insert(collection_id, buyer);
                     self.token_owners.insert(&token_id, token_owners)?;
