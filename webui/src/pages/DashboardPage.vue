@@ -2,13 +2,28 @@
   <div :style='{width: "1080px", margin: "32px auto"}'>
     <div class='row'>
       <q-space />
-      <div :style='{textAlign: "end"}'>
-        <div>{{ account }}</div>
-        <div>
-          <span>{{ spendableCredits?.length ? spendableCredits + ' Credits' : '0 Credits' }}</span>
-          <span>{{ lineraBalance?.length ? ', ' + lineraBalance + ' Linera' : ', 0 Linera' }}</span>
-          <span> (1 Linera = {{ creditsPerLinera }} Credits)</span>
+      <div class='row' :style='{textAlign: "end"}'>
+        <div :style='{marginTop: "4px"}' class='text-green-7'>
+          <span class='text-bold'>{{ account }}</span>
+          <div>
+            <span>{{ spendableCredits?.length ? spendableCredits + ' Credits' : '0 Credits' }}</span>
+            <span>{{ lineraBalance?.length ? ', ' + lineraBalance + ' Linera' : ', 0 Linera' }}</span>
+            <span> (1 Linera = {{ creditsPerLinera }} Credits)</span>
+          </div>
         </div>
+        <q-avatar :style='{marginLeft: "8px"}' size='48px'>
+          <q-img
+            :src='avatar ? avatar : "~/assets/ResPeer.png"'
+            width='48px'
+            height='48px'
+            fit='cover'
+            :style='{borderRadius: "50%"}'
+          >
+            <template #error>
+              <div class='absolute-full flex flex-center error' />
+            </template>
+          </q-img>
+        </q-avatar>
       </div>
     </div>
     <q-splitter
@@ -88,8 +103,18 @@ const collection = useCollectionStore()
 const creditsPerLinera = computed(() => collection.creditsPerLinera)
 const spendableCredits = computed(() => user.spendable)
 const lineraBalance = computed(() => collection.lineraBalance)
+const avatarIds = computed(() => collection.avatars.get(account.value))
+const avatar = computed(() => avatarIds.value ? collection.nftBannerByID(avatarIds.value[0], avatarIds.value[1]) : collection.nftBannerByID(1001, 1000))
 
 const splitterModel = ref(20)
 const tab = ref('contents')
 
 </script>
+
+<style scoped lang='sass'>
+.error
+  background-image: url(../assets/ResPeer.png)
+  border-radius: 50%
+  background-size: cover
+  background-repeat: no-repeat
+</style>
