@@ -12,6 +12,7 @@ const collectionsKeys = computed(() => collection.collectionsKeys)
 const collections = computed(() => collection.collections)
 const collectionIndex = ref(-1)
 const collectionKey = computed(() => collectionIndex.value >= 0 ? collectionsKeys.value[collectionIndex.value] : undefined)
+const mutateKeys = computed(() => collection.mutateKeys)
 const block = useBlockStore()
 const blockHeight = computed(() => block.blockHeight)
 
@@ -67,6 +68,13 @@ watch(collectionsKeys, () => {
 })
 
 watch(blockHeight, () => {
+  if (collectionsKeys.value.length === 0) {
+    return
+  }
+  collectionIndex.value = 0
+})
+
+watch(mutateKeys, () => {
   if (collectionsKeys.value.length === 0) {
     return
   }

@@ -172,6 +172,7 @@ impl Mall {
         token_id: u16,
         credits: Amount,
     ) -> Result<(), StateError> {
+        let credits = Amount::from_tokens(credits.into());
         match self.collections.get(&collection_id).await {
             Ok(Some(collection)) => match collection.nfts.get(&token_id) {
                 Some(nft) => {
@@ -209,21 +210,27 @@ impl Mall {
                         Ok(Some(owners)) => owners,
                         _ => HashMap::default(),
                     };
-                    let owner = token_owners.get(&collection_id).unwrap();
-                    let owner_balance = match self.balances.get(owner).await {
+                    let owner = match token_owners.get(&collection_id) {
+                        Some(owner) => *owner,
+                        _ => return Err(StateError::CollectionNotExists),
+                    };
+                    if owner == buyer {
+                        return Err(StateError::BuyerIsOwner);
+                    }
+                    let owner_balance = match self.balances.get(&owner).await {
                         Ok(Some(balance)) => balance,
                         _ => Amount::zero(),
                     };
                     self.balances
-                        .insert(owner, owner_balance.saturating_add(price))?;
+                        .insert(&owner, owner_balance.saturating_add(price))?;
                     self.balances
                         .insert(&buyer, buyer_balance.saturating_sub(price))?;
                     log::info!(
                         "{} buy {}-{} from {} with {} Lineras and {} Credits {} discount",
                         buyer,
-                        owner,
                         collection_id,
                         token_id,
+                        owner,
                         price,
                         credits,
                         discount_amount
@@ -240,7 +247,7 @@ impl Mall {
                                     token_ids.push(token_id);
                                     let mut collections = collections.clone();
                                     collections.insert(collection_id, token_ids);
-                                    self.assets.insert(owner, collections)?;
+                                    self.assets.insert(&owner, collections)?;
                                 }
                                 None => {
                                     let mut collections = collections.clone();
@@ -414,4 +421,7 @@ pub enum StateError {
 
     #[error("Invalid price")]
     InvalidPrice,
+
+    #[error("Buyer is same as owner")]
+    BuyerIsOwner,
 }
