@@ -13,17 +13,35 @@ export /* async */ function getClientOptions /* options?: Partial<BootFileParams
     })
   )
 
+  const searchParams = new URLSearchParams(window.location.search.replace('?', ''))
+  let feedAppID = searchParams.get('feedAppID') as string
+  if (!feedAppID) {
+    feedAppID = 'e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65210000000000000000000000e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65230000000000000000000000'
+  }
+  let creditAppID = searchParams.get('creditAppID') as string
+  if (!creditAppID) {
+    creditAppID = 'e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65010000000000000001000000e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65030000000000000000000000'
+  }
+  let mallAppID = searchParams.get('mallAppID') as string
+  if (!mallAppID) {
+    mallAppID = 'e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a659c0000000000000000000000e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a659e0000000000000000000000'
+  }
+  let port = searchParams.get('port') as string
+  if (!port) {
+    port = '8080'
+  }
+
   const httpLink = createHttpLink({
     uri: (operation) => {
       switch (operation.variables.endpoint) {
         case 'feed':
-          return 'http://localhost:8080/applications/e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65210000000000000000000000e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65230000000000000000000000'
+          return 'http://localhost:' + port + '/applications/' + feedAppID
         case 'credit':
-          return 'http://localhost:8080/applications/e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65010000000000000001000000e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65030000000000000000000000'
+          return 'http://localhost:' + port + '/applications/' + creditAppID
         case 'mall':
-          return 'http://localhost:8080/applications/e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a659c0000000000000000000000e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a659e0000000000000000000000'
+          return 'http://localhost:' + port + '/applications/' + mallAppID
         default:
-          return 'http://localhost:8080/applications/e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65040000000000000000000000e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65060000000000000000000000'
+          return 'http://localhost:' + port + '/applications/' + feedAppID
       }
     }
   })
