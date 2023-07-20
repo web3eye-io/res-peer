@@ -5,10 +5,11 @@ import { GraphQLWsLink } from '@apollo/client/link/subscriptions'
 import { createClient } from 'graphql-ws'
 import { getMainDefinition } from '@apollo/client/utilities'
 
+export const feedAppID = 'e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65210000000000000000000000e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65230000000000000000000000'
+export const creditAppID = 'e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65010000000000000001000000e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65030000000000000000000000'
+export const mallAppID = 'e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a659c0000000000000000000000e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a659e0000000000000000000000'
+
 export /* async */ function getClientOptions (/* {app, router, ...}, options?: Partial<BootFileParams<unknown>> */) {
-  const feedAppID = 'e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65210000000000000000000000e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65230000000000000000000000'
-  const creditAppID = 'e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65010000000000000001000000e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65030000000000000000000000'
-  const mallAppID = 'e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a659c0000000000000000000000e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a659e0000000000000000000000'
   const port = '8080'
 
   const wsLink = new GraphQLWsLink(
@@ -26,8 +27,10 @@ export /* async */ function getClientOptions (/* {app, router, ...}, options?: P
           return 'http://localhost:' + port + '/applications/' + creditAppID
         case 'mall':
           return 'http://localhost:' + port + '/applications/' + mallAppID
+        case 'main':
+          return 'http://localhost:' + port
         default:
-          return 'http://localhost:' + port + '/applications/' + feedAppID
+          return 'http://localhost:' + port
       }
     }
   })
