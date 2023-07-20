@@ -18,11 +18,11 @@
         </template>
       </q-img>
       <div :style='{padding: "16px 32px"}'>
-        <div class='row'>
+        <div class='row no-wrap text-no-wrap'>
           <div v-if='_nft.name?.length' :style='{fontWeight: 600, fontSize: "16px", marginBottom: "8px"}' class='text-pink-9'>
             {{ _nft.name }}
           </div>
-          <div :style='{fontWeight: 600, fontSize: "16px", marginBottom: "8px", marginLeft: "8px"}' class='text-cyan-8'>
+          <div :style='{fontWeight: 600, fontSize: "16px", marginBottom: "8px", marginLeft: "8px"}' class='text-cyan-8 no-wrap'>
             {{ _nft.collectionName }} #{{ _nft.token_id }}
           </div>
         </div>
