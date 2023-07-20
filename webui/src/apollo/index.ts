@@ -5,31 +5,17 @@ import { GraphQLWsLink } from '@apollo/client/link/subscriptions'
 import { createClient } from 'graphql-ws'
 import { getMainDefinition } from '@apollo/client/utilities'
 
-export /* async */ function getClientOptions /* options?: Partial<BootFileParams<any>> */() {
-/* {app, router, ...} */
+export /* async */ function getClientOptions (/* {app, router, ...}, options?: Partial<BootFileParams<unknown>> */) {
+  const feedAppID = 'e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65210000000000000000000000e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65230000000000000000000000'
+  const creditAppID = 'e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65010000000000000001000000e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65030000000000000000000000'
+  const mallAppID = 'e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a659c0000000000000000000000e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a659e0000000000000000000000'
+  const port = '8080'
+
   const wsLink = new GraphQLWsLink(
     createClient({
-      url: 'ws://localhost:8080/ws'
+      url: 'ws://localhost:' + port + '/ws'
     })
   )
-
-  const searchParams = new URLSearchParams(window.location.search.replace('?', ''))
-  let feedAppID = searchParams.get('feedAppID') as string
-  if (!feedAppID) {
-    feedAppID = 'e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65210000000000000000000000e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65230000000000000000000000'
-  }
-  let creditAppID = searchParams.get('creditAppID') as string
-  if (!creditAppID) {
-    creditAppID = 'e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65010000000000000001000000e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65030000000000000000000000'
-  }
-  let mallAppID = searchParams.get('mallAppID') as string
-  if (!mallAppID) {
-    mallAppID = 'e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a659c0000000000000000000000e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a659e0000000000000000000000'
-  }
-  let port = searchParams.get('port') as string
-  if (!port) {
-    port = '8080'
-  }
 
   const httpLink = createHttpLink({
     uri: (operation) => {
