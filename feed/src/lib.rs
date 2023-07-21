@@ -71,7 +71,6 @@ pub enum Operation {
     },
     CreateChannel {
         name: String,
-        chain_id: ChainId,
     },
     DeleteChannel {
         channel_id: u64,

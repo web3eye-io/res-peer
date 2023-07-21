@@ -2,14 +2,14 @@
 
 mod state;
 
-use std::collections::HashMap;
+use std::{collections::HashMap, str::FromStr};
 
 use self::state::Feed;
 use async_trait::async_trait;
 use credit::CreditAbi;
 use feed::{Content, Message, Operation};
 use linera_sdk::{
-    base::{Amount, ApplicationId, Owner, SessionId, WithContractAbi},
+    base::{Amount, ApplicationId, ChainId, Owner, SessionId, WithContractAbi},
     contract::system_api::current_system_time,
     ApplicationCallResult, CalleeContext, Contract, ExecutionResult, MessageContext,
     OperationContext, SessionCallResult, ViewStateStorage,
@@ -21,6 +21,9 @@ linera_sdk::contract!(Feed);
 impl WithContractAbi for Feed {
     type Abi = feed::FeedAbi;
 }
+
+const CHANNEL_LIST_CHAIN_ID: &str =
+    "e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65";
 
 #[async_trait]
 impl Contract for Feed {
@@ -79,9 +82,14 @@ impl Contract for Feed {
                     context.chain_id
                 );
             }
-            Operation::CreateChannel { name, chain_id } => {
-                return Ok(ExecutionResult::default()
-                    .with_message(chain_id, Message::CreateChannel { name, chain_id }));
+            Operation::CreateChannel { name } => {
+                return Ok(ExecutionResult::default().with_message(
+                    ChainId::from_str(CHANNEL_LIST_CHAIN_ID).unwrap(),
+                    Message::CreateChannel {
+                        name,
+                        chain_id: context.chain_id,
+                    },
+                ));
             }
             Operation::DeleteChannel { channel_id } => self.delete_channel(channel_id).await?,
         }
