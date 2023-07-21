@@ -7,7 +7,7 @@ use async_graphql::{EmptySubscription, Object, Request, Response, Schema};
 use async_trait::async_trait;
 use feed::Operation;
 use linera_sdk::{
-    base::{Amount, WithServiceAbi},
+    base::{Amount, ChainId, WithServiceAbi},
     QueryContext, Service, ViewStateStorage,
 };
 use std::sync::Arc;
@@ -73,6 +73,14 @@ impl MutationRoot {
     async fn tip(&self, ccid: String, amount: Amount) -> Vec<u8> {
         cid::Cid::try_from(ccid.clone()).expect("Invalid content cid");
         bcs::to_bytes(&Operation::Tip { cid: ccid, amount }).unwrap()
+    }
+
+    async fn create_channel(&self, name: String, chain_id: ChainId) -> Vec<u8> {
+        bcs::to_bytes(&Operation::CreateChannel { name, chain_id }).unwrap()
+    }
+
+    async fn delete_channel(&self, channel_id: u64) -> Vec<u8> {
+        bcs::to_bytes(&Operation::DeleteChannel { channel_id }).unwrap()
     }
 }
 

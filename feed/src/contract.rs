@@ -7,7 +7,7 @@ use std::collections::HashMap;
 use self::state::Feed;
 use async_trait::async_trait;
 use credit::CreditAbi;
-use feed::{Content, Operation};
+use feed::{Content, Message, Operation};
 use linera_sdk::{
     base::{Amount, ApplicationId, Owner, SessionId, WithContractAbi},
     contract::system_api::current_system_time,
@@ -79,15 +79,32 @@ impl Contract for Feed {
                     context.chain_id
                 );
             }
+            Operation::CreateChannel { name, chain_id } => {
+                return Ok(ExecutionResult::default()
+                    .with_message(chain_id, Message::CreateChannel { name, chain_id }));
+            }
+            Operation::DeleteChannel { channel_id } => self.delete_channel(channel_id).await?,
         }
         Ok(ExecutionResult::default())
     }
 
     async fn execute_message(
         &mut self,
-        _context: &MessageContext,
-        _message: Self::Message,
+        context: &MessageContext,
+        message: Self::Message,
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
+        match message {
+            Message::CreateChannel { name, chain_id } => {
+                log::info!(
+                    "Create channel {} by {} at {}",
+                    name,
+                    context.authenticated_signer.unwrap(),
+                    chain_id
+                );
+                self.create_channel(name, context.authenticated_signer.unwrap(), chain_id)
+                    .await?
+            }
+        }
         Ok(ExecutionResult::default())
     }
 
@@ -109,7 +126,7 @@ impl Contract for Feed {
         _forwarded_sessions: Vec<SessionId>,
     ) -> Result<SessionCallResult<Self::Message, Self::Response, Self::SessionState>, Self::Error>
     {
-        Ok(SessionCallResult::default())
+        Err(ContractError::SessionsNotSupported)
     }
 }
 
@@ -236,4 +253,7 @@ pub enum ContractError {
 
     #[error(transparent)]
     StateError(#[from] state::StateError),
+
+    #[error("Cross-application sessions not supported")]
+    SessionsNotSupported,
 }
