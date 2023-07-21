@@ -33,7 +33,10 @@ watch(result, () => {
     return
   }
   user.spendable = (result.value as Record<string, string>).spendables
-  user.amounts = (result.value as Record<string, Record<string, Array<AgeAmount>>>).balances.amounts
+  const balance = (result.value as Record<string, Record<string, Array<AgeAmount>>>).balances
+  if (balance) {
+    user.amounts = balance.amounts
+  }
 })
 
 const block = useBlockStore()
