@@ -40,6 +40,7 @@ pub struct Content {
 pub struct Channel {
     pub channel_id: u64,
     pub name: String,
+    pub owner: Owner,
     pub chain_id: ChainId,
 }
 
@@ -79,5 +80,9 @@ pub enum Operation {
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub enum Message {
-    CreateChannel { name: String, chain_id: ChainId },
+    CreateChannel {
+        name: String,
+        owner: Owner,
+        chain_id: ChainId,
+    },
 }

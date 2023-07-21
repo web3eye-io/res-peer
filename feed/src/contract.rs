@@ -87,6 +87,7 @@ impl Contract for Feed {
                     ChainId::from_str(CHANNEL_LIST_CHAIN_ID).unwrap(),
                     Message::CreateChannel {
                         name,
+                        owner: context.authenticated_signer.unwrap(),
                         chain_id: context.chain_id,
                     },
                 ));
@@ -102,9 +103,13 @@ impl Contract for Feed {
         message: Self::Message,
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
         match message {
-            Message::CreateChannel { name, chain_id } => {
-                log::info!("Create channel {} at {}", name, chain_id);
-                self.create_channel(name, chain_id).await?
+            Message::CreateChannel {
+                name,
+                owner,
+                chain_id,
+            } => {
+                log::info!("Create channel {} by {} at {}", name, owner, chain_id);
+                self.create_channel(name, owner, chain_id).await?
             }
         }
         Ok(ExecutionResult::default())

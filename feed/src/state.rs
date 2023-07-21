@@ -106,12 +106,14 @@ impl Feed {
     pub(crate) async fn create_channel(
         &mut self,
         name: String,
+        owner: Owner,
         chain_id: ChainId,
     ) -> Result<(), StateError> {
         let mut channels = self.channels.get().clone();
         channels.push(Channel {
             channel_id: *self.channel_id.get(),
             name,
+            owner,
             chain_id,
         });
         self.channels.set(channels);
