@@ -16,7 +16,9 @@ const block = useBlockStore()
 
 onResult((res) => {
   const data = res.data as Record<string, Record<string, Record<string, Record<string, unknown>>>>
-  block.blockHeight = data.notifications.reason.NewBlock.height as number
-  block.blockHash = data.notifications.reason.NewBlock.hash as string
+  if (data.notifications.reason.NewBlock) {
+    block.blockHeight = data.notifications.reason.NewBlock.height as number
+    block.blockHash = data.notifications.reason.NewBlock.hash as string
+  }
 })
 </script>
