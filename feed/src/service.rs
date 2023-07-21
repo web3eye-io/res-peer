@@ -74,14 +74,6 @@ impl MutationRoot {
         cid::Cid::try_from(ccid.clone()).expect("Invalid content cid");
         bcs::to_bytes(&Operation::Tip { cid: ccid, amount }).unwrap()
     }
-
-    async fn create_channel(&self, name: String) -> Vec<u8> {
-        bcs::to_bytes(&Operation::CreateChannel { name }).unwrap()
-    }
-
-    async fn delete_channel(&self, channel_id: u64) -> Vec<u8> {
-        bcs::to_bytes(&Operation::DeleteChannel { channel_id }).unwrap()
-    }
 }
 
 /// An error that can occur while querying the service.

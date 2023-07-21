@@ -1,6 +1,6 @@
-use feed::{Channel, Content, InitialState};
+use feed::{Content, InitialState};
 use linera_sdk::{
-    base::{ChainId, Owner, Timestamp},
+    base::{Owner, Timestamp},
     contract::system_api::current_system_time,
     views::{MapView, RegisterView, ViewStorageContext},
 };
@@ -14,16 +14,12 @@ pub struct Feed {
     pub publishes: MapView<Owner, Vec<String>>,
     pub react_interval_ms: RegisterView<u64>,
     pub react_accounts: MapView<Owner, Timestamp>,
-    pub avatars: MapView<Owner, String>,
-    pub channels: RegisterView<Vec<Channel>>,
-    pub channel_id: RegisterView<u64>,
 }
 
 #[allow(dead_code)]
 impl Feed {
     pub(crate) async fn initialize(&mut self, state: InitialState) {
         self.react_interval_ms.set(state.react_interval_ms);
-        self.channel_id.set(1000);
     }
 
     pub(crate) async fn create_content(
@@ -102,36 +98,6 @@ impl Feed {
             _ => return Err(StateError::NotExist),
         }
     }
-
-    pub(crate) async fn create_channel(
-        &mut self,
-        name: String,
-        owner: Owner,
-        chain_id: ChainId,
-    ) -> Result<(), StateError> {
-        let mut channels = self.channels.get().clone();
-        channels.push(Channel {
-            channel_id: *self.channel_id.get(),
-            name,
-            owner,
-            chain_id,
-        });
-        self.channels.set(channels);
-        self.channel_id.set(self.channel_id.get() + 1);
-        Ok(())
-    }
-
-    pub(crate) async fn delete_channel(&mut self, channel_id: u64) -> Result<(), StateError> {
-        let mut channels = self.channels.get().clone();
-        match channels.iter().position(|ch| ch.channel_id == channel_id) {
-            Some(index) => {
-                channels.remove(index);
-                self.channels.set(channels);
-            }
-            None => return Err(StateError::ChannelNotExist),
-        }
-        Ok(())
-    }
 }
 
 /// Attempts to debit from an account with insufficient funds.
@@ -152,7 +118,4 @@ pub enum StateError {
 
     #[error("View error")]
     ViewError(#[from] linera_views::views::ViewError),
-
-    #[error("Channel not exist")]
-    ChannelNotExist,
 }

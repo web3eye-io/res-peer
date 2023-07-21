@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use async_graphql::{Request, Response, SimpleObject};
-use linera_sdk::base::{Amount, ApplicationId, ChainId, ContractAbi, Owner, ServiceAbi, Timestamp};
+use linera_sdk::base::{Amount, ApplicationId, ContractAbi, Owner, ServiceAbi, Timestamp};
 use serde::{Deserialize, Serialize};
 
 pub struct FeedAbi;
@@ -36,14 +36,6 @@ pub struct Content {
     pub created_at: Timestamp,
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone, SimpleObject, Eq, PartialEq)]
-pub struct Channel {
-    pub channel_id: u64,
-    pub name: String,
-    pub owner: Owner,
-    pub chain_id: ChainId,
-}
-
 #[derive(Clone, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
 pub struct InitialState {
     pub react_interval_ms: u64,
@@ -70,19 +62,14 @@ pub enum Operation {
         cid: String,
         amount: Amount,
     },
-    CreateChannel {
-        name: String,
-    },
-    DeleteChannel {
-        channel_id: u64,
-    },
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub enum Message {
-    CreateChannel {
-        name: String,
-        owner: Owner,
-        chain_id: ChainId,
+    Publish {
+        cid: String,
+        title: String,
+        content: String,
+        author: Owner,
     },
 }

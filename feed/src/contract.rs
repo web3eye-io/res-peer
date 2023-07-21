@@ -10,7 +10,7 @@ use credit::CreditAbi;
 use feed::{Content, Message, Operation};
 use linera_sdk::{
     base::{Amount, ApplicationId, ChainId, Owner, SessionId, WithContractAbi},
-    contract::system_api::current_system_time,
+    contract::system_api::{self, current_system_time},
     ApplicationCallResult, CalleeContext, Contract, ExecutionResult, MessageContext,
     OperationContext, SessionCallResult, ViewStateStorage,
 };
@@ -22,8 +22,7 @@ impl WithContractAbi for Feed {
     type Abi = feed::FeedAbi;
 }
 
-const CHANNEL_LIST_CHAIN_ID: &str =
-    "e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65";
+const CREATION_CHAIN_ID: &str = "e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65";
 
 #[async_trait]
 impl Contract for Feed {
@@ -50,17 +49,29 @@ impl Contract for Feed {
                 title,
                 content,
             } => {
-                self.publish(
-                    context,
-                    cid,
-                    title,
-                    content,
-                    context.authenticated_signer.unwrap(),
-                )
-                .await?
+                if context.chain_id == system_api::current_application_id().creation.chain_id {
+                    self.publish(cid, title, content, context.authenticated_signer.unwrap())
+                        .await?
+                } else {
+                    return Ok(ExecutionResult::default().with_message(
+                        ChainId::from_str(CREATION_CHAIN_ID).unwrap(),
+                        Message::Publish {
+                            cid,
+                            title,
+                            content,
+                            author: context.authenticated_signer.unwrap(),
+                        },
+                    ));
+                }
             }
-            Operation::Like { cid } => self.like(context, cid).await?,
-            Operation::Dislike { cid } => self.dislike(context, cid).await?,
+            Operation::Like { cid } => {
+                self.like(cid, context.authenticated_signer.unwrap())
+                    .await?
+            }
+            Operation::Dislike { cid } => {
+                self.dislike(cid, context.authenticated_signer.unwrap())
+                    .await?
+            }
             Operation::Comment {
                 comment_cid,
                 content_cid,
@@ -82,17 +93,6 @@ impl Contract for Feed {
                     context.chain_id
                 );
             }
-            Operation::CreateChannel { name } => {
-                return Ok(ExecutionResult::default().with_message(
-                    ChainId::from_str(CHANNEL_LIST_CHAIN_ID).unwrap(),
-                    Message::CreateChannel {
-                        name,
-                        owner: context.authenticated_signer.unwrap(),
-                        chain_id: context.chain_id,
-                    },
-                ));
-            }
-            Operation::DeleteChannel { channel_id } => self.delete_channel(channel_id).await?,
         }
         Ok(ExecutionResult::default())
     }
@@ -103,14 +103,12 @@ impl Contract for Feed {
         message: Self::Message,
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
         match message {
-            Message::CreateChannel {
-                name,
-                owner,
-                chain_id,
-            } => {
-                log::info!("Create channel {} by {} at {}", name, owner, chain_id);
-                self.create_channel(name, owner, chain_id).await?
-            }
+            Message::Publish {
+                cid,
+                title,
+                content,
+                author,
+            } => self.publish(cid, title, content, author).await?,
         }
         Ok(ExecutionResult::default())
     }
@@ -142,12 +140,7 @@ impl Feed {
         Self::parameters()
     }
 
-    async fn reward_credits(
-        &mut self,
-        _context: &OperationContext,
-        owner: Owner,
-        amount: Amount,
-    ) -> Result<(), ContractError> {
+    async fn reward_credits(&mut self, owner: Owner, amount: Amount) -> Result<(), ContractError> {
         log::info!("Reward owner {:?} amount {:?}", owner, amount);
         let call = credit::ApplicationCall::Reward { owner, amount };
         self.call_application(true, Self::credit_id()?, &call, vec![])
@@ -157,89 +150,52 @@ impl Feed {
 
     async fn publish(
         &mut self,
-        context: &OperationContext,
         cid: String,
         title: String,
         content: String,
         author: Owner,
     ) -> Result<(), ContractError> {
-        log::info!(
-            "Publish cid {:?} sender {:?} chain {:?}",
-            cid,
-            context.authenticated_signer,
-            context.chain_id
-        );
-        match context.authenticated_signer {
-            Some(owner) => {
-                match self
-                    .create_content(
-                        Content {
-                            cid,
-                            title,
-                            content,
-                            author,
-                            likes: 0,
-                            dislikes: 0,
-                            accounts: HashMap::default(),
-                            created_at: current_system_time(),
-                        },
-                        owner,
-                    )
-                    .await
-                {
-                    Ok(_) => {
-                        return self
-                            .reward_credits(context, owner, Amount::from_tokens(500))
-                            .await;
-                    }
-                    Err(err) => return Err(ContractError::StateError(err)),
-                }
+        log::info!("Publish cid {:?} sender {:?}", cid, author,);
+        match self
+            .create_content(
+                Content {
+                    cid,
+                    title,
+                    content,
+                    author,
+                    likes: 0,
+                    dislikes: 0,
+                    accounts: HashMap::default(),
+                    created_at: current_system_time(),
+                },
+                author,
+            )
+            .await
+        {
+            Ok(_) => {
+                return self.reward_credits(author, Amount::from_tokens(500)).await;
             }
-            _ => return Err(ContractError::InvalidPublisher),
+            Err(err) => return Err(ContractError::StateError(err)),
         }
     }
 
-    async fn like(&mut self, context: &OperationContext, cid: String) -> Result<(), ContractError> {
-        log::info!(
-            "Like cid {:?} sender {:?} chain {:?}",
-            cid,
-            context.authenticated_signer,
-            context.chain_id
-        );
-        match context.authenticated_signer {
-            Some(owner) => match self.like_content(cid, owner, true).await {
-                Ok(_) => {
-                    return self
-                        .reward_credits(context, owner, Amount::from_tokens(100))
-                        .await;
-                }
-                Err(err) => return Err(ContractError::StateError(err)),
-            },
-            _ => return Err(ContractError::InvalidPublisher),
+    async fn like(&mut self, cid: String, owner: Owner) -> Result<(), ContractError> {
+        log::info!("Like cid {:?} sender {:?}", cid, owner,);
+        match self.like_content(cid, owner, true).await {
+            Ok(_) => {
+                return self.reward_credits(owner, Amount::from_tokens(100)).await;
+            }
+            Err(err) => return Err(ContractError::StateError(err)),
         }
     }
 
-    async fn dislike(
-        &mut self,
-        context: &OperationContext,
-        cid: String,
-    ) -> Result<(), ContractError> {
-        log::info!(
-            "Dislike cid {:?} sender {:?} chain {:?}",
-            cid,
-            context.authenticated_signer,
-            context.chain_id
-        );
-        match context.authenticated_signer {
-            Some(owner) => match self.like_content(cid, owner, false).await {
-                Ok(_) => {
-                    return self
-                        .reward_credits(context, owner, Amount::from_tokens(100))
-                        .await;
-                }
-                Err(err) => return Err(ContractError::StateError(err)),
-            },
-            _ => return Err(ContractError::InvalidPublisher),
+    async fn dislike(&mut self, cid: String, owner: Owner) -> Result<(), ContractError> {
+        log::info!("Dislike cid {:?} sender {:?}", cid, owner,);
+        match self.like_content(cid, owner, false).await {
+            Ok(_) => {
+                return self.reward_credits(owner, Amount::from_tokens(100)).await;
+            }
+            Err(err) => return Err(ContractError::StateError(err)),
         }
     }
 }
