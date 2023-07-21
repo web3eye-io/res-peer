@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use async_graphql::{Request, Response, SimpleObject};
-use linera_sdk::base::{Amount, ApplicationId, ChainId, ContractAbi, Owner, ServiceAbi, Timestamp};
+use linera_sdk::base::{Amount, ApplicationId, ContractAbi, Owner, ServiceAbi, Timestamp};
 use serde::{Deserialize, Serialize};
 
 pub struct FeedAbi;
@@ -62,9 +62,7 @@ pub enum Operation {
         cid: String,
         amount: Amount,
     },
-    RequestSubscribe {
-        chain_id: ChainId,
-    },
+    RequestSubscribe,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]

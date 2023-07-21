@@ -96,10 +96,11 @@ impl Contract for Feed {
                     context.chain_id
                 );
             }
-            Operation::RequestSubscribe { chain_id } => {
-                return Ok(
-                    ExecutionResult::default().with_message(chain_id, Message::RequestSubscribe)
-                );
+            Operation::RequestSubscribe => {
+                return Ok(ExecutionResult::default().with_message(
+                    ChainId::from_str(CREATION_CHAIN_ID).unwrap(),
+                    Message::RequestSubscribe,
+                ));
             }
         }
         Ok(ExecutionResult::default())
