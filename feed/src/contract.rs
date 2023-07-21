@@ -9,7 +9,9 @@ use async_trait::async_trait;
 use credit::CreditAbi;
 use feed::{Content, Message, Operation};
 use linera_sdk::{
-    base::{Amount, ApplicationId, ChainId, Owner, SessionId, WithContractAbi},
+    base::{
+        Amount, ApplicationId, ChainId, ChannelName, Destination, Owner, SessionId, WithContractAbi,
+    },
     contract::system_api::{self, current_system_time},
     ApplicationCallResult, CalleeContext, Contract, ExecutionResult, MessageContext,
     OperationContext, SessionCallResult, ViewStateStorage,
@@ -23,6 +25,7 @@ impl WithContractAbi for Feed {
 }
 
 const CREATION_CHAIN_ID: &str = "e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65";
+const CONTENT_CHANNEL_NAME: &[u8] = b"contents";
 
 #[async_trait]
 impl Contract for Feed {
@@ -93,13 +96,18 @@ impl Contract for Feed {
                     context.chain_id
                 );
             }
+            Operation::RequestSubscribe { chain_id } => {
+                return Ok(
+                    ExecutionResult::default().with_message(chain_id, Message::RequestSubscribe)
+                );
+            }
         }
         Ok(ExecutionResult::default())
     }
 
     async fn execute_message(
         &mut self,
-        __context: &MessageContext,
+        context: &MessageContext,
         message: Self::Message,
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
         match message {
@@ -108,9 +116,30 @@ impl Contract for Feed {
                 title,
                 content,
                 author,
-            } => self.publish(cid, title, content, author).await?,
+            } => {
+                self.publish(cid.clone(), title.clone(), content.clone(), author)
+                    .await?;
+                let dest =
+                    Destination::Subscribers(ChannelName::from(CONTENT_CHANNEL_NAME.to_vec()));
+                return Ok(ExecutionResult::default().with_message(
+                    dest,
+                    Message::Publish {
+                        cid,
+                        title,
+                        content,
+                        author,
+                    },
+                ));
+            }
+            Message::RequestSubscribe => {
+                let mut result = ExecutionResult::default();
+                result.subscribe.push((
+                    ChannelName::from(CONTENT_CHANNEL_NAME.to_vec()),
+                    context.message_id.chain_id,
+                ));
+                return Ok(result);
+            }
         }
-        Ok(ExecutionResult::default())
     }
 
     async fn handle_application_call(
@@ -172,10 +201,8 @@ impl Feed {
             )
             .await
         {
-            Ok(_) => {
-                return self.reward_credits(author, Amount::from_tokens(500)).await;
-            }
-            Err(err) => return Err(ContractError::StateError(err)),
+            Ok(_) => self.reward_credits(author, Amount::from_tokens(500)).await,
+            Err(err) => Err(ContractError::StateError(err)),
         }
     }
 
