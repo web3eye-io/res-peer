@@ -40,7 +40,6 @@ pub struct Content {
 pub struct Channel {
     pub channel_id: u64,
     pub name: String,
-    pub owner: Owner,
     pub chain_id: ChainId,
 }
 

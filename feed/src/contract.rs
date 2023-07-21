@@ -66,7 +66,7 @@ impl Contract for Feed {
                     "Comment cid {:?} to cid {:?} sender {:?} chain {:?}",
                     comment_cid,
                     content_cid,
-                    context.authenticated_signer,
+                    context.authenticated_signer.unwrap(),
                     context.chain_id
                 );
             }
@@ -75,7 +75,7 @@ impl Contract for Feed {
                     "Tip cid {:?} amount {:?} sender {:?} chain {:?}",
                     cid,
                     amount,
-                    context.authenticated_signer,
+                    context.authenticated_signer.unwrap(),
                     context.chain_id
                 );
             }
@@ -90,19 +90,13 @@ impl Contract for Feed {
 
     async fn execute_message(
         &mut self,
-        context: &MessageContext,
+        __context: &MessageContext,
         message: Self::Message,
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
         match message {
             Message::CreateChannel { name, chain_id } => {
-                log::info!(
-                    "Create channel {} by {} at {}",
-                    name,
-                    context.authenticated_signer.unwrap(),
-                    chain_id
-                );
-                self.create_channel(name, context.authenticated_signer.unwrap(), chain_id)
-                    .await?
+                log::info!("Create channel {} at {}", name, chain_id);
+                self.create_channel(name, chain_id).await?
             }
         }
         Ok(ExecutionResult::default())
