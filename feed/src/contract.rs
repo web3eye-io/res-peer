@@ -117,11 +117,6 @@ impl Contract for Feed {
                 self.publish(cid.clone(), title.clone(), content.clone(), author)
                     .await?;
                 log::info!("Published cid {:?} sender {:?}", cid, author);
-                if context.message_id.chain_id
-                    == system_api::current_application_id().creation.chain_id
-                {
-                    return Ok(ExecutionResult::default());
-                }
                 let dest =
                     Destination::Subscribers(ChannelName::from(CONTENT_CHANNEL_NAME.to_vec()));
                 log::info!(
