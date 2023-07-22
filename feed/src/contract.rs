@@ -120,6 +120,7 @@ impl Contract for Feed {
             } => {
                 self.publish(cid.clone(), title.clone(), content.clone(), author)
                     .await?;
+                log::info!("Published cid {:?} sender {:?}", cid, author,);
                 let dest =
                     Destination::Subscribers(ChannelName::from(CONTENT_CHANNEL_NAME.to_vec()));
                 return Ok(ExecutionResult::default().with_message(
@@ -134,6 +135,9 @@ impl Contract for Feed {
             }
             Message::RequestSubscribe => {
                 let mut result = ExecutionResult::default();
+                if context.chain_id == system_api::current_application_id().creation.chain_id {
+                    return Ok(result);
+                }
                 result.subscribe.push((
                     ChannelName::from(CONTENT_CHANNEL_NAME.to_vec()),
                     context.message_id.chain_id,
@@ -175,6 +179,7 @@ impl Feed {
         let call = credit::ApplicationCall::Reward { owner, amount };
         self.call_application(true, Self::credit_id()?, &call, vec![])
             .await?;
+        log::info!("Rewarded owner {:?} amount {:?}", owner, amount);
         Ok(())
     }
 

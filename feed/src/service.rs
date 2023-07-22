@@ -74,6 +74,10 @@ impl MutationRoot {
         cid::Cid::try_from(ccid.clone()).expect("Invalid content cid");
         bcs::to_bytes(&Operation::Tip { cid: ccid, amount }).unwrap()
     }
+
+    async fn request_subscribe(&self) -> Vec<u8> {
+        bcs::to_bytes(&Operation::RequestSubscribe).unwrap()
+    }
 }
 
 /// An error that can occur while querying the service.
