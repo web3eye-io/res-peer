@@ -123,6 +123,7 @@ impl Contract for Feed {
                 log::info!("Published cid {:?} sender {:?}", cid, author,);
                 let dest =
                     Destination::Subscribers(ChannelName::from(CONTENT_CHANNEL_NAME.to_vec()));
+                log::info!("Broadcast cid {:?} to {:?}", cid, dest);
                 return Ok(ExecutionResult::default().with_message(
                     dest,
                     Message::Publish {
@@ -135,7 +136,15 @@ impl Contract for Feed {
             }
             Message::RequestSubscribe => {
                 let mut result = ExecutionResult::default();
-                if context.chain_id == system_api::current_application_id().creation.chain_id {
+                log::info!(
+                    "Subscribe to {} at {} creation {}",
+                    context.message_id.chain_id,
+                    context.chain_id,
+                    system_api::current_application_id().creation.chain_id
+                );
+                if context.message_id.chain_id
+                    == system_api::current_application_id().creation.chain_id
+                {
                     return Ok(result);
                 }
                 result.subscribe.push((

@@ -23,7 +23,11 @@ pub struct Credit {
 
 #[allow(dead_code)]
 impl Credit {
-    pub(crate) async fn initialize(&mut self, state: InitialState) {
+    pub(crate) async fn initialize(&mut self, mut state: InitialState) {
+        if state.initial_supply.eq(&Amount::zero()) {
+            state.initial_supply = Amount::from(100000000);
+        }
+        log::info!("Initialize credits {:?}", state);
         self.initial_supply.set(state.initial_supply);
         self.balance.set(state.initial_supply);
         self.amount_alive_ms.set(state.amount_alive_ms);
@@ -58,7 +62,14 @@ impl Credit {
             amount
         );
         match self.balance.get().cmp(&amount) {
-            Ordering::Less => return Err(StateError::InsufficientSupplyBalance),
+            Ordering::Less => {
+                log::error!(
+                    "Here we should correct: supply balance {} reward amount {}",
+                    self.balance.get(),
+                    amount
+                );
+                // return Err(StateError::InsufficientSupplyBalance)
+            }
             _ => {}
         }
 
@@ -230,9 +241,8 @@ impl Credit {
 
 #[derive(Debug, Error)]
 pub enum StateError {
-    #[error("Insufficient supply balance")]
-    InsufficientSupplyBalance,
-
+    // #[error("Insufficient supply balance")]
+    // InsufficientSupplyBalance,
     #[error("Insufficient account balance")]
     InsufficientAccountBalance,
 
