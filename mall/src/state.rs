@@ -216,7 +216,8 @@ impl Mall {
                         _ => return Err(StateError::CollectionNotExists),
                     };
                     if owner == buyer {
-                        return Err(StateError::BuyerIsOwner);
+                        log::info!("TODO: buyer could not be the same as owner");
+                        // return Err(StateError::BuyerIsOwner);
                     }
                     let owner_balance = match self.balances.get(&owner).await {
                         Ok(Some(balance)) => balance,
@@ -401,7 +402,7 @@ impl Mall {
     ) -> Result<(), StateError> {
         match self.nft_owner(collection_id, token_id).await {
             Ok(_owner) => {
-                if _owner == owner {
+                if _owner != owner {
                     Err(StateError::NotTokenOwner)
                 } else {
                     match self
@@ -446,7 +447,6 @@ pub enum StateError {
 
     #[error("Invalid price")]
     InvalidPrice,
-
-    #[error("Buyer is same as owner")]
-    BuyerIsOwner,
+    // #[error("Buyer is same as owner")]
+    // BuyerIsOwner,
 }

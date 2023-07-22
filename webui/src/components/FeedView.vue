@@ -60,7 +60,7 @@
 
 <script setup lang='ts'>
 import { Content, useContentStore } from 'src/stores/content'
-import { computed, watch } from 'vue'
+import { computed, onMounted, watch } from 'vue'
 import { provideApolloClient, useMutation, useQuery } from '@vue/apollo-composable'
 import { ApolloClient } from '@apollo/client/core'
 import gql from 'graphql-tag'
@@ -83,7 +83,7 @@ const userAvatar = (account: string) => {
 }
 
 const getContentAvatar = (index: number) => {
-  if (index <= contents.value.length) {
+  if (index >= contents.value.length) {
     return
   }
   const account = contents.value[index].author
@@ -109,6 +109,10 @@ const getContentAvatar = (index: number) => {
 }
 
 watch(contents, () => {
+  getContentAvatar(0)
+})
+
+onMounted(() => {
   getContentAvatar(0)
 })
 
