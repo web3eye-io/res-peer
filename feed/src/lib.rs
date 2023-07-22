@@ -71,7 +71,7 @@ pub enum Message {
         cid: String,
         title: String,
         content: String,
-        author: Owner,
+        author: Owner
     },
     RequestSubscribe,
 }

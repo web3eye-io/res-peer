@@ -56,7 +56,7 @@ impl Contract for Feed {
                     self.publish(cid, title, content, context.authenticated_signer.unwrap())
                         .await?
                 } else {
-                    return Ok(ExecutionResult::default().with_message(
+                    return Ok(ExecutionResult::default().with_authenticated_message(
                         ChainId::from_str(CREATION_CHAIN_ID).unwrap(),
                         Message::Publish {
                             cid,
