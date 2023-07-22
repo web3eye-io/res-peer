@@ -52,20 +52,16 @@ impl Contract for Feed {
                 title,
                 content,
             } => {
-                if context.chain_id == system_api::current_application_id().creation.chain_id {
-                    self.publish(cid, title, content, context.authenticated_signer.unwrap())
-                        .await?
-                } else {
-                    return Ok(ExecutionResult::default().with_authenticated_message(
-                        ChainId::from_str(CREATION_CHAIN_ID).unwrap(),
-                        Message::Publish {
-                            cid,
-                            title,
-                            content,
-                            author: context.authenticated_signer.unwrap(),
-                        },
-                    ));
-                }
+                // Here we should already subscribe to creation feed application so we don't need to publish directly
+                return Ok(ExecutionResult::default().with_authenticated_message(
+                    ChainId::from_str(CREATION_CHAIN_ID).unwrap(),
+                    Message::Publish {
+                        cid,
+                        title,
+                        content,
+                        author: context.authenticated_signer.unwrap(),
+                    },
+                ));
             }
             Operation::Like { cid } => {
                 self.like(cid, context.authenticated_signer.unwrap())
@@ -120,10 +116,20 @@ impl Contract for Feed {
             } => {
                 self.publish(cid.clone(), title.clone(), content.clone(), author)
                     .await?;
-                log::info!("Published cid {:?} sender {:?}", cid, author,);
+                log::info!("Published cid {:?} sender {:?}", cid, author);
+                if context.message_id.chain_id
+                    == system_api::current_application_id().creation.chain_id
+                {
+                    return Ok(ExecutionResult::default());
+                }
                 let dest =
                     Destination::Subscribers(ChannelName::from(CONTENT_CHANNEL_NAME.to_vec()));
-                log::info!("Broadcast cid {:?} to {:?}", cid, dest);
+                log::info!(
+                    "Broadcast cid {:?} to {:?} at {}",
+                    cid,
+                    dest,
+                    context.chain_id
+                );
                 return Ok(ExecutionResult::default().with_message(
                     dest,
                     Message::Publish {

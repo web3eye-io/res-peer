@@ -42,6 +42,7 @@
       <feed-contents-query />
       <mall-info-query />
       <mall-collections-query />
+      <request-subscribe />
       <router-view />
     </q-page-container>
 
@@ -108,6 +109,7 @@ import FeedContentsQuery from 'src/components/FeedContentsQuery.vue'
 import MallInfoQuery from 'src/components/MallInfoQuery.vue'
 import MallCollectionsQuery from 'src/components/MallCollectionsQuery.vue'
 import RequestApplication from 'src/components/RequestApplication.vue'
+import RequestSubscribe from 'src/components/RequestSubscribe.vue'
 
 const router = useRouter()
 const account = ref('')

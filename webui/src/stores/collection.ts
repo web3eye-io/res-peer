@@ -116,11 +116,12 @@ export const useCollectionStore = defineStore('collection', {
     },
     collectionBanner (): (collection: Collection) => string {
       return (collection: Collection) => {
+        let baseUri = collection.baseUri
         if (collection.baseUri?.endsWith('/')) {
-          collection.baseUri = collection.baseUri.substring(0, collection.baseUri.length - 1)
+          baseUri = collection.baseUri.substring(0, collection.baseUri.length - 1)
         }
         const nfts = this.nftsByCollectionID(collection.collectionId)
-        return collection.baseUri + '/' + nfts[0]?.uri
+        return baseUri + '/' + nfts[0]?.uri
       }
     },
     nftBannerByID (): (collectionId: number, tokenId: number) => string | undefined {
