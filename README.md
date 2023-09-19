@@ -21,6 +21,8 @@ ResPeer provides a market for asset producers to put their work on shelves. Prod
 
 ![image](webui/src/assets/Workflow.png)
 
+TL;NR
+
 ## Reviewer
 
 In ResPeer, an committee which is organized by community members will review all of the submitted content including article, comment and art work. We believe a product which does not advocate motivated values will not live long. So members in the community who proved their upright and talent will be selected as the reviewer of the committee. After they succcess to approve the content, then they will receive some rewards from the foundation.
