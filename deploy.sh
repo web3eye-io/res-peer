@@ -75,11 +75,11 @@ function run_service_1() {
   export LINERA_STORAGE=rocksdb:$wallet_dir/linera1.db
   # print $'\U01f499' $LIGHTGREEN " Initialize wallet2 ..."
   # linera wallet init --genesis $wallet_dir/genesis.json
-  # print $'\U01f499' $LIGHTGREEN " Gen wallet2 pub key ..."
-  # pub_key=`linera keygen`
-  # print $'\U01f499' $LIGHTGREEN " Open wallet2 chain ..."
+  print $'\U01f499' $LIGHTGREEN " Gen wallet2 pub key ..."
+  pub_key=`linera keygen`
+  print $'\U01f499' $LIGHTGREEN " Open wallet2 chain ..."
   # linera open-chain --to-public-key $pub_key
-  # linera open-chain
+  linera open-chain
   print $'\U01f499' $LIGHTGREEN " Run 8081 service ..."
   linera service --port 8081 > $SERVICE1_LOG_FILE 2>&1 &
 }
