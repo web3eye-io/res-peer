@@ -35,6 +35,7 @@
     </q-header>
 
     <q-page-container>
+      <chain-query />
       <request-application />
       <credit-query />
       <block-subscription />
@@ -110,6 +111,7 @@ import MarketInfoQuery from 'src/components/MarketInfoQuery.vue'
 import MarketCollectionsQuery from 'src/components/MarketCollectionsQuery.vue'
 import RequestApplication from 'src/components/RequestApplication.vue'
 import RequestSubscribe from 'src/components/RequestSubscribe.vue'
+import ChainQuery from 'src/components/ChainQuery.vue'
 
 const router = useRouter()
 const account = ref('')
