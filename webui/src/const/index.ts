@@ -3,4 +3,3 @@ export const creditAppID = 'e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595c
 export const marketAppID = 'e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65060000000000000000000000e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65080000000000000000000000'
 /// Following variables should be set with different service
 export const port = '8080'
-export const appChainId = '368717fa4077e85e9d66ed96d85dad25f06029dc3cc986deef8cb81e6fea3483'
