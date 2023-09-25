@@ -17,7 +17,6 @@ function print() {
 
 NODE_LOG_FILE=$HOME/linera-project/linera.log
 SERVICE_LOG_FILE=$HOME/linera-project/service_8080.log
-SERVICE1_LOG_FILE=$HOME/linera-project/service_8081.log
 
 print $'\U01F4AB' $YELLOW " Running lienra net, log in $NODE_LOG_FILE ..."
 linera net up 2>&1 | sh -c 'exec cat' > $NODE_LOG_FILE &
@@ -69,22 +68,24 @@ sed -i "s/marketAppID =.*/marketAppID = \"$market_appid\"/g" webui/src/const/ind
 print $'\U01f499' $LIGHTGREEN " Run 8080 service ..."
 linera service > $SERVICE_LOG_FILE 2>&1 &
 
-function run_service_1() {
+function run_new_service() {
   wallet_dir=`dirname $LINERA_WALLET`
-  export LINERA_WALLET=$wallet_dir/wallet_1.json
-  export LINERA_STORAGE=rocksdb:$wallet_dir/linera1.db
-  # print $'\U01f499' $LIGHTGREEN " Initialize wallet2 ..."
-  # linera wallet init --genesis $wallet_dir/genesis.json
+  export LINERA_WALLET=$wallet_dir/wallet_$1.json
+  export LINERA_STORAGE=rocksdb:$wallet_dir/linera$1.db
+  print $'\U01f499' $LIGHTGREEN " Initialize wallet2 ..."
+  linera wallet init --genesis $wallet_dir/genesis.json
+  linera wallet show
   print $'\U01f499' $LIGHTGREEN " Gen wallet2 pub key ..."
   pub_key=`linera keygen`
   print $'\U01f499' $LIGHTGREEN " Open wallet2 chain ..."
   # linera open-chain --to-public-key $pub_key
   linera open-chain
-  print $'\U01f499' $LIGHTGREEN " Run 8081 service ..."
-  linera service --port 8081 > $SERVICE1_LOG_FILE 2>&1 &
+  print $'\U01f499' $LIGHTGREEN " Run $2 service ..."
+  LOG_FILE=`echo $SERVICE_LOG_FILE | sed "s/8080/$2/g"`
+  linera service --port $2 > $LOG_FILE 2>&1 &
 }
 
-run_service_1
+run_new_service 2 8081
 
 function cleanup() {
   rm -rf `dirname $LINERA_WALLET`
