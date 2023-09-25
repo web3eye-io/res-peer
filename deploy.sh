@@ -85,7 +85,7 @@ function run_new_service() {
   sed -i "s/appChainId =.*/appChainId = '$chain_id'/g" webui/src/const/index.ts
   print $'\U01f499' $LIGHTGREEN " Run $2 service ..."
   LOG_FILE=`echo $SERVICE_LOG_FILE | sed "s/8080/$2/g"`
-  linera service --port $2 > $LOG_FILE 2>&1 &
+  linera --wallet $wallet --storage $storage service --port $2 > $LOG_FILE 2>&1 &
 }
 
 run_new_service 2 8081
