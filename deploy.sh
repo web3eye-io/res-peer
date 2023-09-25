@@ -3,9 +3,9 @@
 unset LINERA_WALLET
 unset LINERA_STORAGE
 
-killall -15 linera
-killall -15 linera-proxy
-killall -15 linera-server
+killall -15 linera > /dev/null 2>&1
+killall -15 linera-proxy > /dev/null 2>&1
+killall -15 linera-server > /dev/null 2>&1
 
 BLUE='\033[1;34m'
 YELLOW='\033[1;33m'
@@ -67,33 +67,35 @@ sed -i "s/feedAppID =.*/feedAppID = \"$feed_appid\"/g" webui/src/const/index.ts
 sed -i "s/creditAppID =.*/creditAppID = \"$credit_appid\"/g" webui/src/const/index.ts
 sed -i "s/marketAppID =.*/marketAppID = \"$market_appid\"/g" webui/src/const/index.ts
 
-print $'\U01f499' $LIGHTGREEN " Run 8080 service ..."
-linera service > $SERVICE_LOG_FILE 2>&1 &
-
 function run_new_service() {
   wallet_dir=`dirname $LINERA_WALLET`
   export LINERA_WALLET=$wallet_dir/wallet_$1.json
   export LINERA_STORAGE=rocksdb:$wallet_dir/linera$1.db
   print $'\U01f499' $LIGHTGREEN " Initialize wallet2 ..."
   linera wallet init --genesis $wallet_dir/genesis.json
-  linera wallet show
   print $'\U01f499' $LIGHTGREEN " Gen wallet2 pub key ..."
   pub_key=`linera keygen`
   print $'\U01f499' $LIGHTGREEN " Open wallet2 chain ..."
-  # linera open-chain --to-public-key $pub_key
-  linera open-chain
+  effect_and_chain=`linera --wallet $3 --storage $4 open-chain --to-public-key $pub_key`
+  effect=$(echo "$effect_and_chain" | sed -n '1 p')
+  linera assign --key $pub_key --message-id $effect
+  linera wallet show
   print $'\U01f499' $LIGHTGREEN " Run $2 service ..."
   LOG_FILE=`echo $SERVICE_LOG_FILE | sed "s/8080/$2/g"`
   linera service --port $2 > $LOG_FILE 2>&1 &
 }
 
-run_new_service 2 8081
+run_new_service 2 8081 $LINERA_WALLET $LINERA_STORAGE
+
+print $'\U01f499' $LIGHTGREEN " Run 8080 service ..."
+linera service > $SERVICE_LOG_FILE 2>&1 &
+
 
 function cleanup() {
   rm -rf `dirname $LINERA_WALLET`
-  killall -15 linera
-  killall -15 linera-proxy
-  killall -15 linera-server
+  killall -15 linera > /dev/null 2>&1
+  killall -15 linera-proxy > /dev/null 2>&1
+  killall -15 linera-server > /dev/null 2>&1
 }
 
 trap cleanup INT
