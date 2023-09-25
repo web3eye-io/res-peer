@@ -4,6 +4,8 @@ unset LINERA_WALLET
 unset LINERA_STORAGE
 
 killall -15 linera
+killall -15 linera-proxy
+killall -15 linera-server
 
 BLUE='\033[1;34m'
 YELLOW='\033[1;33m'
@@ -90,6 +92,8 @@ run_new_service 2 8081
 function cleanup() {
   rm -rf `dirname $LINERA_WALLET`
   killall -15 linera
+  killall -15 linera-proxy
+  killall -15 linera-server
 }
 
 trap cleanup INT
