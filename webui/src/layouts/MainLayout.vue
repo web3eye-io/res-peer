@@ -40,8 +40,8 @@
       <block-subscription />
       <feed-contents-keys-query />
       <feed-contents-query />
-      <mall-info-query />
-      <mall-collections-query />
+      <market-info-query />
+      <market-collections-query />
       <request-subscribe />
       <router-view />
     </q-page-container>
@@ -106,8 +106,8 @@ import CreditQuery from 'src/components/CreditQuery.vue'
 import BlockSubscription from 'src/components/BlockSubscription.vue'
 import FeedContentsKeysQuery from 'src/components/FeedContentsKeysQuery.vue'
 import FeedContentsQuery from 'src/components/FeedContentsQuery.vue'
-import MallInfoQuery from 'src/components/MallInfoQuery.vue'
-import MallCollectionsQuery from 'src/components/MallCollectionsQuery.vue'
+import MarketInfoQuery from 'src/components/MarketInfoQuery.vue'
+import MarketCollectionsQuery from 'src/components/MarketCollectionsQuery.vue'
 import RequestApplication from 'src/components/RequestApplication.vue'
 import RequestSubscribe from 'src/components/RequestSubscribe.vue'
 
@@ -149,7 +149,7 @@ const onLogoutClick = () => {
   account.value = undefined as unknown as string
 }
 const onNFTMarketClick = () => {
-  void router.push({ path: '/mall' })
+  void router.push({ path: '/market' })
 }
 </script>
 

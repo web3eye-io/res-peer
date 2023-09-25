@@ -16,11 +16,11 @@ const apolloClient = new ApolloClient(options)
 const block = useBlockStore()
 const blockHeight = computed(() => block.blockHeight)
 watch(blockHeight, () => {
-  getMallInfo()
+  getMarketInfo()
 })
 
 watch(account, () => {
-  getMallInfo()
+  getMarketInfo()
 })
 
 const collection = useCollectionStore()
@@ -43,11 +43,11 @@ const onResult = (res: Record<string, unknown>) => {
   }
 }
 
-const getMallInfo = () => {
+const getMarketInfo = () => {
   const { result /*, fetchMore, onResult, onError */ } = provideApolloClient(apolloClient)(() => {
     if (account.value) {
       return useQuery(gql`
-        query getMallInfo($account: String!) {
+        query getMarketInfo($account: String!) {
           collectionsKeys
           creditsPerLinera
           balances(owner: $account)
@@ -56,17 +56,17 @@ const getMallInfo = () => {
         }
       `, {
         account: `${account.value}`,
-        endpoint: 'mall'
+        endpoint: 'market'
       })
     }
     return useQuery(gql`
-        query getMallInfo {
+        query getMarketInfo {
           collectionsKeys
           creditsPerLinera
         }
       `, {
       account: `${account.value}`,
-      endpoint: 'mall'
+      endpoint: 'market'
     })
   })
 
@@ -77,7 +77,7 @@ const getMallInfo = () => {
 }
 
 onMounted(() => {
-  getMallInfo()
+  getMarketInfo()
 })
 
 </script>

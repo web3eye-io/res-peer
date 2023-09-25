@@ -93,12 +93,12 @@ const getContentAvatar = (index: number) => {
   }
 
   const { result /*, fetchMore, onResult, onError */ } = provideApolloClient(apolloClient)(() => useQuery(gql`
-    query getMallInfo($account: String!) {
+    query getMarketInfo($account: String!) {
         avatars(owner: $account)
       }
     `, {
     account: `${account}`,
-    endpoint: 'mall'
+    endpoint: 'market'
   }))
 
   watch(result, () => {

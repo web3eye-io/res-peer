@@ -20,8 +20,8 @@ export /* async */ function getClientOptions (/* {app, router, ...}, options?: P
           return 'http://localhost:' + constants.port + '/applications/' + constants.feedAppID
         case 'credit':
           return 'http://localhost:' + constants.port + '/applications/' + constants.creditAppID
-        case 'mall':
-          return 'http://localhost:' + constants.port + '/applications/' + constants.mallAppID
+        case 'market':
+          return 'http://localhost:' + constants.port + '/applications/' + constants.marketAppID
         case 'main':
           return 'http://localhost:' + constants.port
         default:

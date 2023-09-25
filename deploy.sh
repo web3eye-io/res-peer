@@ -57,6 +57,10 @@ print $'\U01f499' $LIGHTGREEN " Feed application deployed"
 echo -e "    Bytecode ID:    $BLUE$feed_bid$NC"
 echo -e "    Application ID: $BLUE$feed_appid$NC"
 
+sed -i "s/feedAppID=.*/export const feedAppID=\"$feed_appid\"" webui/src/const/index.ts
+sed -i "s/creditAppID=.*/export const creditAppID=\"$credit_appid\"" webui/src/const/index.ts
+sed -i "s/marketAppID=.*/export const marketAppID=\"$market_appid\"" webui/src/const/index.ts
+
 function cleanup() {
   rm -rf `dirname $LINERA_WALLET`
 }

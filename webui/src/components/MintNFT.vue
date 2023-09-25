@@ -76,7 +76,7 @@ const onMintlick = async () => {
     uri: uri.value,
     price: ownPrice.value ? price.value : undefined,
     name: name.value,
-    endpoint: 'mall'
+    endpoint: 'market'
   })
 }
 

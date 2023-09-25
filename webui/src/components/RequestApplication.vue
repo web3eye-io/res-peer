@@ -6,7 +6,7 @@ import { ApolloClient } from '@apollo/client/core'
 import { provideApolloClient, useMutation } from '@vue/apollo-composable'
 import * as constants from 'src/const'
 
-const appIDs = ref([constants.feedAppID, constants.creditAppID, constants.mallAppID])
+const appIDs = ref([constants.feedAppID, constants.creditAppID, constants.marketAppID])
 
 const options = /* await */ getClientOptions(/* {app, router ...} */)
 const apolloClient = new ApolloClient(options)

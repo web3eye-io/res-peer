@@ -34,7 +34,7 @@ const getCollection = (collectionKey: number, force: boolean, done?: () => void)
     }
   `, {
     collectionKey: parseInt(collectionKey.toString()),
-    endpoint: 'mall'
+    endpoint: 'market'
   }, {
     fetchPolicy: force ? 'network-only' : 'cache-and-network'
   }))

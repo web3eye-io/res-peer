@@ -126,7 +126,7 @@ const onBuyClick = async (_nft: NFTAnother) => {
     collectionId: _nft.collectionId,
     tokenId: _nft.token_id,
     credits: creditsToUse.value.toString(),
-    endpoint: 'mall'
+    endpoint: 'market'
   })
 }
 

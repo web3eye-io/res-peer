@@ -7,7 +7,7 @@ const routes: RouteRecordRaw[] = [
     children: [
       { path: '', component: () => import('pages/IndexPage.vue') },
       { path: 'dashboard', component: () => import('pages/DashboardPage.vue') },
-      { path: 'mall', component: () => import('pages/NftMallPage.vue') },
+      { path: 'market', component: () => import('pages/NftMarketPage.vue') },
       { path: 'collection', component: () => import('pages/CollectionPage.vue') }
     ]
   },

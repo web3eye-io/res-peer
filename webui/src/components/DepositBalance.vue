@@ -53,7 +53,7 @@ const onDepositClick = async () => {
   })
   await mutate({
     amount: amount.value.toString(),
-    endpoint: 'mall'
+    endpoint: 'market'
   })
 }
 

@@ -68,7 +68,7 @@ const onSetAvatarClick = async () => {
   await mutate({
     collectionId: parseInt(collectionId.value.toString()),
     tokenId: parseInt(tokenId.value.toString()),
-    endpoint: 'mall'
+    endpoint: 'market'
   })
 }
 
