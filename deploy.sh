@@ -3,6 +3,8 @@
 unset LINERA_WALLET
 unset LINERA_STORAGE
 
+killall -15 linera
+
 BLUE='\033[1;34m'
 YELLOW='\033[1;33m'
 LIGHTGREEN='\033[1;32m'
@@ -13,14 +15,17 @@ function print() {
 }
 
 
-LOG_FILE=$HOME/linera-project/linera.log
-print $'\U01F4AB' $YELLOW " Running lienra net, log in $LOG_FILE ..."
-linera net up 2>&1 | sh -c 'exec cat' > $LOG_FILE &
+NODE_LOG_FILE=$HOME/linera-project/linera.log
+SERVICE_LOG_FILE=$HOME/linera-project/service_8080.log
+SERVICE1_LOG_FILE=$HOME/linera-project/service_8081.log
+
+print $'\U01F4AB' $YELLOW " Running lienra net, log in $NODE_LOG_FILE ..."
+linera net up 2>&1 | sh -c 'exec cat' > $NODE_LOG_FILE &
 
 while true; do
-  [ ! -f $LOG_FILE ] && sleep 3 && continue
-  LINERA_WALLET_ENV=`grep "export LINERA_WALLET" $LOG_FILE | sed 's/"//g'`
-  LINERA_STORAGE_ENV=`grep "export LINERA_STORAGE" $LOG_FILE | sed 's/"//g'`
+  [ ! -f $NODE_LOG_FILE ] && sleep 3 && continue
+  LINERA_WALLET_ENV=`grep "export LINERA_WALLET" $NODE_LOG_FILE | sed 's/"//g'`
+  LINERA_STORAGE_ENV=`grep "export LINERA_STORAGE" $NODE_LOG_FILE | sed 's/"//g'`
   print $'\U01F411' $LIGHTGREEN " Waiting linera net ..."
   [ -z "$LINERA_WALLET_ENV" -o -z "$LINERA_STORAGE_ENV" ] && sleep 3 && continue
   print $'\U01F411' $LIGHTGREEN " Linera net up ..."
@@ -61,8 +66,29 @@ sed -i "s/feedAppID =.*/feedAppID = \"$feed_appid\"/g" webui/src/const/index.ts
 sed -i "s/creditAppID =.*/creditAppID = \"$credit_appid\"/g" webui/src/const/index.ts
 sed -i "s/marketAppID =.*/marketAppID = \"$market_appid\"/g" webui/src/const/index.ts
 
+print $'\U01f499' $LIGHTGREEN " Run 8080 service ..."
+linera service > $SERVICE_LOG_FILE 2>&1 &
+
+function run_service_1() {
+  wallet_dir=`dirname $LINERA_WALLET`
+  export LINERA_WALLET=$wallet_dir/wallet_1.json
+  export LINERA_STORAGE=rocksdb:$wallet_dir/linera1.db
+  # print $'\U01f499' $LIGHTGREEN " Initialize wallet2 ..."
+  # linera wallet init --genesis $wallet_dir/genesis.json
+  # print $'\U01f499' $LIGHTGREEN " Gen wallet2 pub key ..."
+  # pub_key=`linera keygen`
+  # print $'\U01f499' $LIGHTGREEN " Open wallet2 chain ..."
+  # linera open-chain --to-public-key $pub_key
+  # linera open-chain
+  print $'\U01f499' $LIGHTGREEN " Run 8081 service ..."
+  linera service --port 8081 > $SERVICE1_LOG_FILE 2>&1 &
+}
+
+run_service_1
+
 function cleanup() {
   rm -rf `dirname $LINERA_WALLET`
+  killall -15 linera
 }
 
 trap cleanup INT
