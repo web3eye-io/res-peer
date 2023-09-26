@@ -24,8 +24,8 @@ const requestApplication = async (index: number) => {
   }
   const appID = appIDs.value[index]
   const { mutate, onDone, onError } = provideApolloClient(apolloClient)(() => useMutation(gql`
-    mutation requestApplication ($applicationId: String!, $targetChainId: String!) {
-      requestApplication(applicationId: $applicationId, targetChainId: $targetChainId)
+    mutation requestApplication ($chainId: String!, $applicationId: String!, $targetChainId: String!) {
+      requestApplication(chainId: $chainId, applicationId: $applicationId, targetChainId: $targetChainId)
     }
   `))
   onDone(() => {
@@ -35,6 +35,7 @@ const requestApplication = async (index: number) => {
     console.log(error)
   })
   await mutate({
+    chainId: constants.appDeployChain,
     applicationId: appID,
     targetChainId: targetChainId.value,
     endpoint: 'main'
