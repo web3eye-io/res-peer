@@ -8,6 +8,7 @@ import { computed, onMounted, watch } from 'vue'
 import { getClientOptions } from 'src/apollo'
 import { ApolloClient } from '@apollo/client/core'
 import { useApplicationStore } from 'src/stores/application'
+import { targetChain } from 'src/stores/chain'
 
 const user = useUserStore()
 const account = computed(() => user.account)
@@ -19,7 +20,7 @@ const options = /* await */ getClientOptions(/* {app, router ...} */)
 const apolloClient = new ApolloClient(options)
 
 const ready = () => {
-  return account.value?.length && marketApp.value?.length
+  return account.value?.length && marketApp.value?.length && targetChain.value?.length
 }
 
 watch(blockHeight, () => {
@@ -65,7 +66,8 @@ const getMarketInfo = () => {
         }
       `, {
         account: `${account.value}`,
-        endpoint: 'market'
+        endpoint: 'market',
+        chainId: targetChain.value
       })
     }
     return useQuery(gql`
@@ -75,7 +77,8 @@ const getMarketInfo = () => {
         }
       `, {
       account: `${account.value}`,
-      endpoint: 'market'
+      endpoint: 'market',
+      chainId: targetChain.value
     })
   })
 

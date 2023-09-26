@@ -71,7 +71,6 @@ import { targetChain } from 'src/stores/chain'
 const content = useContentStore()
 const contents = computed(() => Array.from(content.contents.values()).sort((a: Content, b: Content) => a.createdAt < b.createdAt ? 1 : -1))
 const collection = useCollectionStore()
-
 const options = /* await */ getClientOptions(/* {app, router ...} */)
 const apolloClient = new ApolloClient(options)
 
@@ -110,11 +109,18 @@ const getContentAvatar = (index: number) => {
   })
 }
 
+watch(targetChain, () => {
+  if (!targetChain.value) return
+  getContentAvatar(0)
+})
+
 watch(contents, () => {
+  if (!targetChain.value) return
   getContentAvatar(0)
 })
 
 onMounted(() => {
+  if (!targetChain.value) return
   getContentAvatar(0)
 })
 
