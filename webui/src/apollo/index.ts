@@ -5,11 +5,13 @@ import { GraphQLWsLink } from '@apollo/client/link/subscriptions'
 import { createClient } from 'graphql-ws'
 import { getMainDefinition } from '@apollo/client/utilities'
 import * as constants from 'src/const'
+import { Cookies } from 'quasar'
 
 export /* async */ function getClientOptions (/* {app, router, ...}, options?: Partial<BootFileParams<unknown>> */) {
+  const port = Cookies.get('service-port') || constants.port
   const wsLink = new GraphQLWsLink(
     createClient({
-      url: 'ws://localhost:' + constants.port + '/ws'
+      url: 'ws://localhost:' + port + '/ws'
     })
   )
 
@@ -18,15 +20,15 @@ export /* async */ function getClientOptions (/* {app, router, ...}, options?: P
       const chainId = operation.variables.chainId as string
       switch (operation.variables.endpoint) {
         case 'feed':
-          return 'http://localhost:' + constants.port + '/chains/' + chainId + '/applications/' + constants.Apps.feedApp
+          return 'http://localhost:' + port + '/chains/' + chainId + '/applications/' + constants.Apps.feedApp
         case 'credit':
-          return 'http://localhost:' + constants.port + '/chains/' + chainId + '/applications/' + constants.Apps.creditApp
+          return 'http://localhost:' + port + '/chains/' + chainId + '/applications/' + constants.Apps.creditApp
         case 'market':
-          return 'http://localhost:' + constants.port + '/chains/' + chainId + '/applications/' + constants.Apps.marketApp
+          return 'http://localhost:' + port + '/chains/' + chainId + '/applications/' + constants.Apps.marketApp
         case 'main':
-          return 'http://localhost:' + constants.port
+          return 'http://localhost:' + port
         default:
-          return 'http://localhost:' + constants.port
+          return 'http://localhost:' + port
       }
     }
   })

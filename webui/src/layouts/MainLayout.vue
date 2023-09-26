@@ -98,10 +98,11 @@
 </template>
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { onMounted, ref } from 'vue'
 import { Cookies } from 'quasar'
 import { useUserStore } from 'src/stores/user'
+import * as constants from 'src/const'
 
 import CreditQuery from 'src/components/CreditQuery.vue'
 import BlockSubscription from 'src/components/BlockSubscription.vue'
@@ -117,6 +118,13 @@ const router = useRouter()
 const account = ref('')
 const logining = ref(false)
 const user = useUserStore()
+const route = useRoute()
+
+interface Query {
+  port: number
+}
+
+const port = ref((route.query as unknown as Query).port || constants.port)
 
 const onGithubClick = (uri: string) => {
   window.open(uri)
@@ -144,6 +152,7 @@ const onLoginConfirmClick = () => {
 onMounted(() => {
   account.value = Cookies.get('account')
   user.account = account.value
+  Cookies.set('service-port', port.value.toString())
 })
 const onLogoutClick = () => {
   Cookies.remove('account')
