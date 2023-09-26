@@ -7,6 +7,7 @@ import { ApolloClient } from '@apollo/client/core'
 import gql from 'graphql-tag'
 import { getClientOptions } from 'src/apollo'
 import { useApplicationStore } from 'src/stores/application'
+import { targetChain } from 'src/stores/chain'
 
 const user = useUserStore()
 const block = useBlockStore()
@@ -38,7 +39,8 @@ const getBalance = () => {
     }
   `, {
     owner: account.value,
-    endpoint: 'credit'
+    endpoint: 'credit',
+    chainId: targetChain.value
   }))
 
   watch(result, () => {

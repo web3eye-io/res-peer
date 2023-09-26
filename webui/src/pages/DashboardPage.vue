@@ -13,10 +13,10 @@
         </div>
         <q-avatar :style='{marginLeft: "8px"}' size='48px'>
           <q-img
-            :src='avatar ? avatar : "~/assets/ResPeer.png"'
+            :src='avatar?.length ? avatar : "~assets/ResPeer.png"'
             width='48px'
             height='48px'
-            fit='cover'
+            fit='contain'
             :style='{borderRadius: "50%"}'
           >
             <template #error>

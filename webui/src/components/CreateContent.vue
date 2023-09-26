@@ -32,6 +32,7 @@ import * as json from 'multiformats/codecs/json'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { getClientOptions } from 'src/apollo'
 import { ApolloClient } from '@apollo/client/core'
+import { targetChain } from 'src/stores/chain'
 
 const title = ref('')
 const content = ref('')
@@ -64,7 +65,8 @@ const onPublishClick = async () => {
     cid,
     title: title.value,
     content: content.value,
-    endpoint: 'feed'
+    endpoint: 'feed',
+    chainId: targetChain.value
   })
 }
 

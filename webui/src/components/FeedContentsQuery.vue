@@ -6,6 +6,7 @@ import { getClientOptions } from 'src/apollo'
 import { useContentStore, Content } from 'src/stores/content'
 import { computed, watch, ref, onMounted } from 'vue'
 import { useBlockStore } from 'src/stores/block'
+import { targetChain } from 'src/stores/chain'
 
 const content = useContentStore()
 const contentsKeys = computed(() => content.contentsKeys)
@@ -35,7 +36,8 @@ const getContent = (contentKey: string, force: boolean, done?: () => void) => {
     }
   `, {
     contentKey: `${contentKey}`,
-    endpoint: 'feed'
+    endpoint: 'feed',
+    chainId: targetChain.value
   }, {
     fetchPolicy: force ? 'network-only' : 'cache-and-network'
   }))

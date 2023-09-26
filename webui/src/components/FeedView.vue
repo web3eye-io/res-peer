@@ -66,6 +66,7 @@ import { ApolloClient } from '@apollo/client/core'
 import gql from 'graphql-tag'
 import { getClientOptions } from 'src/apollo'
 import { useCollectionStore } from 'src/stores/collection'
+import { targetChain } from 'src/stores/chain'
 
 const content = useContentStore()
 const contents = computed(() => Array.from(content.contents.values()).sort((a: Content, b: Content) => a.createdAt < b.createdAt ? 1 : -1))
@@ -98,7 +99,8 @@ const getContentAvatar = (index: number) => {
       }
     `, {
     account: `${account}`,
-    endpoint: 'market'
+    endpoint: 'market',
+    chainId: targetChain.value
   }))
 
   watch(result, () => {

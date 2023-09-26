@@ -15,8 +15,14 @@ const chain = useChainStore()
 const targetChainId = computed(() => chain.targetChain)
 const application = useApplicationStore()
 
-const requestApplication = async (index: number) => {
+const requestApplication = async (index: number, retry: boolean) => {
   if (index >= constants.appIds.length) {
+    return
+  }
+  if (retry) {
+    setTimeout(() => {
+      void requestApplication(index + 1, retry)
+    }, 3000)
     return
   }
   if (!targetChainId.value) {
@@ -40,9 +46,10 @@ const requestApplication = async (index: number) => {
         application.marketApp = constants.Apps.marketApp
         break
     }
-    void requestApplication(index + 1)
+    void requestApplication(index + 1, false)
   })
   onError((error) => {
+    void requestApplication(index, true)
     console.log(error)
   })
   await mutate({
@@ -55,12 +62,12 @@ const requestApplication = async (index: number) => {
 
 watch(targetChainId, () => {
   if (targetChainId.value) {
-    void requestApplication(0)
+    void requestApplication(0, false)
   }
 })
 
 onMounted(() => {
-  void requestApplication(0)
+  void requestApplication(0, false)
 })
 
 </script>
