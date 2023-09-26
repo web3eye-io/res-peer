@@ -6,12 +6,14 @@ import { ApolloClient } from '@apollo/client/core'
 import { provideApolloClient, useMutation } from '@vue/apollo-composable'
 import * as constants from 'src/const'
 import { useChainStore } from 'src/stores/chain'
+import { useApplicationStore } from 'src/stores/application'
 
 const options = /* await */ getClientOptions(/* {app, router ...} */)
 const apolloClient = new ApolloClient(options)
 
 const chain = useChainStore()
 const targetChainId = computed(() => chain.targetChain)
+const application = useApplicationStore()
 
 const requestApplication = async (index: number) => {
   if (index >= constants.appIds.length) {
@@ -27,6 +29,17 @@ const requestApplication = async (index: number) => {
     }
   `))
   onDone(() => {
+    switch (index) {
+      case 0:
+        application.feedApp = constants.Apps.feedApp
+        break
+      case 1:
+        application.creditApp = constants.Apps.creditApp
+        break
+      case 2:
+        application.marketApp = constants.Apps.marketApp
+        break
+    }
     void requestApplication(index + 1)
   })
   onError((error) => {

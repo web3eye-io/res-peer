@@ -13,7 +13,7 @@ const apolloClient = new ApolloClient(options)
 
 const chain = useChainStore()
 
-const getChains = (done?: () => void) => {
+const getChains = () => {
   const { result /*, fetchMore, onResult, onError */ } = provideApolloClient(apolloClient)(() => useQuery(gql`
     query getChains {
       chains {
@@ -33,7 +33,6 @@ const getChains = (done?: () => void) => {
     chain.chains = chains.list as Array<string>
     chain.defaultChain = chains.default as string
     chain.targetChain = chain.defaultChain
-    done?.()
   })
 }
 
