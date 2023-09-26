@@ -63,8 +63,8 @@ print $'\U01f499' $LIGHTGREEN " Feed application deployed"
 echo -e "    Bytecode ID:    $BLUE$feed_bid$NC"
 echo -e "    Application ID: $BLUE$feed_appid$NC"
 
-sed -i "s/feedApp =.*/feedApp = '$feed_appid'/g" webui/src/const/index.ts
-sed -i "s/creditApp =.*/creditApp = '$credit_appid'/g" webui/src/const/index.ts
+sed -i "s/feedApp =.*/feedApp = '$feed_appid',/g" webui/src/const/index.ts
+sed -i "s/creditApp =.*/creditApp = '$credit_appid',/g" webui/src/const/index.ts
 sed -i "s/marketApp =.*/marketApp = '$market_appid'/g" webui/src/const/index.ts
 
 function run_new_service() {
