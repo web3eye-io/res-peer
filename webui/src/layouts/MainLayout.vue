@@ -35,6 +35,7 @@
     </q-header>
 
     <q-page-container>
+      <router-view />
       <chain-query />
       <request-application />
       <credit-query />
@@ -44,7 +45,6 @@
       <market-info-query />
       <market-collections-query />
       <request-subscribe />
-      <router-view />
     </q-page-container>
 
     <q-footer elevated :style='{height: "32px", lineHeight: "32px"}'>
@@ -99,7 +99,7 @@
 
 <script setup lang="ts">
 import { useRouter, useRoute } from 'vue-router'
-import { onMounted, ref } from 'vue'
+import { onBeforeMount, onMounted, ref } from 'vue'
 import { Cookies } from 'quasar'
 import { useUserStore } from 'src/stores/user'
 import * as constants from 'src/const'
@@ -149,11 +149,14 @@ const onLoginConfirmClick = () => {
   Cookies.set('account', account.value)
   user.account = account.value
 }
+onBeforeMount(() => {
+  Cookies.set('service-port', port.value.toString())
+})
 onMounted(() => {
   account.value = Cookies.get('account')
   user.account = account.value
-  Cookies.set('service-port', port.value.toString())
 })
+
 const onLogoutClick = () => {
   Cookies.remove('account')
   user.account = undefined as unknown as string

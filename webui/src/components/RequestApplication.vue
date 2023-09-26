@@ -46,9 +46,9 @@ const requestApplication = async (index: number) => {
     console.log(error)
   })
   await mutate({
-    chainId: constants.appDeployChain,
+    chainId: targetChainId.value,
     applicationId: appId,
-    targetChainId: targetChainId.value,
+    targetChainId: constants.appDeployChain,
     endpoint: 'main'
   })
 }
