@@ -138,7 +138,8 @@ const onLikeClick = async (cid: string) => {
   })
   await mutate({
     cid,
-    endpoint: 'feed'
+    endpoint: 'feed',
+    chainId: targetChain.value
   })
 }
 
@@ -156,7 +157,8 @@ const onDislikeClick = async (cid: string) => {
   })
   await mutate({
     cid,
-    endpoint: 'feed'
+    endpoint: 'feed',
+    chainId: targetChain.value
   })
 }
 

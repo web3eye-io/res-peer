@@ -28,6 +28,7 @@ import { getClientOptions } from 'src/apollo'
 import { ApolloClient } from '@apollo/client/core'
 import { provideApolloClient, useMutation } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
+import { targetChain } from 'src/stores/chain'
 
 const editing = ref(false)
 const amount = ref(0)
@@ -53,7 +54,8 @@ const onDepositClick = async () => {
   })
   await mutate({
     amount: amount.value.toString(),
-    endpoint: 'market'
+    endpoint: 'market',
+    chainId: targetChain.value
   })
 }
 

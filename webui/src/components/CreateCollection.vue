@@ -31,6 +31,7 @@ import { getClientOptions } from 'src/apollo'
 import { ApolloClient } from '@apollo/client/core'
 import { provideApolloClient, useMutation } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
+import { targetChain } from 'src/stores/chain'
 
 const editing = ref(false)
 const baseUri = ref('')
@@ -64,7 +65,8 @@ const onCreateClick = async () => {
     baseUri: baseUri.value,
     price: uniquePrice.value ? price.value : undefined,
     name: name.value,
-    endpoint: 'market'
+    endpoint: 'market',
+    chainId: targetChain.value
   })
 }
 

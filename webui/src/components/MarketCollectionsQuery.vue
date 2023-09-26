@@ -6,6 +6,7 @@ import { getClientOptions } from 'src/apollo'
 import { useCollectionStore, Collection } from 'src/stores/collection'
 import { computed, watch, ref } from 'vue'
 import { useBlockStore } from 'src/stores/block'
+import { targetChain } from 'src/stores/chain'
 
 const collection = useCollectionStore()
 const collectionsKeys = computed(() => collection.collectionsKeys)
@@ -34,7 +35,8 @@ const getCollection = (collectionKey: number, force: boolean, done?: () => void)
     }
   `, {
     collectionKey: parseInt(collectionKey.toString()),
-    endpoint: 'market'
+    endpoint: 'market',
+    chainId: targetChain.value
   }, {
     fetchPolicy: force ? 'network-only' : 'cache-and-network'
   }))

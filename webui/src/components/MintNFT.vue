@@ -36,6 +36,7 @@ import { ApolloClient } from '@apollo/client/core'
 import { provideApolloClient, useMutation } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
 import { useCollectionStore } from 'src/stores/collection'
+import { targetChain } from 'src/stores/chain'
 
 const editing = ref(false)
 const uri = ref('')
@@ -76,7 +77,8 @@ const onMintlick = async () => {
     uri: uri.value,
     price: ownPrice.value ? price.value : undefined,
     name: name.value,
-    endpoint: 'market'
+    endpoint: 'market',
+    chainId: targetChain.value
   })
 }
 

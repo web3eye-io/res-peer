@@ -57,6 +57,7 @@ import { getClientOptions } from 'src/apollo'
 import { ApolloClient } from '@apollo/client/core'
 import { provideApolloClient, useMutation } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
+import { targetChain } from 'src/stores/chain'
 
 interface Query {
   collectionId: number
@@ -126,7 +127,8 @@ const onBuyClick = async (_nft: NFTAnother) => {
     collectionId: _nft.collectionId,
     tokenId: _nft.token_id,
     credits: creditsToUse.value.toString(),
-    endpoint: 'market'
+    endpoint: 'market',
+    chainId: targetChain.value
   })
 }
 

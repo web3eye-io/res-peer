@@ -34,6 +34,7 @@ import { provideApolloClient, useMutation } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
 import { useCollectionStore } from 'src/stores/collection'
 import { useUserStore } from 'src/stores/user'
+import { targetChain } from 'src/stores/chain'
 
 const editing = ref(false)
 const collectionId = ref(0)
@@ -68,7 +69,8 @@ const onSetAvatarClick = async () => {
   await mutate({
     collectionId: parseInt(collectionId.value.toString()),
     tokenId: parseInt(tokenId.value.toString()),
-    endpoint: 'market'
+    endpoint: 'market',
+    chainId: targetChain.value
   })
 }
 

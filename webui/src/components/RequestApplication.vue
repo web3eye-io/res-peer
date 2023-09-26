@@ -1,18 +1,15 @@
 <script setup lang="ts">
-import { computed, onMounted, watch } from 'vue'
+import { onMounted, watch } from 'vue'
 import gql from 'graphql-tag'
 import { getClientOptions } from 'src/apollo'
 import { ApolloClient } from '@apollo/client/core'
 import { provideApolloClient, useMutation } from '@vue/apollo-composable'
 import * as constants from 'src/const'
-import { useChainStore } from 'src/stores/chain'
+import { targetChain } from 'src/stores/chain'
 import { useApplicationStore } from 'src/stores/application'
 
 const options = /* await */ getClientOptions(/* {app, router ...} */)
 const apolloClient = new ApolloClient(options)
-
-const chain = useChainStore()
-const targetChainId = computed(() => chain.targetChain)
 const application = useApplicationStore()
 
 const requestApplication = async (index: number, retry: boolean) => {
@@ -23,9 +20,6 @@ const requestApplication = async (index: number, retry: boolean) => {
     setTimeout(() => {
       void requestApplication(index + 1, retry)
     }, 3000)
-    return
-  }
-  if (!targetChainId.value) {
     return
   }
   const appId = constants.appIds[index]
@@ -53,21 +47,23 @@ const requestApplication = async (index: number, retry: boolean) => {
     console.log(error)
   })
   await mutate({
-    chainId: targetChainId.value,
+    chainId: targetChain.value,
     applicationId: appId,
     targetChainId: constants.appDeployChain,
     endpoint: 'main'
   })
 }
 
-watch(targetChainId, () => {
-  if (targetChainId.value) {
+watch(targetChain, () => {
+  if (targetChain.value) {
     void requestApplication(0, false)
   }
 })
 
 onMounted(() => {
-  void requestApplication(0, false)
+  if (targetChain.value) {
+    void requestApplication(0, false)
+  }
 })
 
 </script>

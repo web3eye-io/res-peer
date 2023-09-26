@@ -60,7 +60,8 @@ const getBalance = () => {
     }
     void refetch({
       owner: account.value,
-      endpoint: 'credit'
+      endpoint: 'credit',
+      chainId: targetChain.value
     })
   })
 
@@ -70,7 +71,8 @@ const getBalance = () => {
     }
     void refetch({
       owner: account.value,
-      endpoint: 'credit'
+      endpoint: 'credit',
+      chainId: targetChain.value
     })
   })
 }
