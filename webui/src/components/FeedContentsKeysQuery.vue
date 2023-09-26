@@ -38,7 +38,7 @@ const getContentsKeys = () => {
   }
   fetchTicker.value = window.setInterval(() => {
     void refetch()
-  }, 3000)
+  }, 60000)
 
   onResult((res) => {
     if (res.loading) {
