@@ -7,6 +7,7 @@ import { useBlockStore } from 'src/stores/block'
 import { useContentStore } from 'src/stores/content'
 import { computed, onMounted, watch } from 'vue'
 import { useApplicationStore } from 'src/stores/application'
+import { targetChain } from 'src/stores/chain'
 
 const block = useBlockStore()
 const blockHeight = computed(() => block.blockHeight)
@@ -22,7 +23,8 @@ const getContentsKeys = () => {
       contentsKeys
     }
   `, {
-    endpoint: 'feed'
+    endpoint: 'feed',
+    chainId: targetChain.value
   }))
 
   watch(blockHeight, () => {
@@ -36,6 +38,12 @@ const getContentsKeys = () => {
     content.contentsKeys = (res.data as Record<string, Array<string>>).contentsKeys
   })
 }
+
+watch(feedApp, () => {
+  if (feedApp.value) {
+    getContentsKeys()
+  }
+})
 
 onMounted(() => {
   if (feedApp.value) {
