@@ -32,6 +32,7 @@ const getChains = (done?: () => void) => {
     const chains = r.chains as Record<string, unknown>
     chain.chains = chains.list as Array<string>
     chain.defaultChain = chains.default as string
+    chain.targetChain = chain.defaultChain
     done?.()
   })
 }
