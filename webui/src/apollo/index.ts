@@ -17,11 +17,11 @@ export /* async */ function getClientOptions (/* {app, router, ...}, options?: P
     uri: (operation) => {
       switch (operation.variables.endpoint) {
         case 'feed':
-          return 'http://localhost:' + constants.port + '/applications/' + constants.feedAppID
+          return 'http://localhost:' + constants.port + '/applications/' + constants.Apps.feedApp
         case 'credit':
-          return 'http://localhost:' + constants.port + '/applications/' + constants.creditAppID
+          return 'http://localhost:' + constants.port + '/applications/' + constants.Apps.creditApp
         case 'market':
-          return 'http://localhost:' + constants.port + '/applications/' + constants.marketAppID
+          return 'http://localhost:' + constants.port + '/applications/' + constants.Apps.marketApp
         case 'main':
           return 'http://localhost:' + constants.port
         default:
