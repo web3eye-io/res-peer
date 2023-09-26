@@ -24,8 +24,8 @@ pub struct Credit {
 #[allow(dead_code)]
 impl Credit {
     pub(crate) async fn initialize(&mut self, mut state: InitialState) {
-        if state.initial_supply.eq(&Amount::zero()) {
-            state.initial_supply = Amount::from(100000000);
+        if state.initial_supply.eq(&Amount::ZERO) {
+            state.initial_supply = Amount::from_tokens(100000000);
         }
         log::info!("Initialize credits {:?}", state);
         self.initial_supply.set(state.initial_supply);
@@ -166,7 +166,7 @@ impl Credit {
                     self.spendables
                         .insert(&from, spendable.saturating_sub(amount))?;
                     let mut amounts = self.balances.get(&from).await.unwrap().unwrap();
-                    let mut total: Amount = Amount::zero();
+                    let mut total: Amount = Amount::ZERO;
                     let mut remain: Option<AgeAmount> = None;
                     amounts.amounts.retain(|_amount| {
                         if total.ge(&amount) {

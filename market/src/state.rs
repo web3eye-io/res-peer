@@ -182,7 +182,7 @@ impl Market {
                     }
                     let buyer_balance = match self.balances.get(&buyer).await {
                         Ok(Some(balance)) => balance,
-                        _ => Amount::zero(),
+                        _ => Amount::ZERO,
                     };
                     let mut price = if nft.price.is_some() {
                         nft.price.unwrap()
@@ -191,17 +191,17 @@ impl Market {
                     } else {
                         return Err(StateError::InvalidPrice);
                     };
-                    let discount_amount = if self.credits_per_linera.get().ge(&Amount::zero()) {
+                    let discount_amount = if self.credits_per_linera.get().ge(&Amount::ZERO) {
                         let d1 = credits.saturating_div(*self.credits_per_linera.get());
                         let d2 = price
                             .saturating_mul(*self.max_credits_percent.get() as u128)
                             .saturating_div(Amount::from_atto(100));
-                        Amount::from(match d1.cmp(&d2) {
+                        Amount::from_atto(match d1.cmp(&d2) {
                             Ordering::Less => d1,
                             _ => d2,
                         })
                     } else {
-                        Amount::zero()
+                        Amount::ZERO
                     };
                     price = price.saturating_sub(discount_amount);
                     if price.gt(&buyer_balance) {
@@ -221,7 +221,7 @@ impl Market {
                     }
                     let owner_balance = match self.balances.get(&owner).await {
                         Ok(Some(balance)) => balance,
-                        _ => Amount::zero(),
+                        _ => Amount::ZERO,
                     };
                     self.balances
                         .insert(&owner, owner_balance.saturating_add(price))?;

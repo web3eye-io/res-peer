@@ -34,7 +34,7 @@ pub struct AgeAmounts {
 
 impl AgeAmounts {
     pub fn sum(&self) -> Amount {
-        let mut _sum = Amount::zero();
+        let mut _sum = Amount::ZERO;
         self.amounts
             .iter()
             .for_each(|a| _sum = _sum.try_add(a.amount).unwrap());
