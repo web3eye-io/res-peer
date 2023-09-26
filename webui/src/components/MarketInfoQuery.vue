@@ -7,19 +7,28 @@ import { useUserStore } from 'src/stores/user'
 import { computed, onMounted, watch } from 'vue'
 import { getClientOptions } from 'src/apollo'
 import { ApolloClient } from '@apollo/client/core'
+import { useApplicationStore } from 'src/stores/application'
 
 const user = useUserStore()
 const account = computed(() => user.account)
+const application = useApplicationStore()
+const marketApp = computed(() => application.marketApp)
+const block = useBlockStore()
+const blockHeight = computed(() => block.blockHeight)
 const options = /* await */ getClientOptions(/* {app, router ...} */)
 const apolloClient = new ApolloClient(options)
 
-const block = useBlockStore()
-const blockHeight = computed(() => block.blockHeight)
+const ready = () => {
+  return account.value?.length && marketApp.value?.length
+}
+
 watch(blockHeight, () => {
+  if (!ready()) return
   getMarketInfo()
 })
 
 watch(account, () => {
+  if (!ready()) return
   getMarketInfo()
 })
 
@@ -77,6 +86,7 @@ const getMarketInfo = () => {
 }
 
 onMounted(() => {
+  if (!ready()) return
   getMarketInfo()
 })
 

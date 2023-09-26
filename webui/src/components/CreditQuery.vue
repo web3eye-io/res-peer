@@ -14,7 +14,6 @@ const blockHeight = computed(() => block.blockHeight)
 const account = computed(() => user.account)
 const application = useApplicationStore()
 const creditApp = computed(() => application.creditApp)
-// const chain = useChainStore()
 const options = /* await */ getClientOptions(/* {app, router ...} */)
 const apolloClient = new ApolloClient(options)
 

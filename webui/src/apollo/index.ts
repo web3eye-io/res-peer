@@ -15,13 +15,14 @@ export /* async */ function getClientOptions (/* {app, router, ...}, options?: P
 
   const httpLink = createHttpLink({
     uri: (operation) => {
+      const chainId = operation.variables.chainId as string
       switch (operation.variables.endpoint) {
         case 'feed':
-          return 'http://localhost:' + constants.port + '/applications/' + constants.Apps.feedApp
+          return 'http://localhost:' + constants.port + '/chains/' + chainId + '/applications/' + constants.Apps.feedApp
         case 'credit':
-          return 'http://localhost:' + constants.port + '/applications/' + constants.Apps.creditApp
+          return 'http://localhost:' + constants.port + '/chains/' + chainId + '/applications/' + constants.Apps.creditApp
         case 'market':
-          return 'http://localhost:' + constants.port + '/applications/' + constants.Apps.marketApp
+          return 'http://localhost:' + constants.port + '/chains/' + chainId + '/applications/' + constants.Apps.marketApp
         case 'main':
           return 'http://localhost:' + constants.port
         default:

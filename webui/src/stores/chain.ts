@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { computed } from 'vue'
 
 export const useChainStore = defineStore('chain', {
   state: () => ({
@@ -9,3 +10,6 @@ export const useChainStore = defineStore('chain', {
   getters: {},
   actions: {}
 })
+
+const chain = useChainStore()
+export const targetChain = computed(() => chain.targetChain)

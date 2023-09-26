@@ -32,12 +32,10 @@ import * as json from 'multiformats/codecs/json'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { getClientOptions } from 'src/apollo'
 import { ApolloClient } from '@apollo/client/core'
-import { useContentStore } from 'src/stores/content'
 
 const title = ref('')
 const content = ref('')
 const editing = ref(false)
-const _content = useContentStore()
 
 const onPublishClick = async () => {
   if (title.value.length <= 0 || content.value.length <= 0) {
@@ -58,7 +56,6 @@ const onPublishClick = async () => {
   `))
   onDone(() => {
     editing.value = !editing.value
-    _content.queryKeys = true
   })
   onError((error) => {
     console.log(error)
