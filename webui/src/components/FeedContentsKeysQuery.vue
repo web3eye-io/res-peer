@@ -17,6 +17,10 @@ const feedApp = computed(() => application.feedApp)
 const options = /* await */ getClientOptions(/* {app, router ...} */)
 const apolloClient = new ApolloClient(options)
 
+const ready = () => {
+  return feedApp.value?.length && targetChain.value?.length
+}
+
 const getContentsKeys = () => {
   const { /* result, */ refetch /*, fetchMore */, onResult /*, onError */ } = provideApolloClient(apolloClient)(() => useQuery(gql`
     query getContentsKeys {
@@ -41,15 +45,18 @@ const getContentsKeys = () => {
 }
 
 watch(feedApp, () => {
-  if (feedApp.value) {
-    getContentsKeys()
-  }
+  if (!ready()) return
+  getContentsKeys()
+})
+
+watch(targetChain, () => {
+  if (!ready()) return
+  getContentsKeys()
 })
 
 onMounted(() => {
-  if (feedApp.value) {
-    getContentsKeys()
-  }
+  if (!ready()) return
+  getContentsKeys()
 })
 
 </script>

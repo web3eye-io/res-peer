@@ -61,6 +61,13 @@ watch(collectionKey, () => {
   })
 })
 
+watch(targetChain, () => {
+  if (collectionsKeys.value.length === 0) {
+    return
+  }
+  collectionIndex.value = 0
+})
+
 watch(collectionsKeys, () => {
   if (collectionsKeys.value.length === 0) {
     return

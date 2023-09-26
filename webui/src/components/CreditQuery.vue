@@ -19,7 +19,7 @@ const options = /* await */ getClientOptions(/* {app, router ...} */)
 const apolloClient = new ApolloClient(options)
 
 const ready = () => {
-  return account.value?.length && creditApp.value?.length
+  return account.value?.length && creditApp.value?.length && targetChain.value?.length
 }
 
 const getBalance = () => {
@@ -77,17 +77,18 @@ const getBalance = () => {
   })
 }
 
+watch(targetChain, () => {
+  if (!ready()) return
+  getBalance()
+})
+
 watch(creditApp, () => {
-  if (!ready()) {
-    return
-  }
+  if (!ready()) return
   getBalance()
 })
 
 onMounted(() => {
-  if (!ready()) {
-    return
-  }
+  if (!ready()) return
   getBalance()
 })
 

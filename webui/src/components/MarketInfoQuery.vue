@@ -19,16 +19,26 @@ const blockHeight = computed(() => block.blockHeight)
 const options = /* await */ getClientOptions(/* {app, router ...} */)
 const apolloClient = new ApolloClient(options)
 
-const ready = () => {
-  return account.value?.length && marketApp.value?.length && targetChain.value?.length
+const ready = (): boolean => {
+  return account.value?.length > 0 && marketApp.value?.length > 0 && targetChain.value?.length > 0
 }
 
-watch(blockHeight, () => {
+watch(targetChain, () => {
+  if (!ready()) return
+  getMarketInfo()
+})
+
+watch(marketApp, () => {
   if (!ready()) return
   getMarketInfo()
 })
 
 watch(account, () => {
+  if (!ready()) return
+  getMarketInfo()
+})
+
+watch(blockHeight, () => {
   if (!ready()) return
   getMarketInfo()
 })
