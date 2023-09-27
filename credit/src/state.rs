@@ -241,8 +241,6 @@ impl Credit {
 
 #[derive(Debug, Error)]
 pub enum StateError {
-    // #[error("Insufficient supply balance")]
-    // InsufficientSupplyBalance,
     #[error("Insufficient account balance")]
     InsufficientAccountBalance,
 

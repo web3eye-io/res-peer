@@ -1,0 +1,28 @@
+[package]
+name = "foundation"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+async-graphql = { version = "5.0.7", default-features = false }
+async-trait = "0.1.58"
+bcs = "0.1.3"
+futures = "0.3.24"
+linera-sdk = { workspace = true }
+linera-views = { workspace = true }
+serde = { version = "1.0.130", features = ["derive"] }
+serde_json = "1.0.93"
+thiserror = "1.0.38"
+log = { workspace = true }
+
+[dev-dependencies]
+linera-sdk = { workspace = true, features = ["test"] }
+webassembly-test = "0.1.0"
+
+[[bin]]
+name = "foundation_contract"
+path = "src/contract.rs"
+
+[[bin]]
+name = "foundation_service"
+path = "src/service.rs"
