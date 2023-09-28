@@ -4,10 +4,9 @@ mod state;
 
 use self::state::Foundation;
 use async_trait::async_trait;
-use foundation::{ApplicationCall, Operation};
+use foundation::{ApplicationCall, RewardType};
 use linera_sdk::{
     base::{SessionId, WithContractAbi},
-    contract::system_api,
     ApplicationCallResult, CalleeContext, Contract, ExecutionResult, MessageContext,
     OperationContext, SessionCallResult, ViewStateStorage,
 };
@@ -29,40 +28,15 @@ impl Contract for Foundation {
         _context: &OperationContext,
         state: Self::InitializationArgument,
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
-        self.initialize(state).await;
+        self.initialize(state).await?;
         Ok(ExecutionResult::default())
     }
 
     async fn execute_operation(
         &mut self,
-        context: &OperationContext,
-        operation: Self::Operation,
+        _context: &OperationContext,
+        _operation: Self::Operation,
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
-        match operation {
-            Operation::Liquidate => self.liquidate().await,
-            Operation::Reward { owner, amount } => self.reward(owner, amount).await?,
-            Operation::SetRewardCallers { application_ids } => {
-                // Operation could be only created by chain owner, so here we don't need to verify owner
-                if context.chain_id != system_api::current_application_id().creation.chain_id {
-                    return Err(ContractError::OperationNotAllowed);
-                }
-                self.set_reward_callers(application_ids).await
-            }
-            Operation::SetTransferCallers { application_ids } => {
-                // Operation could be only created by chain owner, so here we don't need to verify owner
-                if context.chain_id != system_api::current_application_id().creation.chain_id {
-                    return Err(ContractError::OperationNotAllowed);
-                }
-                self.set_transfer_callers(application_ids).await
-            }
-            Operation::Transfer { from, to, amount } => {
-                self.transfer(from, to, amount).await?;
-            }
-            Operation::TransferExt { to, amount } => {
-                self.transfer(context.authenticated_signer.unwrap(), to, amount)
-                    .await?
-            }
-        }
         Ok(ExecutionResult::default())
     }
 
@@ -82,44 +56,38 @@ impl Contract for Foundation {
     ) -> Result<ApplicationCallResult<Self::Message, Self::Response, Self::SessionState>, Self::Error>
     {
         match call {
-            ApplicationCall::Reward { owner, amount } => {
-                log::info!(
-                    "Reward owner {} amount {} caller {}",
-                    owner,
-                    amount,
-                    context.authenticated_caller_id.unwrap()
-                );
-                match self
-                    .reward_callers
-                    .contains(&context.authenticated_caller_id.unwrap())
-                    .await
-                {
-                    Ok(_) => {}
-                    _ => return Err(ContractError::CallerNotAllowed),
-                }
-                self.reward(owner, amount).await?;
-                Ok(ApplicationCallResult::default())
-            }
-            ApplicationCall::Transfer { from, to, amount } => {
-                log::info!(
-                    "Transfer {} from {} to {} caller {}",
-                    amount,
-                    from,
-                    to,
-                    context.authenticated_caller_id.unwrap()
-                );
-                match self
-                    .transfer_callers
-                    .contains(&context.authenticated_caller_id.unwrap())
-                    .await
-                {
-                    Ok(_) => {}
-                    _ => return Err(ContractError::CallerNotAllowed),
-                }
-                self.transfer(from, to, amount).await?;
-                Ok(ApplicationCallResult::default())
+            ApplicationCall::Deposit { amount } => self.deposit(amount).await?,
+            ApplicationCall::Lock {
+                activity_id,
+                activity_host,
+                amount,
+            } => self.lock(activity_host, activity_id, amount).await?,
+            ApplicationCall::Reward {
+                reward_user,
+                reward_type,
+                amount,
+                activity_id,
+            } => {
+                let reward_user = match reward_type {
+                    RewardType::Publish => context.authenticated_signer,
+                    _ => reward_user,
+                };
+                let reward_user = match reward_user {
+                    Some(user) => user,
+                    None => return Err(ContractError::InvalidUser),
+                };
+                let activity_host = match reward_type {
+                    RewardType::Activity => match context.authenticated_signer {
+                        Some(user) => Some(user),
+                        None => return Err(ContractError::InvalidUser),
+                    },
+                    _ => return Err(ContractError::InvalidUser),
+                };
+                self.reward(reward_user, reward_type, amount, activity_id, activity_host)
+                    .await?;
             }
         }
+        Ok(ApplicationCallResult::default())
     }
 
     async fn handle_session_call(
@@ -144,16 +112,11 @@ pub enum ContractError {
     /// Failed to deserialize JSON string
     #[error("Failed to deserialize JSON string")]
     JsonError(#[from] serde_json::Error),
+
     // Add more error variants here.
     #[error(transparent)]
     StateError(#[from] state::StateError),
 
-    #[error("NOT IMPLEMENTED")]
-    NotImplemented,
-
-    #[error("Caller not allowed")]
-    CallerNotAllowed,
-
-    #[error("Operation not allowed")]
-    OperationNotAllowed,
+    #[error("Invalid user")]
+    InvalidUser,
 }

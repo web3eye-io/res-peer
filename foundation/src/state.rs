@@ -112,9 +112,9 @@ impl Foundation {
         if balance.le(&amount) {
             return Err(StateError::InsufficientBalance);
         }
-        self.reward_user(reward_user, amount).await;
+        self.reward_user(reward_user, amount).await?;
         self.activity_lock_funds
-            .insert(&activity_id, balance.saturating_sub(amount));
+            .insert(&activity_id, balance.saturating_sub(amount))?;
         Ok(())
     }
 
@@ -124,7 +124,7 @@ impl Foundation {
             .try_mul(*self.author_reward_factor.get() as u128)?
             .saturating_div(Amount::from_atto(100));
         self.reward_user(reward_user, Amount::from_atto(amount))
-            .await;
+            .await?;
         self.author_reward_balance
             .set(balance.saturating_sub(Amount::from_atto(amount)));
         Ok(())
@@ -136,7 +136,7 @@ impl Foundation {
             .try_mul(*self.review_reward_factor.get() as u128)?
             .saturating_div(Amount::from_atto(100));
         self.reward_user(reward_user, Amount::from_atto(amount))
-            .await;
+            .await?;
         self.review_reward_balance
             .set(balance.saturating_sub(Amount::from_atto(amount)));
         Ok(())

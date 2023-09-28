@@ -3,13 +3,9 @@
 mod state;
 
 use self::state::Foundation;
-use async_graphql::{EmptySubscription, Object, Request, Response, Schema};
+use async_graphql::{EmptyMutation, EmptySubscription, Request, Response, Schema};
 use async_trait::async_trait;
-use foundation::Operation;
-use linera_sdk::{
-    base::{Amount, ApplicationId, Owner, WithServiceAbi},
-    QueryContext, Service, ViewStateStorage,
-};
+use linera_sdk::{base::WithServiceAbi, QueryContext, Service, ViewStateStorage};
 use std::sync::Arc;
 use thiserror::Error;
 
@@ -29,38 +25,9 @@ impl Service for Foundation {
         _context: &QueryContext,
         request: Request,
     ) -> Result<Response, Self::Error> {
-        let schema = Schema::build(self.clone(), MutationRoot {}, EmptySubscription).finish();
+        let schema = Schema::build(self.clone(), EmptyMutation, EmptySubscription).finish();
         let response = schema.execute(request).await;
         Ok(response)
-    }
-}
-
-struct MutationRoot;
-
-#[Object]
-impl MutationRoot {
-    async fn liquidate(&self) -> Vec<u8> {
-        vec![0]
-    }
-
-    async fn reward(&self, owner: Owner, amount: Amount) -> Vec<u8> {
-        bcs::to_bytes(&Operation::Reward { owner, amount }).unwrap()
-    }
-
-    async fn set_reward_callers(&self, application_ids: Vec<ApplicationId>) -> Vec<u8> {
-        bcs::to_bytes(&Operation::SetRewardCallers { application_ids }).unwrap()
-    }
-
-    async fn set_transfer_callers(&self, application_ids: Vec<ApplicationId>) -> Vec<u8> {
-        bcs::to_bytes(&Operation::SetTransferCallers { application_ids }).unwrap()
-    }
-
-    async fn transfer(&self, from: Owner, to: Owner, amount: Amount) -> Vec<u8> {
-        bcs::to_bytes(&Operation::Transfer { from, to, amount }).unwrap()
-    }
-
-    async fn transfer_ext(&self, to: Owner, amount: Amount) -> Vec<u8> {
-        bcs::to_bytes(&Operation::TransferExt { to, amount }).unwrap()
     }
 }
 
