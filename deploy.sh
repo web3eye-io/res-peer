@@ -59,9 +59,16 @@ echo -e "    Application ID: $BLUE$feed_appid$NC"
 print $'\U01F4AB' $YELLOW " Deploying Market application ..."
 market_bid=`linera publish-bytecode ./target/wasm32-unknown-unknown/release/market_{contract,service}.wasm`
 market_appid=`linera create-application $market_bid --json-argument '{"credits_per_linera":"30","max_credits_percent":30,"trade_fee_percent":3}' --json-parameters "\"$credit_appid\"" --required-application-ids $credit_appid`
-print $'\U01f499' $LIGHTGREEN " Feed application deployed"
-echo -e "    Bytecode ID:    $BLUE$feed_bid$NC"
-echo -e "    Application ID: $BLUE$feed_appid$NC"
+print $'\U01f499' $LIGHTGREEN " Market application deployed"
+echo -e "    Bytecode ID:    $BLUE$market_bid$NC"
+echo -e "    Application ID: $BLUE$market_appid$NC"
+
+print $'\U01F4AB' $YELLOW " Deploying Foundation application ..."
+foundation_bid=`linera publish-bytecode ./target/wasm32-unknown-unknown/release/foundation_{contract,service}.wasm`
+foundation_appid=`linera create-application $foundation_bid --json-argument '{"review_reward_percent":20,"review_reward_factor":20,"author_reward_percent":40,"author_reward_factor":20,"activity_reward_percent":10}'`
+print $'\U01f499' $LIGHTGREEN " Foundation application deployed"
+echo -e "    Bytecode ID:    $BLUE$foundation_bid$NC"
+echo -e "    Application ID: $BLUE$foundation_appid$NC"
 
 sed -i "s/feedApp =.*/feedApp = '$feed_appid',/g" webui/src/const/index.ts
 sed -i "s/creditApp =.*/creditApp = '$credit_appid',/g" webui/src/const/index.ts

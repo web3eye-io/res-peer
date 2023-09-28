@@ -172,6 +172,22 @@ impl Foundation {
         activity_id: u64,
         amount: Amount,
     ) -> Result<(), StateError> {
+        let locked = match self.activity_lock_funds.get(&activity_id).await? {
+            Some(amount) => amount,
+            None => Amount::ZERO,
+        };
+        let _activity_host = match self.activity_owners.get(&activity_id).await? {
+            Some(user) => {
+                if activity_host != user {
+                    return Err(StateError::InvalidActivityOwner);
+                }
+                user
+            }
+            None => activity_host,
+        };
+        let amount = locked.try_add(amount)?;
+        self.activity_lock_funds.insert(&activity_id, amount)?;
+        self.activity_owners.insert(&activity_id, _activity_host)?;
         Ok(())
     }
 }
