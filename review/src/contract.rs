@@ -9,7 +9,6 @@ use linera_sdk::{
     ApplicationCallResult, CalleeContext, Contract, ExecutionResult, MessageContext,
     OperationContext, SessionCallResult, ViewStateStorage,
 };
-use review::ApplicationCall;
 use thiserror::Error;
 
 linera_sdk::contract!(Review);

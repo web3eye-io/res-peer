@@ -62,22 +62,76 @@ impl Review {
         }
         Ok(need_notify)
     }
+
+    pub(crate) async fn reject_content(&mut self, content_cid: String) -> Result<bool, StateError> {
+        let mut need_notify = false;
+        match self
+            .content_applications
+            .get(&content_cid)
+            .await?
+            .as_deref()
+        {
+            Some([approved, rejected]) => {
+                let rejected = *rejected + 1;
+                self.content_applications
+                    .insert(&content_cid, vec![*approved, rejected])?;
+                need_notify = rejected >= *self.content_rejected_threshold.get();
+            }
+            _ => {
+                self.content_applications.insert(&content_cid, vec![0, 1])?;
+            }
+        }
+        Ok(need_notify)
+    }
+
+    pub(crate) async fn approve_asset(&mut self, collection_id: u64) -> Result<bool, StateError> {
+        let mut need_notify = false;
+        match self
+            .asset_applications
+            .get(&collection_id)
+            .await?
+            .as_deref()
+        {
+            Some([approved, rejected]) => {
+                let approved = *approved + 1;
+                self.asset_applications
+                    .insert(&collection_id, vec![approved, *rejected])?;
+                need_notify = approved >= *self.content_approved_threshold.get();
+            }
+            _ => {
+                self.asset_applications.insert(&collection_id, vec![1, 0])?;
+            }
+        }
+        Ok(need_notify)
+    }
+
+    pub(crate) async fn reject_asset(&mut self, collection_id: u64) -> Result<bool, StateError> {
+        let mut need_notify = false;
+        match self
+            .asset_applications
+            .get(&collection_id)
+            .await?
+            .as_deref()
+        {
+            Some([approved, rejected]) => {
+                let rejected = *rejected + 1;
+                self.asset_applications
+                    .insert(&collection_id, vec![*approved, rejected])?;
+                need_notify = rejected >= *self.content_rejected_threshold.get();
+            }
+            _ => {
+                self.asset_applications.insert(&collection_id, vec![0, 1])?;
+            }
+        }
+        Ok(need_notify)
+    }
 }
 
 #[derive(Debug, Error)]
 pub enum StateError {
-    #[error("Invalid percent")]
-    InvalidPercent,
-
-    #[error("Insufficient balance")]
-    InsufficientBalance,
-
     #[error("View error")]
     ViewError(#[from] linera_views::views::ViewError),
 
     #[error("Arithmetic error")]
     ArithmeticError(#[from] ArithmeticError),
-
-    #[error("Invalid activity owner")]
-    InvalidActivityOwner,
 }
