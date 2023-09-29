@@ -70,9 +70,18 @@ print $'\U01f499' $LIGHTGREEN " Foundation application deployed"
 echo -e "    Bytecode ID:    $BLUE$foundation_bid$NC"
 echo -e "    Application ID: $BLUE$foundation_appid$NC"
 
+print $'\U01F4AB' $YELLOW " Deploying Review application ..."
+review_bid=`linera publish-bytecode ./target/wasm32-unknown-unknown/release/review_{contract,service}.wasm`
+review_appid=`linera create-application $review_bid --json-argument '{"content_approved_threshold":3,"content_rejected_threshold":2,"asset_approved_threshold":2,"asset_approved_threshold":2}' --json-parameters "\"$feed_appid\"" --required-application-ids $feed_appid`
+print $'\U01f499' $LIGHTGREEN " Review application deployed"
+echo -e "    Bytecode ID:    $BLUE$review_bid$NC"
+echo -e "    Application ID: $BLUE$review_appid$NC"
+
+
 sed -i "s/feedApp =.*/feedApp = '$feed_appid',/g" webui/src/const/index.ts
 sed -i "s/creditApp =.*/creditApp = '$credit_appid',/g" webui/src/const/index.ts
 sed -i "s/marketApp =.*/marketApp = '$market_appid'/g" webui/src/const/index.ts
+sed -i "s/reviewApp =.*/reviewApp = '$review_appid'/g" webui/src/const/index.ts
 
 function run_new_service() {
   wallet_dir=`dirname $LINERA_WALLET`
