@@ -3,7 +3,8 @@ members = [
     "credit",
     "feed",
     "market",
-    "foundation"
+    "foundation",
+    "review"
 ]
 resolver = "2"
 
