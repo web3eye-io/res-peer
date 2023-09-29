@@ -33,6 +33,7 @@ tokio = "1.29.1"
 futures-util = "0.3.28"
 credit = { path = "./credit" }
 feed = { path = "./feed" }
+review = { path = "./review" }
 
 [profile.release]
 debug = true

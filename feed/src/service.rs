@@ -29,6 +29,7 @@ impl Service for Feed {
         _context: &QueryContext,
         request: Request,
     ) -> Result<Response, Self::Error> {
+        // TODO: we need to filter content according to requester and review state here
         let schema: Schema<Arc<Feed>, MutationRoot, EmptySubscription> =
             Schema::build(self.clone(), MutationRoot {}, EmptySubscription).finish();
         let response = schema.execute(request).await;
@@ -42,7 +43,7 @@ struct MutationRoot;
 impl MutationRoot {
     async fn publish(&self, ccid: String, title: String, content: String) -> Vec<u8> {
         cid::Cid::try_from(ccid.clone()).expect("Invalid content cid");
-        bcs::to_bytes(&Operation::Publish {
+        bcs::to_bytes(&Operation::Submit {
             cid: ccid,
             title,
             content,

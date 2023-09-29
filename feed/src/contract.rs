@@ -47,7 +47,7 @@ impl Contract for Feed {
         operation: Self::Operation,
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
         match operation {
-            Operation::Publish {
+            Operation::Submit {
                 cid,
                 title,
                 content,

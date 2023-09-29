@@ -43,7 +43,7 @@ pub struct InitialState {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub enum Operation {
-    Publish {
+    Submit {
         cid: String,
         title: String,
         content: String,
@@ -73,5 +73,12 @@ pub enum Message {
         content: String,
         author: Owner,
     },
+    RequestSubscribe,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub enum ApplicationCall {
+    Approve { cid: String, reason: Option<String> },
+    Reject { cid: String, reason: Option<String> },
     RequestSubscribe,
 }
