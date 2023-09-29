@@ -32,19 +32,33 @@ impl Review {
         Ok(())
     }
 
+    pub(crate) async fn is_reviewer(&self, owner: Owner) -> Result<bool, StateError> {
+        match self.reviewers.get(&owner).await? {
+            Some(approved) => Ok(approved),
+            None => Ok(false),
+        }
+    }
+
     pub(crate) async fn approve_content(
         &mut self,
         content_cid: String,
     ) -> Result<bool, StateError> {
-        let need_notify = false;
-        match self.content_applications.get(content_cid).await? {
+        let mut need_notify = false;
+        match self
+            .content_applications
+            .get(&content_cid)
+            .await?
+            .as_deref()
+        {
             Some([approved, rejected]) => {
-                approved += 1;
+                let approved = *approved + 1;
                 self.content_applications
-                    .insert(content_cid, [approved, rejected]);
+                    .insert(&content_cid, vec![approved, *rejected])?;
                 need_notify = approved >= *self.content_approved_threshold.get();
             }
-            None => self.content_applications.insert(content_cid, [1, 0]),
+            _ => {
+                self.content_applications.insert(&content_cid, vec![1, 0])?;
+            }
         }
         Ok(need_notify)
     }

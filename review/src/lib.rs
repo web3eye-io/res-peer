@@ -1,5 +1,5 @@
 use async_graphql::{Request, Response};
-use linera_sdk::base::{Amount, ContractAbi, Owner, ServiceAbi};
+use linera_sdk::base::{ContractAbi, ServiceAbi};
 use serde::{Deserialize, Serialize};
 
 pub struct ReviewAbi;
@@ -9,7 +9,7 @@ impl ContractAbi for ReviewAbi {
     type InitializationArgument = InitialState;
     type Operation = ();
     type Message = ();
-    type ApplicationCall = ApplicationCall;
+    type ApplicationCall = ();
     type SessionCall = ();
     type SessionState = ();
     type Response = ();
