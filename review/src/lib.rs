@@ -1,13 +1,13 @@
 use async_graphql::{Request, Response};
-use linera_sdk::base::{ContractAbi, ServiceAbi};
+use linera_sdk::base::{ApplicationId, ContractAbi, ServiceAbi};
 use serde::{Deserialize, Serialize};
 
 pub struct ReviewAbi;
 
 impl ContractAbi for ReviewAbi {
-    type Parameters = ();
+    type Parameters = ApplicationId<feed::FeedAbi>;
     type InitializationArgument = InitialState;
-    type Operation = ();
+    type Operation = Operation;
     type Message = ();
     type ApplicationCall = ();
     type SessionCall = ();
@@ -16,7 +16,7 @@ impl ContractAbi for ReviewAbi {
 }
 
 impl ServiceAbi for ReviewAbi {
-    type Parameters = ();
+    type Parameters = ApplicationId<feed::FeedAbi>;
     type Query = Request;
     type QueryResponse = Response;
 }

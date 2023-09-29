@@ -4,11 +4,13 @@ mod state;
 
 use self::state::Review;
 use async_trait::async_trait;
+use feed::FeedAbi;
 use linera_sdk::{
-    base::{SessionId, WithContractAbi},
+    base::{ApplicationId, SessionId, WithContractAbi},
     ApplicationCallResult, CalleeContext, Contract, ExecutionResult, MessageContext,
     OperationContext, SessionCallResult, ViewStateStorage,
 };
+use review::Operation;
 use thiserror::Error;
 
 linera_sdk::contract!(Review);
@@ -33,9 +35,48 @@ impl Contract for Review {
 
     async fn execute_operation(
         &mut self,
-        _context: &OperationContext,
-        _operation: Self::Operation,
+        context: &OperationContext,
+        operation: Self::Operation,
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
+        let (need_notify, reason) = match operation {
+            Operation::ApproveContent {
+                content_cid,
+                reason,
+            } => (
+                self.approve_content(context.authenticated_signer.unwrap(), content_cid)
+                    .await?,
+                reason,
+            ),
+            Operation::RejectContent {
+                content_cid,
+                reason,
+            } => (
+                self.reject_content(context.authenticated_signer.unwrap(), content_cid)
+                    .await?,
+                reason,
+            ),
+            Operation::ApproveAsset {
+                collection_id,
+                reason,
+            } => (
+                self.approve_asset(context.authenticated_signer.unwrap(), collection_id)
+                    .await?,
+                reason,
+            ),
+            Operation::RejectAsset {
+                collection_id,
+                reason,
+            } => (
+                self.reject_asset(context.authenticated_signer.unwrap(), collection_id)
+                    .await?,
+                reason,
+            ),
+        };
+        // TODO: create reason content
+        if !need_notify {
+            // TODO: notify content approval or rejected
+            return Ok(ExecutionResult::default());
+        }
         Ok(ExecutionResult::default())
     }
 
@@ -66,6 +107,12 @@ impl Contract for Review {
     ) -> Result<SessionCallResult<Self::Message, Self::Response, Self::SessionState>, Self::Error>
     {
         Ok(SessionCallResult::default())
+    }
+}
+
+impl Review {
+    fn feed_id() -> Result<ApplicationId<FeedAbi>, ContractError> {
+        Self::parameters()
     }
 }
 
