@@ -23,38 +23,28 @@ impl ServiceAbi for ReviewAbi {
 
 #[derive(Clone, Debug, Deserialize, PartialEq, PartialOrd, Serialize)]
 pub struct InitialState {
-    pub review_reward_percent: u8,
-    pub review_reward_factor: u8,
-    pub author_reward_percent: u8,
-    pub author_reward_factor: u8,
-    pub activity_reward_percent: u8,
+    pub content_approved_threshold: i16,
+    pub content_rejected_threshold: i16,
+    pub asset_approved_threshold: i16,
+    pub asset_rejected_threshold: i16,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-pub enum RewardType {
-    Review,
-    Publish,
-    Activity,
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-pub enum ApplicationCall {
-    Deposit {
-        amount: Amount,
+pub enum Operation {
+    ApproveContent {
+        content_cid: String,
+        reason: Option<String>,
     },
-    Reward {
-        // Review: sender is the reward user
-        // Author: sender is not the reward user
-        // Activity: sender is not the reward user
-        reward_user: Option<Owner>,
-        reward_type: RewardType,
-        // For activity we have amount, for other type amount is determined by review
-        amount: Option<Amount>,
-        activity_id: Option<u64>,
+    RejectContent {
+        content_cid: String,
+        reason: Option<String>,
     },
-    Lock {
-        activity_id: u64,
-        activity_host: Owner,
-        amount: Amount,
+    ApproveAsset {
+        collection_id: u64,
+        reason: Option<String>,
+    },
+    RejectAsset {
+        collection_id: u64,
+        reason: Option<String>,
     },
 }

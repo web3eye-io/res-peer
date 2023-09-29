@@ -17,6 +17,8 @@ pub struct Feed {
     pub publishes: MapView<Owner, Vec<String>>,
     pub react_interval_ms: RegisterView<u64>,
     pub react_accounts: MapView<Owner, Timestamp>,
+    pub collection_recommends: MapView<u64, Vec<String>>,
+    pub collection_comments: MapView<u64, Vec<String>>,
 }
 
 #[allow(dead_code)]

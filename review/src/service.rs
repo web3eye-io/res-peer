@@ -3,9 +3,10 @@
 mod state;
 
 use self::state::Review;
-use async_graphql::{EmptyMutation, EmptySubscription, Request, Response, Schema};
+use async_graphql::{EmptySubscription, Object, Request, Response, Schema};
 use async_trait::async_trait;
 use linera_sdk::{base::WithServiceAbi, QueryContext, Service, ViewStateStorage};
+use review::Operation;
 use std::sync::Arc;
 use thiserror::Error;
 
@@ -25,9 +26,46 @@ impl Service for Review {
         _context: &QueryContext,
         request: Request,
     ) -> Result<Response, Self::Error> {
-        let schema = Schema::build(self.clone(), EmptyMutation, EmptySubscription).finish();
+        let schema = Schema::build(self.clone(), MutationRoot {}, EmptySubscription).finish();
         let response = schema.execute(request).await;
         Ok(response)
+    }
+}
+
+struct MutationRoot;
+
+#[Object]
+impl MutationRoot {
+    async fn approve_content(&self, content_cid: String, reason: Option<String>) -> Vec<u8> {
+        bcs::to_bytes(&Operation::ApproveContent {
+            content_cid,
+            reason,
+        })
+        .unwrap()
+    }
+
+    async fn reject_content(&self, content_cid: String, reason: Option<String>) -> Vec<u8> {
+        bcs::to_bytes(&Operation::RejectContent {
+            content_cid,
+            reason,
+        })
+        .unwrap()
+    }
+
+    async fn approve_asset(&self, collection_id: u64, reason: Option<String>) -> Vec<u8> {
+        bcs::to_bytes(&Operation::ApproveAsset {
+            collection_id,
+            reason,
+        })
+        .unwrap()
+    }
+
+    async fn reject_asset(&self, collection_id: u64, reason: Option<String>) -> Vec<u8> {
+        bcs::to_bytes(&Operation::RejectAsset {
+            collection_id,
+            reason,
+        })
+        .unwrap()
     }
 }
 

@@ -4,12 +4,12 @@ mod state;
 
 use self::state::Review;
 use async_trait::async_trait;
-use review::{ApplicationCall, RewardType};
 use linera_sdk::{
     base::{SessionId, WithContractAbi},
     ApplicationCallResult, CalleeContext, Contract, ExecutionResult, MessageContext,
     OperationContext, SessionCallResult, ViewStateStorage,
 };
+use review::ApplicationCall;
 use thiserror::Error;
 
 linera_sdk::contract!(Review);
@@ -50,43 +50,11 @@ impl Contract for Review {
 
     async fn handle_application_call(
         &mut self,
-        context: &CalleeContext,
-        call: Self::ApplicationCall,
+        _context: &CalleeContext,
+        _call: Self::ApplicationCall,
         _forwarded_sessions: Vec<SessionId>,
     ) -> Result<ApplicationCallResult<Self::Message, Self::Response, Self::SessionState>, Self::Error>
     {
-        match call {
-            ApplicationCall::Deposit { amount } => self.deposit(amount).await?,
-            ApplicationCall::Lock {
-                activity_id,
-                activity_host,
-                amount,
-            } => self.lock(activity_host, activity_id, amount).await?,
-            ApplicationCall::Reward {
-                reward_user,
-                reward_type,
-                amount,
-                activity_id,
-            } => {
-                let reward_user = match reward_type {
-                    RewardType::Publish => context.authenticated_signer,
-                    _ => reward_user,
-                };
-                let reward_user = match reward_user {
-                    Some(user) => user,
-                    None => return Err(ContractError::InvalidUser),
-                };
-                let activity_host = match reward_type {
-                    RewardType::Activity => match context.authenticated_signer {
-                        Some(user) => Some(user),
-                        None => return Err(ContractError::InvalidUser),
-                    },
-                    _ => return Err(ContractError::InvalidUser),
-                };
-                self.reward(reward_user, reward_type, amount, activity_id, activity_host)
-                    .await?;
-            }
-        }
         Ok(ApplicationCallResult::default())
     }
 
