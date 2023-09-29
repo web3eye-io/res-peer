@@ -65,13 +65,8 @@ impl Review {
         reviewer: Owner,
         content_cid: String,
     ) -> Result<bool, StateError> {
-        match self
-            .validate_content_review(reviewer, content_cid.clone())
-            .await
-        {
-            Ok(_) => {}
-            Err(err) => return Err(err),
-        }
+        self.validate_content_review(reviewer, content_cid.clone())
+            .await?;
         let mut need_notify = false;
         match self
             .content_applications
@@ -97,13 +92,8 @@ impl Review {
         reviewer: Owner,
         content_cid: String,
     ) -> Result<bool, StateError> {
-        match self
-            .validate_content_review(reviewer, content_cid.clone())
-            .await
-        {
-            Ok(_) => {}
-            Err(err) => return Err(err),
-        }
+        self.validate_content_review(reviewer, content_cid.clone())
+            .await?;
         let mut need_notify = false;
         match self
             .content_applications
@@ -146,10 +136,7 @@ impl Review {
         reviewer: Owner,
         collection_id: u64,
     ) -> Result<bool, StateError> {
-        match self.validate_asset_review(reviewer, collection_id).await {
-            Ok(_) => {}
-            Err(err) => return Err(err),
-        }
+        self.validate_asset_review(reviewer, collection_id).await?;
         let mut need_notify = false;
         match self
             .asset_applications
@@ -175,10 +162,7 @@ impl Review {
         reviewer: Owner,
         collection_id: u64,
     ) -> Result<bool, StateError> {
-        match self.validate_asset_review(reviewer, collection_id).await {
-            Ok(_) => {}
-            Err(err) => return Err(err),
-        }
+        self.validate_asset_review(reviewer, collection_id).await?;
         let mut need_notify = false;
         match self
             .asset_applications
