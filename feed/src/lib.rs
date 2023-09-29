@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use async_graphql::{Request, Response, SimpleObject};
-use linera_sdk::base::{Amount, ApplicationId, ContractAbi, Owner, ServiceAbi, Timestamp};
+use linera_sdk::base::{Amount, ApplicationId, ChainId, ContractAbi, Owner, ServiceAbi, Timestamp};
 use serde::{Deserialize, Serialize};
 
 pub struct FeedAbi;
@@ -11,7 +11,7 @@ impl ContractAbi for FeedAbi {
     type InitializationArgument = InitialState;
     type Operation = Operation;
     type Message = Message;
-    type ApplicationCall = ();
+    type ApplicationCall = ApplicationCall;
     type SessionCall = ();
     type SessionState = ();
     type Response = ();
@@ -67,13 +67,19 @@ pub enum Operation {
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub enum Message {
-    Publish {
+    Submit {
         cid: String,
         title: String,
         content: String,
         author: Owner,
     },
-    RequestSubscribe,
+    Publish {
+        cid: String,
+    },
+    RequestPublishedSubscribe,
+    RequestSubmitedSubscribe {
+        chain_id: ChainId,
+    },
 }
 
 #[derive(Debug, Deserialize, Serialize)]

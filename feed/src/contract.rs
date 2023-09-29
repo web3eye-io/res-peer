@@ -7,7 +7,7 @@ use std::{collections::HashMap, str::FromStr};
 use self::state::Feed;
 use async_trait::async_trait;
 use credit::CreditAbi;
-use feed::{Content, Message, Operation};
+use feed::{ApplicationCall, Content, Message, Operation};
 use linera_sdk::{
     base::{
         Amount, ApplicationId, ChainId, ChannelName, Destination, Owner, SessionId, WithContractAbi,
@@ -25,7 +25,8 @@ impl WithContractAbi for Feed {
 }
 
 const CREATION_CHAIN_ID: &str = "e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65";
-const CONTENT_CHANNEL_NAME: &[u8] = b"contents";
+const PUBLISHED_CONTENT_CHANNEL_NAME: &[u8] = b"published_contents";
+const SUBMITTED_CONTENT_CHANNEL_NAME: &[u8] = b"submitted_contents";
 
 #[async_trait]
 impl Contract for Feed {
@@ -55,7 +56,7 @@ impl Contract for Feed {
                 // Here we should already subscribe to creation feed application so we don't need to publish directly
                 return Ok(ExecutionResult::default().with_authenticated_message(
                     ChainId::from_str(CREATION_CHAIN_ID).unwrap(),
-                    Message::Publish {
+                    Message::Submit {
                         cid,
                         title,
                         content,
@@ -95,7 +96,7 @@ impl Contract for Feed {
             Operation::RequestSubscribe => {
                 return Ok(ExecutionResult::default().with_message(
                     ChainId::from_str(CREATION_CHAIN_ID).unwrap(),
-                    Message::RequestSubscribe,
+                    Message::RequestPublishedSubscribe,
                 ));
             }
         }
@@ -108,7 +109,7 @@ impl Contract for Feed {
         message: Self::Message,
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
         match message {
-            Message::Publish {
+            Message::Submit {
                 cid,
                 title,
                 content,
@@ -117,8 +118,9 @@ impl Contract for Feed {
                 self.publish(cid.clone(), title.clone(), content.clone(), author)
                     .await?;
                 log::info!("Published cid {:?} sender {:?}", cid, author);
-                let dest =
-                    Destination::Subscribers(ChannelName::from(CONTENT_CHANNEL_NAME.to_vec()));
+                let dest = Destination::Subscribers(ChannelName::from(
+                    PUBLISHED_CONTENT_CHANNEL_NAME.to_vec(),
+                ));
                 log::info!(
                     "Broadcast cid {:?} to {:?} at {}",
                     cid,
@@ -127,7 +129,7 @@ impl Contract for Feed {
                 );
                 return Ok(ExecutionResult::default().with_message(
                     dest,
-                    Message::Publish {
+                    Message::Submit {
                         cid,
                         title,
                         content,
@@ -135,7 +137,10 @@ impl Contract for Feed {
                     },
                 ));
             }
-            Message::RequestSubscribe => {
+            Message::Publish { cid } => {
+                return Ok(ExecutionResult::default());
+            }
+            Message::RequestPublishedSubscribe => {
                 let mut result = ExecutionResult::default();
                 log::info!(
                     "Subscribe to {} at {} creation {}",
@@ -149,8 +154,23 @@ impl Contract for Feed {
                     return Ok(result);
                 }
                 result.subscribe.push((
-                    ChannelName::from(CONTENT_CHANNEL_NAME.to_vec()),
+                    ChannelName::from(PUBLISHED_CONTENT_CHANNEL_NAME.to_vec()),
                     context.message_id.chain_id,
+                ));
+                return Ok(result);
+            }
+            Message::RequestSubmitedSubscribe { chain_id } => {
+                let mut result = ExecutionResult::default();
+                log::info!(
+                    "Subscribe to {} at {} creation {} from application chain {}",
+                    context.message_id.chain_id,
+                    context.chain_id,
+                    system_api::current_application_id().creation.chain_id,
+                    chain_id,
+                );
+                result.subscribe.push((
+                    ChannelName::from(SUBMITTED_CONTENT_CHANNEL_NAME.to_vec()),
+                    chain_id,
                 ));
                 return Ok(result);
             }
@@ -159,11 +179,25 @@ impl Contract for Feed {
 
     async fn handle_application_call(
         &mut self,
-        _context: &CalleeContext,
-        _call: Self::ApplicationCall,
+        context: &CalleeContext,
+        call: Self::ApplicationCall,
         _forwarded_sessions: Vec<SessionId>,
     ) -> Result<ApplicationCallResult<Self::Message, Self::Response, Self::SessionState>, Self::Error>
     {
+        match call {
+            ApplicationCall::Approve { cid, reason } => {}
+            ApplicationCall::Reject { cid, reason } => {}
+            ApplicationCall::RequestSubscribe => {
+                let mut result = ApplicationCallResult::default();
+                result.execution_result = ExecutionResult::default().with_message(
+                    ChainId::from_str(CREATION_CHAIN_ID).unwrap(),
+                    Message::RequestSubmitedSubscribe {
+                        chain_id: context.chain_id,
+                    },
+                );
+                return Ok(result);
+            }
+        }
         Ok(ApplicationCallResult::default())
     }
 
