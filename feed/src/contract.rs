@@ -115,7 +115,7 @@ impl Contract for Feed {
                 content,
                 author,
             } => {
-                self.publish(cid.clone(), title.clone(), content.clone(), author)
+                self.submit(cid.clone(), title.clone(), content.clone(), author)
                     .await?;
                 log::info!("Published cid {:?} sender {:?}", cid, author);
                 let dest = Destination::Subscribers(ChannelName::from(
@@ -227,7 +227,7 @@ impl Feed {
         Ok(())
     }
 
-    async fn publish(
+    async fn submit(
         &mut self,
         cid: String,
         title: String,
@@ -246,6 +246,8 @@ impl Feed {
                     dislikes: 0,
                     accounts: HashMap::default(),
                     created_at: current_system_time(),
+                    approved: false,
+                    rejected: false,
                 },
                 author,
             )

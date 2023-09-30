@@ -18,7 +18,11 @@ pub struct Review {
     pub reviewer_reviewers: MapView<Owner, HashMap<Owner, bool>>,
     pub content_applications: MapView<String, Vec<i16>>,
     pub content_reviewers: MapView<String, HashMap<Owner, bool>>,
+    pub content_approvers: MapView<String, HashMap<Owner, String>>,
+    pub content_rejectors: MapView<String, HashMap<Owner, String>>,
     pub asset_reviewers: MapView<u64, HashMap<Owner, bool>>,
+    pub asset_approvers: MapView<String, HashMap<Owner, String>>,
+    pub asset_rejectors: MapView<String, HashMap<Owner, String>>,
     pub asset_applications: MapView<u64, Vec<i16>>,
     pub content_approved_threshold: RegisterView<i16>,
     pub content_rejected_threshold: RegisterView<i16>,
@@ -111,7 +115,7 @@ impl Review {
             _ => {
                 self.reviewer_applications.insert(&candidate, vec![1, 0])?;
             }
-        }
+        }need_notify
         let mut need_notify = false;
         match self.reviewer_applications.get(&candidate).await?.as_deref() {
             Some([approved, _rejected]) => {
@@ -120,7 +124,7 @@ impl Review {
                     self.reviewers.insert(&candidate)?;
                     self.reviewer_number.set(self.reviewer_number.get() + 1);
                     need_notify = *approved == *self.content_approved_threshold.get()
-                        || *approved == *self.reviewer_number.get();
+                    || *approved == *self.reviewer_number.get();
                 }
             }
             _ => todo!(),

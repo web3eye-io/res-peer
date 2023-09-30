@@ -11,7 +11,6 @@ use thiserror::Error;
 #[view(context = "ViewStorageContext")]
 pub struct Feed {
     pub contents: MapView<String, Content>,
-    pub content_reviews: MapView<String, bool>,
     pub content_recommends: MapView<String, Vec<String>>,
     pub content_comments: MapView<String, Vec<String>>,
     pub publishes: MapView<Owner, Vec<String>>,

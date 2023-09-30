@@ -34,6 +34,8 @@ pub struct Content {
     pub dislikes: u64,
     pub accounts: HashMap<Owner, bool>,
     pub created_at: Timestamp,
+    pub approved: bool,
+    pub rejected: bool,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
