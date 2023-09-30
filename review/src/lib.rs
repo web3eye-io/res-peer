@@ -1,5 +1,5 @@
 use async_graphql::{Request, Response};
-use linera_sdk::base::{ApplicationId, ContractAbi, ServiceAbi};
+use linera_sdk::base::{ApplicationId, ContractAbi, Owner, ServiceAbi};
 use serde::{Deserialize, Serialize};
 
 pub struct ReviewAbi;
@@ -27,10 +27,24 @@ pub struct InitialState {
     pub content_rejected_threshold: i16,
     pub asset_approved_threshold: i16,
     pub asset_rejected_threshold: i16,
+    pub reviewer_approved_threshold: i16,
+    pub reviewer_rejected_threshold: i16,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 pub enum Operation {
+    ApplyReviewer {
+        resume: String,
+    },
+    UpdateReviewerResume {
+        resume: String,
+    },
+    ApproveReviewer {
+        candidate: Owner,
+    },
+    RejectReviewer {
+        candidate: Owner,
+    },
     ApproveContent {
         content_cid: String,
         reason: Option<String>,

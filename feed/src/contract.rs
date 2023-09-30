@@ -93,7 +93,7 @@ impl Contract for Feed {
                     context.chain_id
                 );
             }
-            Operation::RequestSubscribe => {
+            Operation::RequestPublishedSubscribe => {
                 return Ok(ExecutionResult::default().with_message(
                     ChainId::from_str(CREATION_CHAIN_ID).unwrap(),
                     Message::RequestPublishedSubscribe,
@@ -159,7 +159,7 @@ impl Contract for Feed {
                 ));
                 return Ok(result);
             }
-            Message::RequestSubmitedSubscribe { chain_id } => {
+            Message::RequestSubmittedSubscribe { chain_id } => {
                 let mut result = ExecutionResult::default();
                 log::info!(
                     "Subscribe to {} at {} creation {} from application chain {}",
@@ -187,11 +187,11 @@ impl Contract for Feed {
         match call {
             ApplicationCall::Approve { cid, reason } => {}
             ApplicationCall::Reject { cid, reason } => {}
-            ApplicationCall::RequestSubscribe => {
+            ApplicationCall::RequestSubmittedSubscribe => {
                 let mut result = ApplicationCallResult::default();
                 result.execution_result = ExecutionResult::default().with_message(
                     ChainId::from_str(CREATION_CHAIN_ID).unwrap(),
-                    Message::RequestSubmitedSubscribe {
+                    Message::RequestSubmittedSubscribe {
                         chain_id: context.chain_id,
                     },
                 );

@@ -62,7 +62,7 @@ pub enum Operation {
         cid: String,
         amount: Amount,
     },
-    RequestSubscribe,
+    RequestPublishedSubscribe,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
@@ -77,7 +77,7 @@ pub enum Message {
         cid: String,
     },
     RequestPublishedSubscribe,
-    RequestSubmitedSubscribe {
+    RequestSubmittedSubscribe {
         chain_id: ChainId,
     },
 }
@@ -86,5 +86,5 @@ pub enum Message {
 pub enum ApplicationCall {
     Approve { cid: String, reason: Option<String> },
     Reject { cid: String, reason: Option<String> },
-    RequestSubscribe,
+    RequestSubmittedSubscribe,
 }
