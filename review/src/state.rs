@@ -206,6 +206,12 @@ impl Review {
         }
     }
 
+    pub(crate) async fn submit_content(&mut self, content: Content) -> Result<(), StateError> {
+        self.content_applications
+            .insert(&content.clone().cid, content)?;
+        Ok(())
+    }
+
     pub(crate) async fn approve_content(
         &mut self,
         reviewer: Owner,

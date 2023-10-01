@@ -2,7 +2,7 @@
 
 mod state;
 
-use std::str::FromStr;
+use std::{collections::HashMap, str::FromStr};
 
 use self::state::Review;
 use async_trait::async_trait;
@@ -13,7 +13,7 @@ use linera_sdk::{
     ApplicationCallResult, CalleeContext, Contract, ExecutionResult, MessageContext,
     OperationContext, SessionCallResult, ViewStateStorage,
 };
-use review::{InitialState, Message, Operation};
+use review::{Content, InitialState, Message, Operation};
 use thiserror::Error;
 
 linera_sdk::contract!(Review);
@@ -135,6 +135,9 @@ impl Contract for Review {
                     cid,
                     context.authenticated_signer.unwrap()
                 );
+                self._submit_content(cid, title, content, context.authenticated_signer.unwrap())
+                    .await?;
+                // TODO: broadcast to other chains
             }
             Message::RequestSubmittedSubscribe => {
                 let mut result = ExecutionResult::default();
@@ -231,6 +234,27 @@ impl Review {
     ) -> Result<(), ContractError> {
         self.reject_reviewer(owner, candidate).await?;
         // TODO: notify reviewer
+        Ok(())
+    }
+
+    async fn _submit_content(
+        &mut self,
+        cid: String,
+        title: String,
+        content: String,
+        author: Owner,
+    ) -> Result<(), ContractError> {
+        self.submit_content(Content {
+            cid,
+            title,
+            content,
+            author,
+            reviewers: HashMap::default(),
+            approved: 0,
+            rejected: 0,
+        })
+        .await?;
+        // TODO: reward credits
         Ok(())
     }
 
