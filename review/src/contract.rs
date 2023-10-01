@@ -2,15 +2,18 @@
 
 mod state;
 
+use std::str::FromStr;
+
 use self::state::Review;
 use async_trait::async_trait;
 use feed::FeedAbi;
 use linera_sdk::{
-    base::{ApplicationId, Owner, SessionId, WithContractAbi},
+    base::{ApplicationId, ChainId, ChannelName, Owner, SessionId, WithContractAbi},
+    contract::system_api,
     ApplicationCallResult, CalleeContext, Contract, ExecutionResult, MessageContext,
     OperationContext, SessionCallResult, ViewStateStorage,
 };
-use review::Operation;
+use review::{InitialState, Message, Operation};
 use thiserror::Error;
 
 linera_sdk::contract!(Review);
@@ -18,6 +21,9 @@ linera_sdk::contract!(Review);
 impl WithContractAbi for Review {
     type Abi = review::ReviewAbi;
 }
+
+const CREATION_CHAIN_ID: &str = "e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65";
+const SUBMITTED_CONTENT_CHANNEL_NAME: &[u8] = b"submitted_contents";
 
 #[async_trait]
 impl Contract for Review {
@@ -29,7 +35,8 @@ impl Contract for Review {
         context: &OperationContext,
         state: Self::InitializationArgument,
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
-        self.initialize(context.authenticated_signer.unwrap(), state).await?;
+        self._initialize(context.authenticated_signer.unwrap(), state)
+            .await?;
         Ok(ExecutionResult::default())
     }
 
@@ -54,6 +61,25 @@ impl Contract for Review {
             Operation::RejectReviewer { candidate } => {
                 self._reject_reviewer(context.authenticated_signer.unwrap(), candidate)
                     .await?;
+            }
+            Operation::SubmitContent {
+                cid,
+                title,
+                content,
+            } => {
+                log::info!(
+                    "Submit cid {:?} by {:?}",
+                    cid,
+                    context.authenticated_signer.unwrap()
+                );
+                return Ok(ExecutionResult::default().with_authenticated_message(
+                    ChainId::from_str(CREATION_CHAIN_ID).unwrap(),
+                    Message::SubmitContent {
+                        cid,
+                        title,
+                        content,
+                    },
+                ));
             }
             Operation::ApproveContent {
                 content_cid,
@@ -83,15 +109,53 @@ impl Contract for Review {
                 self._reject_asset(context.authenticated_signer.unwrap(), collection_id, reason)
                     .await?;
             }
+            Operation::RequestSubmittedSubscribe => {
+                return Ok(ExecutionResult::default().with_message(
+                    ChainId::from_str(CREATION_CHAIN_ID).unwrap(),
+                    Message::RequestSubmittedSubscribe,
+                ));
+            }
         }
         Ok(ExecutionResult::default())
     }
 
     async fn execute_message(
         &mut self,
-        _context: &MessageContext,
-        _message: Self::Message,
+        context: &MessageContext,
+        message: Self::Message,
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
+        match message {
+            Message::SubmitContent {
+                cid,
+                title,
+                content,
+            } => {
+                log::info!(
+                    "Message submit content cid {:?} by {:?}",
+                    cid,
+                    context.authenticated_signer.unwrap()
+                );
+            }
+            Message::RequestSubmittedSubscribe => {
+                let mut result = ExecutionResult::default();
+                log::info!(
+                    "Subscribe to {} at {} creation {}",
+                    context.message_id.chain_id,
+                    context.chain_id,
+                    system_api::current_application_id().creation.chain_id
+                );
+                if context.message_id.chain_id
+                    == system_api::current_application_id().creation.chain_id
+                {
+                    return Ok(result);
+                }
+                result.subscribe.push((
+                    ChannelName::from(SUBMITTED_CONTENT_CHANNEL_NAME.to_vec()),
+                    context.message_id.chain_id,
+                ));
+                return Ok(result);
+            }
+        }
         Ok(ExecutionResult::default())
     }
 
@@ -113,13 +177,22 @@ impl Contract for Review {
         _forwarded_sessions: Vec<SessionId>,
     ) -> Result<SessionCallResult<Self::Message, Self::Response, Self::SessionState>, Self::Error>
     {
-        Ok(SessionCallResult::default())
+        Err(ContractError::SessionsNotSupported)
     }
 }
 
 impl Review {
     fn feed_id() -> Result<ApplicationId<FeedAbi>, ContractError> {
         Self::parameters()
+    }
+
+    async fn _initialize(
+        &mut self,
+        creator: Owner,
+        state: InitialState,
+    ) -> Result<(), ContractError> {
+        self.initialize(creator, state).await?;
+        Ok(())
     }
 
     async fn _apply_reviewer(
@@ -229,4 +302,7 @@ pub enum ContractError {
 
     #[error("Invalid user")]
     InvalidUser,
+
+    #[error("Cross-application sessions not supported")]
+    SessionsNotSupported,
 }

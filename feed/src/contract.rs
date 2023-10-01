@@ -26,7 +26,6 @@ impl WithContractAbi for Feed {
 
 const CREATION_CHAIN_ID: &str = "e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65";
 const PUBLISHED_CONTENT_CHANNEL_NAME: &[u8] = b"published_contents";
-const SUBMITTED_CONTENT_CHANNEL_NAME: &[u8] = b"submitted_contents";
 
 #[async_trait]
 impl Contract for Feed {
@@ -48,22 +47,6 @@ impl Contract for Feed {
         operation: Self::Operation,
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
         match operation {
-            Operation::Submit {
-                cid,
-                title,
-                content,
-            } => {
-                // Here we should already subscribe to creation feed application so we don't need to publish directly
-                return Ok(ExecutionResult::default().with_authenticated_message(
-                    ChainId::from_str(CREATION_CHAIN_ID).unwrap(),
-                    Message::Submit {
-                        cid,
-                        title,
-                        content,
-                        author: context.authenticated_signer.unwrap(),
-                    },
-                ));
-            }
             Operation::Like { cid } => {
                 self.like(cid, context.authenticated_signer.unwrap())
                     .await?
@@ -71,18 +54,6 @@ impl Contract for Feed {
             Operation::Dislike { cid } => {
                 self.dislike(cid, context.authenticated_signer.unwrap())
                     .await?
-            }
-            Operation::Comment {
-                comment_cid,
-                content_cid,
-            } => {
-                log::info!(
-                    "Comment cid {:?} to cid {:?} sender {:?} chain {:?}",
-                    comment_cid,
-                    content_cid,
-                    context.authenticated_signer.unwrap(),
-                    context.chain_id
-                );
             }
             Operation::Tip { cid, amount } => {
                 log::info!(
@@ -109,17 +80,17 @@ impl Contract for Feed {
         message: Self::Message,
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
         match message {
-            Message::Submit {
+            Message::Publish {
                 cid,
                 title,
                 content,
                 author,
             } => {
-                self.submit(cid.clone(), title.clone(), content.clone(), author)
+                self.publish(cid.clone(), title.clone(), content.clone(), author)
                     .await?;
                 log::info!("Submitted cid {:?} sender {:?}", cid, author);
                 let dest = Destination::Subscribers(ChannelName::from(
-                    SUBMITTED_CONTENT_CHANNEL_NAME.to_vec(),
+                    PUBLISHED_CONTENT_CHANNEL_NAME.to_vec(),
                 ));
                 log::info!(
                     "Broadcast submitted cid {:?} to {:?} at {}",
@@ -129,29 +100,12 @@ impl Contract for Feed {
                 );
                 return Ok(ExecutionResult::default().with_message(
                     dest,
-                    Message::Submit {
+                    Message::Publish {
                         cid,
                         title,
                         content,
                         author,
                     },
-                ));
-            }
-            Message::Publish { cid } => {
-                self.pubish(cid.clone()).await?;
-                log::info!("Published cid {:?}", cid);
-                let dest = Destination::Subscribers(ChannelName::from(
-                    PUBLISHED_CONTENT_CHANNEL_NAME.to_vec(),
-                ));
-                log::info!(
-                    "Broadcast published cid {:?} to {:?} at {}",
-                    cid,
-                    dest,
-                    context.chain_id
-                );
-                return Ok(ExecutionResult::default().with_message(
-                    dest,
-                    Message::Publish { cid },
                 ));
             }
             Message::RequestPublishedSubscribe => {
@@ -178,25 +132,19 @@ impl Contract for Feed {
 
     async fn handle_application_call(
         &mut self,
-        context: &CalleeContext,
+        _context: &CalleeContext,
         call: Self::ApplicationCall,
         _forwarded_sessions: Vec<SessionId>,
     ) -> Result<ApplicationCallResult<Self::Message, Self::Response, Self::SessionState>, Self::Error>
     {
         match call {
             ApplicationCall::Recommend { cid, reason } => {}
-            ApplicationCall::Publish { cid } => {
-                self.pubish(cid).await?
-            }
-            ApplicationCall::RequestSubmittedSubscribe => {
-                let mut result = ApplicationCallResult::default();
-                result.execution_result = ExecutionResult::default();
-                result.execution_result.subscribe.push((
-                    ChannelName::from(SUBMITTED_CONTENT_CHANNEL_NAME.to_vec()),
-                    context.chain_id,
-                ));
-                return Ok(result);
-            }
+            ApplicationCall::Publish {
+                cid,
+                title,
+                content,
+                author,
+            } => self.publish(cid, title, content, author).await?,
         }
         Ok(ApplicationCallResult::default())
     }
@@ -227,7 +175,7 @@ impl Feed {
         Ok(())
     }
 
-    async fn submit(
+    async fn publish(
         &mut self,
         cid: String,
         title: String,
@@ -246,7 +194,6 @@ impl Feed {
                     dislikes: 0,
                     accounts: HashMap::default(),
                     created_at: current_system_time(),
-                    published: false,
                 },
                 author,
             )
@@ -255,10 +202,6 @@ impl Feed {
             Ok(_) => self.reward_credits(author, Amount::from_tokens(500)).await,
             Err(err) => Err(ContractError::StateError(err)),
         }
-    }
-
-    async fn pubish(&mut self, cid: String) -> Result<(), ContractError> {
-        Ok(())
     }
 
     async fn like(&mut self, cid: String, owner: Owner) -> Result<(), ContractError> {

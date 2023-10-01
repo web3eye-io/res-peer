@@ -34,7 +34,11 @@ pub struct Review {
 
 #[allow(dead_code)]
 impl Review {
-    pub(crate) async fn initialize(&mut self, creator: Owner, state: InitialState) -> Result<(), StateError> {
+    pub(crate) async fn initialize(
+        &mut self,
+        creator: Owner,
+        state: InitialState,
+    ) -> Result<(), StateError> {
         self.content_approved_threshold
             .set(state.content_approved_threshold);
         self.content_rejected_threshold
@@ -126,7 +130,7 @@ impl Review {
                     self.reviewers.insert(&candidate)?;
                     self.reviewer_number.set(self.reviewer_number.get() + 1);
                     need_notify = *approved == *self.content_approved_threshold.get()
-                    || *approved == *self.reviewer_number.get();
+                        || *approved == *self.reviewer_number.get();
                 }
             }
             _ => todo!(),

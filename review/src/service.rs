@@ -5,9 +5,12 @@ mod state;
 use self::state::Review;
 use async_graphql::{EmptySubscription, Object, Request, Response, Schema};
 use async_trait::async_trait;
-use linera_sdk::{base::WithServiceAbi, QueryContext, Service, ViewStateStorage};
+use linera_sdk::{
+    base::{Owner, WithServiceAbi},
+    QueryContext, Service, ViewStateStorage,
+};
 use review::Operation;
-use std::sync::Arc;
+use std::{string, sync::Arc};
 use thiserror::Error;
 
 linera_sdk::service!(Review);
@@ -36,6 +39,31 @@ struct MutationRoot;
 
 #[Object]
 impl MutationRoot {
+    async fn apply_reviewer(&self, resume: String) -> Vec<u8> {
+        bcs::to_bytes(&Operation::ApplyReviewer { resume }).unwrap()
+    }
+
+    async fn update_reviewer_resume(&self, resume: String) -> Vec<u8> {
+        bcs::to_bytes(&Operation::UpdateReviewerResume { resume }).unwrap()
+    }
+
+    async fn approve_reviewer(&self, candidate: Owner) -> Vec<u8> {
+        bcs::to_bytes(&Operation::ApproveReviewer { candidate }).unwrap()
+    }
+
+    async fn reject_reviewer(&self, candidate: Owner) -> Vec<u8> {
+        bcs::to_bytes(&Operation::RejectReviewer { candidate }).unwrap()
+    }
+
+    async fn submit_content(&self, cid: String, title: String, content: String) -> Vec<u8> {
+        bcs::to_bytes(&Operation::SubmitContent {
+            cid,
+            title,
+            content,
+        })
+        .unwrap()
+    }
+
     async fn approve_content(&self, content_cid: String, reason: Option<String>) -> Vec<u8> {
         bcs::to_bytes(&Operation::ApproveContent {
             content_cid,

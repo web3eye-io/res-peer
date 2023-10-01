@@ -8,7 +8,7 @@ impl ContractAbi for ReviewAbi {
     type Parameters = ApplicationId<feed::FeedAbi>;
     type InitializationArgument = InitialState;
     type Operation = Operation;
-    type Message = ();
+    type Message = Message;
     type ApplicationCall = ();
     type SessionCall = ();
     type SessionState = ();
@@ -45,6 +45,11 @@ pub enum Operation {
     RejectReviewer {
         candidate: Owner,
     },
+    SubmitContent {
+        cid: String,
+        title: String,
+        content: String,
+    },
     ApproveContent {
         content_cid: String,
         reason: Option<String>,
@@ -61,4 +66,15 @@ pub enum Operation {
         collection_id: u64,
         reason: Option<String>,
     },
+    RequestSubmittedSubscribe,
+}
+
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
+pub enum Message {
+    SubmitContent {
+        cid: String,
+        title: String,
+        content: String,
+    },
+    RequestSubmittedSubscribe,
 }

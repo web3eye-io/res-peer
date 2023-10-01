@@ -41,16 +41,6 @@ struct MutationRoot;
 
 #[Object]
 impl MutationRoot {
-    async fn publish(&self, ccid: String, title: String, content: String) -> Vec<u8> {
-        cid::Cid::try_from(ccid.clone()).expect("Invalid content cid");
-        bcs::to_bytes(&Operation::Submit {
-            cid: ccid,
-            title,
-            content,
-        })
-        .unwrap()
-    }
-
     async fn like(&self, ccid: String) -> Vec<u8> {
         cid::Cid::try_from(ccid.clone()).expect("Invalid content cid");
         bcs::to_bytes(&Operation::Like { cid: ccid }).unwrap()
@@ -59,16 +49,6 @@ impl MutationRoot {
     async fn dislike(&self, ccid: String) -> Vec<u8> {
         cid::Cid::try_from(ccid.clone()).expect("Invalid content cid");
         bcs::to_bytes(&Operation::Dislike { cid: ccid }).unwrap()
-    }
-
-    async fn comment(&self, ccid: String, comment_cid: String) -> Vec<u8> {
-        cid::Cid::try_from(ccid.clone()).expect("Invalid content cid");
-        cid::Cid::try_from(comment_cid.clone()).expect("Invalid comment cid");
-        bcs::to_bytes(&Operation::Comment {
-            content_cid: ccid,
-            comment_cid,
-        })
-        .unwrap()
     }
 
     async fn tip(&self, ccid: String, amount: Amount) -> Vec<u8> {
