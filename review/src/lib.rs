@@ -1,4 +1,6 @@
-use async_graphql::{Request, Response};
+use std::collections::HashMap;
+
+use async_graphql::{Request, Response, SimpleObject};
 use linera_sdk::base::{ApplicationId, ContractAbi, Owner, ServiceAbi};
 use serde::{Deserialize, Serialize};
 
@@ -23,12 +25,49 @@ impl ServiceAbi for ReviewAbi {
 
 #[derive(Clone, Debug, Deserialize, PartialEq, PartialOrd, Serialize)]
 pub struct InitialState {
-    pub content_approved_threshold: i16,
-    pub content_rejected_threshold: i16,
-    pub asset_approved_threshold: i16,
-    pub asset_rejected_threshold: i16,
-    pub reviewer_approved_threshold: i16,
-    pub reviewer_rejected_threshold: i16,
+    pub content_approved_threshold: u16,
+    pub content_rejected_threshold: u16,
+    pub asset_approved_threshold: u16,
+    pub asset_rejected_threshold: u16,
+    pub reviewer_approved_threshold: u16,
+    pub reviewer_rejected_threshold: u16,
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone, SimpleObject, Eq, PartialEq)]
+pub struct Review {
+    pub reviewer: Owner,
+    pub approved: bool,
+    pub reason: String,
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone, SimpleObject, Eq, PartialEq)]
+pub struct Reviewer {
+    pub reviewer: Owner,
+    pub resume: Option<String>,
+    pub reviewers: HashMap<Owner, Review>,
+    pub approved: u16,
+    pub rejected: u16,
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone, SimpleObject, Eq, PartialEq)]
+pub struct Content {
+    /// Here cid is the content cid::Cid store in ipfs
+    pub cid: String,
+    pub author: Owner,
+    pub title: String,
+    pub content: String,
+    pub reviewers: HashMap<Owner, Review>,
+    pub approved: u16,
+    pub rejected: u16,
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone, SimpleObject, Eq, PartialEq)]
+pub struct Asset {
+    pub collection_id: u64,
+    pub author: Owner,
+    pub reviewers: HashMap<Owner, Review>,
+    pub approved: u16,
+    pub rejected: u16,
 }
 
 #[derive(Debug, Deserialize, Serialize)]

@@ -2,34 +2,26 @@ use std::collections::HashMap;
 
 use linera_sdk::{
     base::{ArithmeticError, Owner},
-    views::{MapView, RegisterView, SetView, ViewStorageContext},
+    views::{MapView, RegisterView, ViewStorageContext},
 };
-use linera_views::views::{GraphQLView, RootView};
-use review::InitialState;
+use linera_views::views::{GraphQLView, RootView, View};
+use review::{Asset, Content, InitialState, Reviewer};
 use thiserror::Error;
 
 #[derive(RootView, GraphQLView)]
 #[view(context = "ViewStorageContext")]
 pub struct Review {
-    pub reviewers: SetView<Owner>,
-    pub reviewer_number: RegisterView<i16>,
-    pub reviewer_applications: MapView<Owner, Vec<i16>>,
-    pub reviewer_resumes: MapView<Owner, String>,
-    pub reviewer_reviewers: MapView<Owner, HashMap<Owner, bool>>,
-    pub content_applications: MapView<String, Vec<i16>>,
-    pub content_reviewers: MapView<String, HashMap<Owner, bool>>,
-    pub content_approvers: MapView<String, HashMap<Owner, String>>,
-    pub content_rejectors: MapView<String, HashMap<Owner, String>>,
-    pub asset_reviewers: MapView<u64, HashMap<Owner, bool>>,
-    pub asset_approvers: MapView<String, HashMap<Owner, String>>,
-    pub asset_rejectors: MapView<String, HashMap<Owner, String>>,
-    pub asset_applications: MapView<u64, Vec<i16>>,
-    pub content_approved_threshold: RegisterView<i16>,
-    pub content_rejected_threshold: RegisterView<i16>,
-    pub asset_approved_threshold: RegisterView<i16>,
-    pub asset_rejected_threshold: RegisterView<i16>,
-    pub reviewer_approved_threshold: RegisterView<i16>,
-    pub reviewer_rejected_threshold: RegisterView<i16>,
+    pub reviewers: MapView<Owner, Reviewer>,
+    pub reviewer_number: RegisterView<u16>,
+    pub reviewer_applications: MapView<Owner, Reviewer>,
+    pub content_applications: MapView<String, Content>,
+    pub asset_applications: MapView<u64, Asset>,
+    pub content_approved_threshold: RegisterView<u16>,
+    pub content_rejected_threshold: RegisterView<u16>,
+    pub asset_approved_threshold: RegisterView<u16>,
+    pub asset_rejected_threshold: RegisterView<u16>,
+    pub reviewer_approved_threshold: RegisterView<u16>,
+    pub reviewer_rejected_threshold: RegisterView<u16>,
 }
 
 #[allow(dead_code)]
@@ -51,13 +43,25 @@ impl Review {
             .set(state.reviewer_rejected_threshold);
         self.reviewer_rejected_threshold
             .set(state.reviewer_rejected_threshold);
-        self.reviewers.insert(&creator)?;
+        self.reviewers.insert(
+            &creator,
+            Reviewer {
+                reviewer: creator,
+                resume: None,
+                reviewers: HashMap::default(),
+                approved: 1,
+                rejected: 0,
+            },
+        )?;
         self.reviewer_number.set(1);
         Ok(())
     }
 
     pub(crate) async fn is_reviewer(&self, owner: Owner) -> Result<bool, StateError> {
-        Ok(self.reviewers.contains(&owner).await?)
+        match self.reviewers.get(&owner).await? {
+            Some(_) => Ok(true),
+            _ => Ok(false),
+        }
     }
 
     pub(crate) async fn apply_reviewer(
@@ -65,11 +69,23 @@ impl Review {
         owner: Owner,
         resume: String,
     ) -> Result<(), StateError> {
-        if self.reviewers.contains(&owner).await? {
+        if self.is_reviewer(owner).await? {
             return Err(StateError::InvalidReviewer);
         }
-        self.reviewer_applications.insert(&owner, vec![0, 0])?;
-        self.reviewer_resumes.insert(&owner, resume)?;
+        match self.reviewer_applications.get(&owner).await? {
+            Some(_) => return Err(StateError::InvalidReviewer),
+            _ => {}
+        }
+        self.reviewer_applications.insert(
+            &owner,
+            Reviewer {
+                reviewer: owner,
+                resume: Some(resume),
+                reviewers: HashMap::default(),
+                approved: 0,
+                rejected: 0,
+            },
+        )?;
         Ok(())
     }
 
@@ -78,14 +94,22 @@ impl Review {
         owner: Owner,
         resume: String,
     ) -> Result<(), StateError> {
-        if !self.reviewers.contains(&owner).await? {
-            match self.reviewer_applications.get(&owner).await? {
-                Some(_) => {}
-                _ => return Err(StateError::InvalidReviewer),
+        match self.reviewers.get(&owner).await? {
+            Some(mut reviewer) => {
+                reviewer.resume = Some(resume);
+                self.reviewers.insert(&owner, reviewer)?;
+                return Ok(());
             }
+            _ => {}
         }
-        self.reviewer_resumes.insert(&owner, resume)?;
-        Ok(())
+        match self.reviewer_applications.get(&owner).await? {
+            Some(mut reviewer) => {
+                reviewer.resume = Some(resume);
+                self.reviewer_applications.insert(&owner, reviewer)?;
+                return Ok(());
+            }
+            _ => Err(StateError::InvalidReviewer),
+        }
     }
 
     pub(crate) async fn validate_reviewer_review(
@@ -96,12 +120,12 @@ impl Review {
         if !self.is_reviewer(reviewer).await? {
             return Err(StateError::InvalidReviewer);
         }
-        match self.reviewer_reviewers.get(&candidate).await? {
-            Some(reviewers) => match reviewers.get(&reviewer) {
+        match self.reviewer_applications.get(&candidate).await? {
+            Some(_reviewer) => match _reviewer.reviewers.get(&reviewer) {
                 Some(_) => Err(StateError::AlreadyReviewed),
                 _ => Ok(()),
             },
-            None => Ok(()),
+            None => Err(StateError::InvalidReviewer),
         }
     }
 
@@ -112,50 +136,57 @@ impl Review {
     ) -> Result<bool, StateError> {
         self.validate_reviewer_review(owner, candidate.clone())
             .await?;
-        match self.reviewer_applications.get(&candidate).await?.as_deref() {
-            Some([approved, rejected]) => {
-                let approved = *approved + 1;
-                self.reviewer_applications
-                    .insert(&candidate, vec![approved, *rejected])?;
+        match self.reviewer_applications.get(&candidate).await? {
+            Some(mut reviewer) => {
+                reviewer.approved += 1;
+                self.reviewer_applications.insert(&candidate, reviewer)?;
             }
-            _ => {
-                self.reviewer_applications.insert(&candidate, vec![1, 0])?;
-            }
+            _ => return Err(StateError::InvalidReviewer),
         }
-        let mut need_notify = false;
-        match self.reviewer_applications.get(&candidate).await?.as_deref() {
-            Some([approved, _rejected]) => {
+        match self.reviewer_applications.get(&candidate).await? {
+            Some(reviewer) => {
                 let approved_threshold = *self.reviewer_approved_threshold.get();
-                if *approved >= approved_threshold || *approved >= *self.reviewer_number.get() {
-                    self.reviewers.insert(&candidate)?;
-                    self.reviewer_number.set(self.reviewer_number.get() + 1);
-                    need_notify = *approved == *self.content_approved_threshold.get()
-                        || *approved == *self.reviewer_number.get();
+                let reviewer_number = *self.reviewer_number.get();
+                if reviewer.approved >= approved_threshold || reviewer.approved >= reviewer_number {
+                    self.reviewers.insert(&candidate, reviewer.clone())?;
+                    self.reviewer_applications.remove(&candidate)?;
+                    self.reviewer_number.set(reviewer_number + 1);
+                    return Ok(true);
                 }
             }
             _ => todo!(),
         }
-        Ok(need_notify)
+        Ok(false)
     }
 
     pub(crate) async fn reject_reviewer(
         &mut self,
         owner: Owner,
         candidate: Owner,
-    ) -> Result<(), StateError> {
+    ) -> Result<bool, StateError> {
         self.validate_reviewer_review(owner, candidate.clone())
             .await?;
-        match self.reviewer_applications.get(&candidate).await?.as_deref() {
-            Some([approved, rejected]) => {
-                let rejected = *rejected + 1;
-                self.reviewer_applications
-                    .insert(&candidate, vec![*approved, rejected])?;
+        match self.reviewer_applications.get(&candidate).await? {
+            Some(mut reviewer) => {
+                reviewer.rejected += 1;
+                self.reviewer_applications.insert(&candidate, reviewer)?;
             }
-            _ => {
-                self.reviewer_applications.insert(&candidate, vec![0, 1])?;
-            }
+            _ => return Err(StateError::InvalidReviewer),
         }
-        Ok(())
+        match self.reviewer_applications.get(&candidate).await? {
+            Some(reviewer) => {
+                let rejected_threshold = *self.reviewer_rejected_threshold.get();
+                let reviewer_number = *self.reviewer_number.get();
+                if reviewer.rejected >= rejected_threshold || reviewer.rejected >= reviewer_number {
+                    self.reviewers.insert(&candidate, reviewer.clone())?;
+                    self.reviewer_applications.remove(&candidate)?;
+                    self.reviewer_number.set(reviewer_number + 1);
+                    return Ok(true);
+                }
+            }
+            _ => todo!(),
+        }
+        Ok(false)
     }
 
     pub(crate) async fn validate_content_review(
@@ -166,12 +197,12 @@ impl Review {
         if !self.is_reviewer(reviewer).await? {
             return Err(StateError::InvalidReviewer);
         }
-        match self.content_reviewers.get(&content_cid).await? {
-            Some(reviewers) => match reviewers.get(&reviewer) {
+        match self.content_applications.get(&content_cid).await? {
+            Some(content) => match content.reviewers.get(&reviewer) {
                 Some(_) => Err(StateError::AlreadyReviewed),
                 _ => Ok(()),
             },
-            None => Ok(()),
+            None => Err(StateError::InvalidContent),
         }
     }
 
@@ -179,28 +210,27 @@ impl Review {
         &mut self,
         reviewer: Owner,
         content_cid: String,
-    ) -> Result<bool, StateError> {
+    ) -> Result<Option<Content>, StateError> {
         self.validate_content_review(reviewer, content_cid.clone())
             .await?;
-        let mut need_notify = false;
-        match self
-            .content_applications
-            .get(&content_cid)
-            .await?
-            .as_deref()
-        {
-            Some([approved, rejected]) => {
-                let approved = *approved + 1;
-                self.content_applications
-                    .insert(&content_cid, vec![approved, *rejected])?;
-                need_notify = approved == *self.content_approved_threshold.get()
-                    || approved == *self.reviewer_number.get();
+        match self.content_applications.get(&content_cid).await? {
+            Some(mut content) => {
+                content.approved += 1;
+                self.content_applications.insert(&content_cid, content)?;
             }
-            _ => {
-                self.content_applications.insert(&content_cid, vec![1, 0])?;
-            }
+            _ => return Err(StateError::InvalidReviewer),
         }
-        Ok(need_notify)
+        match self.content_applications.get(&content_cid).await? {
+            Some(content) => {
+                let approved_threshold = *self.reviewer_approved_threshold.get();
+                let reviewer_number = *self.reviewer_number.get();
+                if content.approved >= approved_threshold || content.approved >= reviewer_number {
+                    return Ok(Some(content));
+                }
+            }
+            _ => todo!(),
+        }
+        Ok(None)
     }
 
     pub(crate) async fn reject_content(
@@ -210,25 +240,24 @@ impl Review {
     ) -> Result<bool, StateError> {
         self.validate_content_review(reviewer, content_cid.clone())
             .await?;
-        let mut need_notify = false;
-        match self
-            .content_applications
-            .get(&content_cid)
-            .await?
-            .as_deref()
-        {
-            Some([approved, rejected]) => {
-                let rejected = *rejected + 1;
-                self.content_applications
-                    .insert(&content_cid, vec![*approved, rejected])?;
-                need_notify = rejected == *self.content_rejected_threshold.get()
-                    || rejected == *self.reviewer_number.get();
+        match self.content_applications.get(&content_cid).await? {
+            Some(mut content) => {
+                content.rejected += 1;
+                self.content_applications.insert(&content_cid, content)?;
             }
-            _ => {
-                self.content_applications.insert(&content_cid, vec![0, 1])?;
-            }
+            _ => return Err(StateError::InvalidReviewer),
         }
-        Ok(need_notify)
+        match self.content_applications.get(&content_cid).await? {
+            Some(content) => {
+                let rejected_threshold = *self.reviewer_rejected_threshold.get();
+                let reviewer_number = *self.reviewer_number.get();
+                if content.rejected >= rejected_threshold || content.rejected >= reviewer_number {
+                    return Ok(true);
+                }
+            }
+            _ => todo!(),
+        }
+        Ok(false)
     }
 
     pub(crate) async fn validate_asset_review(
@@ -239,8 +268,8 @@ impl Review {
         if !self.is_reviewer(reviewer).await? {
             return Err(StateError::InvalidReviewer);
         }
-        match self.asset_reviewers.get(&collection_id).await? {
-            Some(reviewers) => match reviewers.get(&reviewer) {
+        match self.asset_applications.get(&collection_id).await? {
+            Some(asset) => match asset.reviewers.get(&reviewer) {
                 Some(_) => Err(StateError::AlreadyReviewed),
                 _ => Ok(()),
             },
@@ -254,25 +283,24 @@ impl Review {
         collection_id: u64,
     ) -> Result<bool, StateError> {
         self.validate_asset_review(reviewer, collection_id).await?;
-        let mut need_notify = false;
-        match self
-            .asset_applications
-            .get(&collection_id)
-            .await?
-            .as_deref()
-        {
-            Some([approved, rejected]) => {
-                let approved = *approved + 1;
-                self.asset_applications
-                    .insert(&collection_id, vec![approved, *rejected])?;
-                need_notify = approved == *self.content_approved_threshold.get()
-                    || approved == *self.reviewer_number.get();
+        match self.asset_applications.get(&collection_id).await? {
+            Some(mut asset) => {
+                asset.approved += 1;
+                self.asset_applications.insert(&collection_id, asset)?;
             }
-            _ => {
-                self.asset_applications.insert(&collection_id, vec![1, 0])?;
-            }
+            _ => return Err(StateError::InvalidReviewer),
         }
-        Ok(need_notify)
+        match self.asset_applications.get(&collection_id).await? {
+            Some(asset) => {
+                let approved_threshold = *self.reviewer_approved_threshold.get();
+                let reviewer_number = *self.reviewer_number.get();
+                if asset.approved >= approved_threshold || asset.approved >= reviewer_number {
+                    return Ok(true);
+                }
+            }
+            _ => todo!(),
+        }
+        Ok(false)
     }
 
     pub(crate) async fn reject_asset(
@@ -281,25 +309,24 @@ impl Review {
         collection_id: u64,
     ) -> Result<bool, StateError> {
         self.validate_asset_review(reviewer, collection_id).await?;
-        let mut need_notify = false;
-        match self
-            .asset_applications
-            .get(&collection_id)
-            .await?
-            .as_deref()
-        {
-            Some([approved, rejected]) => {
-                let rejected = *rejected + 1;
-                self.asset_applications
-                    .insert(&collection_id, vec![*approved, rejected])?;
-                need_notify = rejected == *self.content_rejected_threshold.get()
-                    || rejected == *self.reviewer_number.get();
+        match self.asset_applications.get(&collection_id).await? {
+            Some(mut asset) => {
+                asset.rejected += 1;
+                self.asset_applications.insert(&collection_id, asset)?;
             }
-            _ => {
-                self.asset_applications.insert(&collection_id, vec![0, 1])?;
-            }
+            _ => return Err(StateError::InvalidReviewer),
         }
-        Ok(need_notify)
+        match self.asset_applications.get(&collection_id).await? {
+            Some(asset) => {
+                let rejected_threshold = *self.reviewer_rejected_threshold.get();
+                let reviewer_number = *self.reviewer_number.get();
+                if asset.rejected >= rejected_threshold || asset.rejected >= reviewer_number {
+                    return Ok(true);
+                }
+            }
+            _ => todo!(),
+        }
+        Ok(false)
     }
 }
 
@@ -316,4 +343,7 @@ pub enum StateError {
 
     #[error("Already reviewer")]
     AlreadyReviewed,
+
+    #[error("Invalid content")]
+    InvalidContent,
 }
