@@ -34,8 +34,7 @@ pub struct Content {
     pub dislikes: u64,
     pub accounts: HashMap<Owner, bool>,
     pub created_at: Timestamp,
-    pub approved: bool,
-    pub rejected: bool,
+    pub published: bool,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
@@ -79,14 +78,12 @@ pub enum Message {
         cid: String,
     },
     RequestPublishedSubscribe,
-    RequestSubmittedSubscribe {
-        chain_id: ChainId,
-    },
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 pub enum ApplicationCall {
-    Approve { cid: String, reason: Option<String> },
-    Reject { cid: String, reason: Option<String> },
+    // Approved reason or recommend reason
+    Recommend { cid: String, reason: Option<String> },
+    Publish { cid: String },
     RequestSubmittedSubscribe,
 }

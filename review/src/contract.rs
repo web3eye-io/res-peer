@@ -26,10 +26,10 @@ impl Contract for Review {
 
     async fn initialize(
         &mut self,
-        _context: &OperationContext,
+        context: &OperationContext,
         state: Self::InitializationArgument,
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
-        self.initialize(state).await?;
+        self.initialize(context.authenticated_signer.unwrap(), state).await?;
         Ok(ExecutionResult::default())
     }
 

@@ -117,12 +117,12 @@ impl Contract for Feed {
             } => {
                 self.submit(cid.clone(), title.clone(), content.clone(), author)
                     .await?;
-                log::info!("Published cid {:?} sender {:?}", cid, author);
+                log::info!("Submitted cid {:?} sender {:?}", cid, author);
                 let dest = Destination::Subscribers(ChannelName::from(
-                    PUBLISHED_CONTENT_CHANNEL_NAME.to_vec(),
+                    SUBMITTED_CONTENT_CHANNEL_NAME.to_vec(),
                 ));
                 log::info!(
-                    "Broadcast cid {:?} to {:?} at {}",
+                    "Broadcast submitted cid {:?} to {:?} at {}",
                     cid,
                     dest,
                     context.chain_id
@@ -138,7 +138,21 @@ impl Contract for Feed {
                 ));
             }
             Message::Publish { cid } => {
-                return Ok(ExecutionResult::default());
+                self.pubish(cid.clone()).await?;
+                log::info!("Published cid {:?}", cid);
+                let dest = Destination::Subscribers(ChannelName::from(
+                    PUBLISHED_CONTENT_CHANNEL_NAME.to_vec(),
+                ));
+                log::info!(
+                    "Broadcast published cid {:?} to {:?} at {}",
+                    cid,
+                    dest,
+                    context.chain_id
+                );
+                return Ok(ExecutionResult::default().with_message(
+                    dest,
+                    Message::Publish { cid },
+                ));
             }
             Message::RequestPublishedSubscribe => {
                 let mut result = ExecutionResult::default();
@@ -159,21 +173,6 @@ impl Contract for Feed {
                 ));
                 return Ok(result);
             }
-            Message::RequestSubmittedSubscribe { chain_id } => {
-                let mut result = ExecutionResult::default();
-                log::info!(
-                    "Subscribe to {} at {} creation {} from application chain {}",
-                    context.message_id.chain_id,
-                    context.chain_id,
-                    system_api::current_application_id().creation.chain_id,
-                    chain_id,
-                );
-                result.subscribe.push((
-                    ChannelName::from(SUBMITTED_CONTENT_CHANNEL_NAME.to_vec()),
-                    chain_id,
-                ));
-                return Ok(result);
-            }
         }
     }
 
@@ -185,16 +184,17 @@ impl Contract for Feed {
     ) -> Result<ApplicationCallResult<Self::Message, Self::Response, Self::SessionState>, Self::Error>
     {
         match call {
-            ApplicationCall::Approve { cid, reason } => {}
-            ApplicationCall::Reject { cid, reason } => {}
+            ApplicationCall::Recommend { cid, reason } => {}
+            ApplicationCall::Publish { cid } => {
+                self.pubish(cid).await?
+            }
             ApplicationCall::RequestSubmittedSubscribe => {
                 let mut result = ApplicationCallResult::default();
-                result.execution_result = ExecutionResult::default().with_message(
-                    ChainId::from_str(CREATION_CHAIN_ID).unwrap(),
-                    Message::RequestSubmittedSubscribe {
-                        chain_id: context.chain_id,
-                    },
-                );
+                result.execution_result = ExecutionResult::default();
+                result.execution_result.subscribe.push((
+                    ChannelName::from(SUBMITTED_CONTENT_CHANNEL_NAME.to_vec()),
+                    context.chain_id,
+                ));
                 return Ok(result);
             }
         }
@@ -246,8 +246,7 @@ impl Feed {
                     dislikes: 0,
                     accounts: HashMap::default(),
                     created_at: current_system_time(),
-                    approved: false,
-                    rejected: false,
+                    published: false,
                 },
                 author,
             )
@@ -256,6 +255,10 @@ impl Feed {
             Ok(_) => self.reward_credits(author, Amount::from_tokens(500)).await,
             Err(err) => Err(ContractError::StateError(err)),
         }
+    }
+
+    async fn pubish(&mut self, cid: String) -> Result<(), ContractError> {
+        Ok(())
     }
 
     async fn like(&mut self, cid: String, owner: Owner) -> Result<(), ContractError> {

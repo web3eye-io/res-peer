@@ -72,7 +72,7 @@ echo -e "    Application ID: $BLUE$foundation_appid$NC"
 
 print $'\U01F4AB' $YELLOW " Deploying Review application ..."
 review_bid=`linera publish-bytecode ./target/wasm32-unknown-unknown/release/review_{contract,service}.wasm`
-review_appid=`linera create-application $review_bid --json-argument '{"content_approved_threshold":3,"content_rejected_threshold":2,"asset_approved_threshold":2,"asset_approved_threshold":2}' --json-parameters "\"$feed_appid\"" --required-application-ids $feed_appid`
+review_appid=`linera create-application $review_bid --json-argument '{"content_approved_threshold":3,"content_rejected_threshold":2,"asset_approved_threshold":2,"asset_rejected_threshold":2,"reviewer_approved_threshold":2,"reviewer_rejected_threshold":2}' --json-parameters "\"$feed_appid\"" --required-application-ids $feed_appid`
 print $'\U01f499' $LIGHTGREEN " Review application deployed"
 echo -e "    Bytecode ID:    $BLUE$review_bid$NC"
 echo -e "    Application ID: $BLUE$review_appid$NC"

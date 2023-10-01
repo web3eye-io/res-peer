@@ -34,7 +34,7 @@ pub struct Review {
 
 #[allow(dead_code)]
 impl Review {
-    pub(crate) async fn initialize(&mut self, state: InitialState) -> Result<(), StateError> {
+    pub(crate) async fn initialize(&mut self, creator: Owner, state: InitialState) -> Result<(), StateError> {
         self.content_approved_threshold
             .set(state.content_approved_threshold);
         self.content_rejected_threshold
@@ -47,6 +47,8 @@ impl Review {
             .set(state.reviewer_rejected_threshold);
         self.reviewer_rejected_threshold
             .set(state.reviewer_rejected_threshold);
+        self.reviewers.insert(&creator)?;
+        self.reviewer_number.set(1);
         Ok(())
     }
 
@@ -115,7 +117,7 @@ impl Review {
             _ => {
                 self.reviewer_applications.insert(&candidate, vec![1, 0])?;
             }
-        }need_notify
+        }
         let mut need_notify = false;
         match self.reviewer_applications.get(&candidate).await?.as_deref() {
             Some([approved, _rejected]) => {

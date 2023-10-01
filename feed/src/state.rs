@@ -53,6 +53,17 @@ impl Feed {
         }
     }
 
+    pub(crate) async fn publish(&mut self, cid: String) -> Result<(), StateError> {
+        match self.contents.get(&cid).await? {
+            Some(mut content) => {
+                content.published = true;
+                self.contents.insert(&cid, content)?;
+                Ok(())
+            },
+            _ => return Err(StateError::NotExist),
+        }
+    }
+
     pub(crate) async fn like_content(
         &mut self,
         ccid: String,
