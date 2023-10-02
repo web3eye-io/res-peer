@@ -102,6 +102,23 @@ impl Feed {
             _ => return Err(StateError::NotExist),
         }
     }
+
+    pub(crate) async fn recommend_content(
+        &mut self,
+        cid: String,
+        reason_cid: String,
+    ) -> Result<(), StateError> {
+        match self.content_recommends.get(&cid).await? {
+            Some(mut recommends) => {
+                recommends.push(reason_cid);
+                self.content_recommends.insert(&cid, recommends)?;
+            }
+            _ => {
+                self.content_recommends.insert(&cid, vec![reason_cid])?;
+            }
+        }
+        Ok(())
+    }
 }
 
 /// Attempts to debit from an account with insufficient funds.

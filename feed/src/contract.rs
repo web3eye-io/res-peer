@@ -88,12 +88,12 @@ impl Contract for Feed {
             } => {
                 self.publish(cid.clone(), title.clone(), content.clone(), author)
                     .await?;
-                log::info!("Submitted cid {:?} sender {:?}", cid, author);
+                log::info!("Published cid {:?} sender {:?}", cid, author);
                 let dest = Destination::Subscribers(ChannelName::from(
                     PUBLISHED_CONTENT_CHANNEL_NAME.to_vec(),
                 ));
                 log::info!(
-                    "Broadcast submitted cid {:?} to {:?} at {}",
+                    "Broadcast published cid {:?} to {:?} at {}",
                     cid,
                     dest,
                     context.chain_id
@@ -132,13 +132,22 @@ impl Contract for Feed {
 
     async fn handle_application_call(
         &mut self,
-        _context: &CalleeContext,
+        context: &CalleeContext,
         call: Self::ApplicationCall,
         _forwarded_sessions: Vec<SessionId>,
     ) -> Result<ApplicationCallResult<Self::Message, Self::Response, Self::SessionState>, Self::Error>
     {
         match call {
-            ApplicationCall::Recommend { cid, reason } => {}
+            ApplicationCall::Recommend {
+                cid,
+                reason_cid,
+                reason,
+            } => {
+                let author = context.authenticated_signer.unwrap();
+                self.publish(reason_cid.clone(), String::default(), reason, author)
+                    .await?;
+                self.recommend_content(cid, reason_cid).await?;
+            }
             ApplicationCall::Publish {
                 cid,
                 title,

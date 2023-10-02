@@ -9,7 +9,9 @@ use async_trait::async_trait;
 use credit::CreditAbi;
 use feed::FeedAbi;
 use linera_sdk::{
-    base::{Amount, ApplicationId, ChainId, ChannelName, Owner, SessionId, WithContractAbi},
+    base::{
+        Amount, ApplicationId, ChainId, ChannelName, Destination, Owner, SessionId, WithContractAbi,
+    },
     contract::system_api,
     ApplicationCallResult, CalleeContext, Contract, ExecutionResult, MessageContext,
     OperationContext, SessionCallResult, ViewStateStorage,
@@ -36,8 +38,12 @@ impl Contract for Review {
         context: &OperationContext,
         state: Self::InitializationArgument,
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
-        self._initialize(context.authenticated_signer.unwrap(), state)
-            .await?;
+        self._initialize(
+            context.chain_id,
+            context.authenticated_signer.unwrap(),
+            state,
+        )
+        .await?;
         Ok(ExecutionResult::default())
     }
 
@@ -48,8 +54,12 @@ impl Contract for Review {
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
         match operation {
             Operation::ApplyReviewer { resume } => {
-                self._apply_reviewer(context.authenticated_signer.unwrap(), resume)
-                    .await?;
+                self._apply_reviewer(
+                    context.chain_id,
+                    context.authenticated_signer.unwrap(),
+                    resume,
+                )
+                .await?;
             }
             Operation::UpdateReviewerResume { resume } => {
                 self._update_reviewer_resume(context.authenticated_signer.unwrap(), resume)
@@ -84,31 +94,55 @@ impl Contract for Review {
             }
             Operation::ApproveContent {
                 content_cid,
+                reason_cid,
                 reason,
             } => {
-                self._approve_content(context.authenticated_signer.unwrap(), content_cid, reason)
-                    .await?;
+                self._approve_content(
+                    context.authenticated_signer.unwrap(),
+                    content_cid,
+                    reason_cid,
+                    reason,
+                )
+                .await?;
             }
             Operation::RejectContent {
                 content_cid,
+                reason_cid,
                 reason,
             } => {
-                self._reject_content(context.authenticated_signer.unwrap(), content_cid, reason)
-                    .await?;
+                self._reject_content(
+                    context.authenticated_signer.unwrap(),
+                    content_cid,
+                    reason_cid,
+                    reason,
+                )
+                .await?;
             }
             Operation::ApproveAsset {
                 collection_id,
+                reason_cid,
                 reason,
             } => {
-                self._approve_asset(context.authenticated_signer.unwrap(), collection_id, reason)
-                    .await?;
+                self._approve_asset(
+                    context.authenticated_signer.unwrap(),
+                    collection_id,
+                    reason_cid,
+                    reason,
+                )
+                .await?;
             }
             Operation::RejectAsset {
                 collection_id,
+                reason_cid,
                 reason,
             } => {
-                self._reject_asset(context.authenticated_signer.unwrap(), collection_id, reason)
-                    .await?;
+                self._reject_asset(
+                    context.authenticated_signer.unwrap(),
+                    collection_id,
+                    reason_cid,
+                    reason,
+                )
+                .await?;
             }
             Operation::RequestSubmittedSubscribe => {
                 return Ok(ExecutionResult::default().with_message(
@@ -136,9 +170,28 @@ impl Contract for Review {
                     cid,
                     context.authenticated_signer.unwrap()
                 );
-                self._submit_content(cid, title, content, context.authenticated_signer.unwrap())
+                let author = context.authenticated_signer.unwrap();
+                self._submit_content(cid.clone(), title.clone(), content.clone(), author)
                     .await?;
                 // TODO: broadcast to other chains
+                log::info!("Submitted cid {:?} sender {:?}", cid, author);
+                let dest = Destination::Subscribers(ChannelName::from(
+                    SUBMITTED_CONTENT_CHANNEL_NAME.to_vec(),
+                ));
+                log::info!(
+                    "Broadcast submitted cid {:?} to {:?} at {}",
+                    cid,
+                    dest,
+                    context.chain_id
+                );
+                return Ok(ExecutionResult::default().with_authenticated_message(
+                    dest,
+                    Message::SubmitContent {
+                        cid,
+                        title,
+                        content,
+                    },
+                ));
             }
             Message::RequestSubmittedSubscribe => {
                 let mut result = ExecutionResult::default();
@@ -160,7 +213,6 @@ impl Contract for Review {
                 return Ok(result);
             }
         }
-        Ok(ExecutionResult::default())
     }
 
     async fn handle_application_call(
@@ -203,21 +255,43 @@ impl Review {
         Ok(())
     }
 
+    async fn publish_content(
+        &mut self,
+        cid: String,
+        title: String,
+        content: String,
+        author: Owner,
+    ) -> Result<(), ContractError> {
+        log::info!("Publish cid {:?}", cid);
+        let call = feed::ApplicationCall::Publish {
+            cid: cid.clone(),
+            title,
+            content,
+            author,
+        };
+        self.call_application(true, Self::feed_app_id()?, &call, vec![])
+            .await?;
+        log::info!("Published cid {:?}", cid);
+        Ok(())
+    }
+
     async fn _initialize(
         &mut self,
+        chain_id: ChainId,
         creator: Owner,
         state: InitialState,
     ) -> Result<(), ContractError> {
-        self.initialize(creator, state).await?;
+        self.initialize(chain_id, creator, state).await?;
         Ok(())
     }
 
     async fn _apply_reviewer(
         &mut self,
+        chain_id: ChainId,
         candidate: Owner,
         resume: String,
     ) -> Result<(), ContractError> {
-        self.apply_reviewer(candidate, resume).await?;
+        self.apply_reviewer(chain_id, candidate, resume).await?;
         Ok(())
     }
 
@@ -259,6 +333,7 @@ impl Review {
         author: Owner,
     ) -> Result<(), ContractError> {
         self.submit_content(Content {
+            // TODO: notify author
             cid,
             title,
             content,
@@ -269,7 +344,6 @@ impl Review {
             created_at: system_api::current_system_time(),
         })
         .await?;
-        // TODO: reward credits
         self.reward_credits(author, Amount::from_tokens(10)).await?;
         Ok(())
     }
@@ -278,12 +352,25 @@ impl Review {
         &mut self,
         reviewer: Owner,
         content_cid: String,
-        _reason: Option<String>,
+        reason_cid: Option<String>,
+        reason: Option<String>,
     ) -> Result<(), ContractError> {
-        self.approve_content(reviewer, content_cid).await?;
-        // TODO: add reason
-        // TODO: if already approved, publish content
-        // TODO: notify author
+        match self
+            .approve_content(reviewer, content_cid, reason.unwrap_or_default())
+            .await?
+        {
+            Some(content) => {
+                self.publish_content(content.cid, content.title, content.content, content.author)
+                    .await?;
+                // TODO: add reason as recommend
+                // TODO: notify author content is published
+            }
+            _ => {
+                // TODO: notify author content is approved
+            }
+        }
+        self.reward_credits(reviewer, Amount::from_tokens(50))
+            .await?;
         Ok(())
     }
 
@@ -291,11 +378,22 @@ impl Review {
         &mut self,
         reviewer: Owner,
         content_cid: String,
-        _reason: Option<String>,
+        reason_cid: Option<String>,
+        reason: Option<String>,
     ) -> Result<(), ContractError> {
-        self.reject_content(reviewer, content_cid).await?;
-        // TODO: add reason
-        // TODO: notify author
+        match self
+            .reject_content(reviewer, content_cid, reason.unwrap_or_default())
+            .await?
+        {
+            Some(content) => {
+                // TODO: notify author content is rejected
+            }
+            _ => {
+                // TODO: notify author content is rejected
+            }
+        }
+        self.reward_credits(reviewer, Amount::from_tokens(50))
+            .await?;
         Ok(())
     }
 
@@ -303,6 +401,7 @@ impl Review {
         &mut self,
         reviewer: Owner,
         collection_id: u64,
+        reason_cid: Option<String>,
         _reason: Option<String>,
     ) -> Result<(), ContractError> {
         self.approve_asset(reviewer, collection_id).await?;
@@ -316,6 +415,7 @@ impl Review {
         &mut self,
         reviewer: Owner,
         collection_id: u64,
+        reason_cid: Option<String>,
         _reason: Option<String>,
     ) -> Result<(), ContractError> {
         self.reject_asset(reviewer, collection_id).await?;

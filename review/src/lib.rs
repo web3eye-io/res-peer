@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use async_graphql::{Request, Response, SimpleObject};
-use linera_sdk::base::{ApplicationId, ContractAbi, Owner, ServiceAbi, Timestamp};
+use linera_sdk::base::{ApplicationId, ChainId, ContractAbi, Owner, ServiceAbi, Timestamp};
 use serde::{Deserialize, Serialize};
 
 pub struct ReviewAbi;
@@ -48,6 +48,7 @@ pub struct Review {
 
 #[derive(Debug, Deserialize, Serialize, Clone, SimpleObject, Eq, PartialEq)]
 pub struct Reviewer {
+    pub chain_id: ChainId,
     pub reviewer: Owner,
     pub resume: Option<String>,
     pub reviewers: HashMap<Owner, Review>,
@@ -98,18 +99,22 @@ pub enum Operation {
     },
     ApproveContent {
         content_cid: String,
+        reason_cid: Option<String>,
         reason: Option<String>,
     },
     RejectContent {
         content_cid: String,
+        reason_cid: Option<String>,
         reason: Option<String>,
     },
     ApproveAsset {
         collection_id: u64,
+        reason_cid: Option<String>,
         reason: Option<String>,
     },
     RejectAsset {
         collection_id: u64,
+        reason_cid: Option<String>,
         reason: Option<String>,
     },
     RequestSubmittedSubscribe,

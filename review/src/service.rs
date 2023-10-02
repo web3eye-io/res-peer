@@ -64,33 +64,57 @@ impl MutationRoot {
         .unwrap()
     }
 
-    async fn approve_content(&self, content_cid: String, reason: Option<String>) -> Vec<u8> {
+    async fn approve_content(
+        &self,
+        content_cid: String,
+        reason_cid: Option<String>,
+        reason: Option<String>,
+    ) -> Vec<u8> {
         bcs::to_bytes(&Operation::ApproveContent {
             content_cid,
+            reason_cid,
             reason,
         })
         .unwrap()
     }
 
-    async fn reject_content(&self, content_cid: String, reason: Option<String>) -> Vec<u8> {
+    async fn reject_content(
+        &self,
+        content_cid: String,
+        reason_cid: Option<String>,
+        reason: Option<String>,
+    ) -> Vec<u8> {
         bcs::to_bytes(&Operation::RejectContent {
             content_cid,
+            reason_cid,
             reason,
         })
         .unwrap()
     }
 
-    async fn approve_asset(&self, collection_id: u64, reason: Option<String>) -> Vec<u8> {
+    async fn approve_asset(
+        &self,
+        collection_id: u64,
+        reason_cid: Option<String>,
+        reason: Option<String>,
+    ) -> Vec<u8> {
         bcs::to_bytes(&Operation::ApproveAsset {
             collection_id,
+            reason_cid,
             reason,
         })
         .unwrap()
     }
 
-    async fn reject_asset(&self, collection_id: u64, reason: Option<String>) -> Vec<u8> {
+    async fn reject_asset(
+        &self,
+        collection_id: u64,
+        reason_cid: Option<String>,
+        reason: Option<String>,
+    ) -> Vec<u8> {
         bcs::to_bytes(&Operation::RejectAsset {
             collection_id,
+            reason_cid,
             reason,
         })
         .unwrap()

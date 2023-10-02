@@ -70,6 +70,7 @@ pub enum ApplicationCall {
     },
     Recommend {
         cid: String,
-        reason: Option<String>,
+        reason_cid: String,
+        reason: String,
     },
 }
