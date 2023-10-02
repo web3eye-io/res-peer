@@ -49,9 +49,16 @@ print $'\U01f499' $LIGHTGREEN " Credit application deployed"
 echo -e "    Bytecode ID:    $BLUE$credit_bid$NC"
 echo -e "    Application ID: $BLUE$credit_appid$NC"
 
+print $'\U01F4AB' $YELLOW " Deploying Foundation application ..."
+foundation_bid=`linera publish-bytecode ./target/wasm32-unknown-unknown/release/foundation_{contract,service}.wasm`
+foundation_appid=`linera create-application $foundation_bid --json-argument '{"review_reward_percent":20,"review_reward_factor":20,"author_reward_percent":40,"author_reward_factor":20,"activity_reward_percent":10}'`
+print $'\U01f499' $LIGHTGREEN " Foundation application deployed"
+echo -e "    Bytecode ID:    $BLUE$foundation_bid$NC"
+echo -e "    Application ID: $BLUE$foundation_appid$NC"
+
 print $'\U01F4AB' $YELLOW " Deploying Feed application ..."
 feed_bid=`linera publish-bytecode ./target/wasm32-unknown-unknown/release/feed_{contract,service}.wasm`
-feed_appid=`linera create-application $feed_bid --json-argument '{"react_interval_ms":60000}' --json-parameters "\"$credit_appid\"" --required-application-ids $credit_appid`
+feed_appid=`linera create-application $feed_bid --json-argument '{"react_interval_ms":60000}' --json-parameters "{\"credit_app_id\":\"$credit_appid\",\"foundation_app_id\":\"$foundation_appid\"}" --required-application-ids $credit_appid --required-application-ids $foundation_appid`
 print $'\U01f499' $LIGHTGREEN " Feed application deployed"
 echo -e "    Bytecode ID:    $BLUE$feed_bid$NC"
 echo -e "    Application ID: $BLUE$feed_appid$NC"
@@ -63,16 +70,9 @@ print $'\U01f499' $LIGHTGREEN " Market application deployed"
 echo -e "    Bytecode ID:    $BLUE$market_bid$NC"
 echo -e "    Application ID: $BLUE$market_appid$NC"
 
-print $'\U01F4AB' $YELLOW " Deploying Foundation application ..."
-foundation_bid=`linera publish-bytecode ./target/wasm32-unknown-unknown/release/foundation_{contract,service}.wasm`
-foundation_appid=`linera create-application $foundation_bid --json-argument '{"review_reward_percent":20,"review_reward_factor":20,"author_reward_percent":40,"author_reward_factor":20,"activity_reward_percent":10}'`
-print $'\U01f499' $LIGHTGREEN " Foundation application deployed"
-echo -e "    Bytecode ID:    $BLUE$foundation_bid$NC"
-echo -e "    Application ID: $BLUE$foundation_appid$NC"
-
 print $'\U01F4AB' $YELLOW " Deploying Review application ..."
 review_bid=`linera publish-bytecode ./target/wasm32-unknown-unknown/release/review_{contract,service}.wasm`
-review_appid=`linera create-application $review_bid --json-argument '{"content_approved_threshold":3,"content_rejected_threshold":2,"asset_approved_threshold":2,"asset_rejected_threshold":2,"reviewer_approved_threshold":2,"reviewer_rejected_threshold":2}' --json-parameters "{\"feed_app_id\":\"$feed_appid\",\"credit_app_id\":\"$credit_appid\"}" --required-application-ids $feed_appid --required-application-ids $credit_appid`
+review_appid=`linera create-application $review_bid --json-argument '{"content_approved_threshold":3,"content_rejected_threshold":2,"asset_approved_threshold":2,"asset_rejected_threshold":2,"reviewer_approved_threshold":2,"reviewer_rejected_threshold":2}' --json-parameters "{\"feed_app_id\":\"$feed_appid\",\"credit_app_id\":\"$credit_appid\",\"foundation_app_id\":\"$foundation_appid\"}" --required-application-ids $feed_appid --required-application-ids $credit_appid --required-application-ids $foundation_appid`
 print $'\U01f499' $LIGHTGREEN " Review application deployed"
 echo -e "    Bytecode ID:    $BLUE$review_bid$NC"
 echo -e "    Application ID: $BLUE$review_appid$NC"

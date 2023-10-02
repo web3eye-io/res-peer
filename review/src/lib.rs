@@ -27,6 +27,7 @@ impl ServiceAbi for ReviewAbi {
 pub struct ReviewParameters {
     pub feed_app_id: ApplicationId<feed::FeedAbi>,
     pub credit_app_id: ApplicationId<credit::CreditAbi>,
+    pub foundation_app_id: ApplicationId<foundation::FoundationAbi>,
 }
 
 #[derive(Clone, Debug, Deserialize, PartialEq, PartialOrd, Serialize)]

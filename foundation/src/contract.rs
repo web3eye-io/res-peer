@@ -69,7 +69,7 @@ impl Contract for Foundation {
                 activity_id,
             } => {
                 let reward_user = match reward_type {
-                    RewardType::Publish => context.authenticated_signer,
+                    RewardType::Review => context.authenticated_signer,
                     _ => reward_user,
                 };
                 let reward_user = match reward_user {
@@ -81,7 +81,7 @@ impl Contract for Foundation {
                         Some(user) => Some(user),
                         None => return Err(ContractError::InvalidUser),
                     },
-                    _ => return Err(ContractError::InvalidUser),
+                    _ => None,
                 };
                 self.reward(reward_user, reward_type, amount, activity_id, activity_host)
                     .await?;

@@ -78,11 +78,7 @@ impl MutationRoot {
         .unwrap()
     }
 
-    async fn reject_content(
-        &self,
-        content_cid: String,
-        reason: Option<String>,
-    ) -> Vec<u8> {
+    async fn reject_content(&self, content_cid: String, reason: Option<String>) -> Vec<u8> {
         bcs::to_bytes(&Operation::RejectContent {
             content_cid,
             reason,
@@ -104,11 +100,7 @@ impl MutationRoot {
         .unwrap()
     }
 
-    async fn reject_asset(
-        &self,
-        collection_id: u64,
-        reason: Option<String>,
-    ) -> Vec<u8> {
+    async fn reject_asset(&self, collection_id: u64, reason: Option<String>) -> Vec<u8> {
         bcs::to_bytes(&Operation::RejectAsset {
             collection_id,
             reason,

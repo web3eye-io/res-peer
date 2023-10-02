@@ -34,6 +34,7 @@ futures-util = "0.3.28"
 credit = { path = "./credit" }
 feed = { path = "./feed" }
 review = { path = "./review" }
+foundation = { path = "./foundation" }
 
 [profile.release]
 debug = true

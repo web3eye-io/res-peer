@@ -8,6 +8,7 @@ use self::state::Feed;
 use async_trait::async_trait;
 use credit::CreditAbi;
 use feed::{ApplicationCall, Content, Message, Operation};
+use foundation::FoundationAbi;
 use linera_sdk::{
     base::{
         Amount, ApplicationId, ChainId, ChannelName, Destination, Owner, SessionId, WithContractAbi,
@@ -108,11 +109,21 @@ impl Contract for Feed {
                     },
                 ));
             }
-            Message::Recommend { cid, reason_cid, reason } => {
+            Message::Recommend {
+                cid,
+                reason_cid,
+                reason,
+            } => {
                 let author = context.authenticated_signer.unwrap();
-                self.publish(reason_cid.clone(), String::default(), reason.clone(), author)
+                self.publish(
+                    reason_cid.clone(),
+                    String::default(),
+                    reason.clone(),
+                    author,
+                )
+                .await?;
+                self.recommend_content(cid.clone(), reason_cid.clone())
                     .await?;
-                self.recommend_content(cid.clone(), reason_cid.clone()).await?;
                 log::info!("Recommend cid {:?} sender {:?}", cid, author);
                 let dest = Destination::Subscribers(ChannelName::from(
                     PUBLISHED_CONTENT_CHANNEL_NAME.to_vec(),
@@ -156,7 +167,7 @@ impl Contract for Feed {
 
     async fn handle_application_call(
         &mut self,
-        context: &CalleeContext,
+        _context: &CalleeContext,
         call: Self::ApplicationCall,
         _forwarded_sessions: Vec<SessionId>,
     ) -> Result<ApplicationCallResult<Self::Message, Self::Response, Self::SessionState>, Self::Error>
@@ -167,11 +178,7 @@ impl Contract for Feed {
                 reason_cid,
                 reason,
             } => {
-                let author = context.authenticated_signer.unwrap();
-                self.publish(reason_cid.clone(), String::default(), reason.clone(), author)
-                    .await?;
-                self.recommend_content(cid.clone(), reason_cid.clone()).await?;
-                log::info!("Recommend cid {:?} sender {:?}", cid, author);
+                log::info!("Recommend cid {:?} reason {:?}", cid, reason_cid);
                 let mut result = ApplicationCallResult::default();
                 result.execution_result = ExecutionResult::default().with_authenticated_message(
                     ChainId::from_str(CREATION_CHAIN_ID).unwrap(),
@@ -206,16 +213,34 @@ impl Contract for Feed {
 }
 
 impl Feed {
-    fn credit_id() -> Result<ApplicationId<CreditAbi>, ContractError> {
-        Self::parameters()
+    fn credit_app_id() -> Result<ApplicationId<CreditAbi>, ContractError> {
+        Ok(Self::parameters().unwrap().credit_app_id)
+    }
+
+    fn foundation_app_id() -> Result<ApplicationId<FoundationAbi>, ContractError> {
+        Ok(Self::parameters().unwrap().foundation_app_id)
     }
 
     async fn reward_credits(&mut self, owner: Owner, amount: Amount) -> Result<(), ContractError> {
         log::info!("Reward owner {:?} amount {:?}", owner, amount);
         let call = credit::ApplicationCall::Reward { owner, amount };
-        self.call_application(true, Self::credit_id()?, &call, vec![])
+        self.call_application(true, Self::credit_app_id()?, &call, vec![])
             .await?;
         log::info!("Rewarded owner {:?} amount {:?}", owner, amount);
+        Ok(())
+    }
+
+    async fn reward_tokens(&mut self, author: Owner) -> Result<(), ContractError> {
+        log::info!("Reward tokens owner {:?}", author);
+        let call = foundation::ApplicationCall::Reward {
+            reward_user: Some(author),
+            reward_type: foundation::RewardType::Publish,
+            amount: None,
+            activity_id: None,
+        };
+        self.call_application(true, Self::foundation_app_id()?, &call, vec![])
+            .await?;
+        log::info!("Rewarded tokens owner {:?}", author);
         Ok(())
     }
 
@@ -243,7 +268,12 @@ impl Feed {
             )
             .await
         {
-            Ok(_) => self.reward_credits(author, Amount::from_tokens(500)).await,
+            Ok(_) => {
+                self.reward_credits(author, Amount::from_tokens(500))
+                    .await?;
+                self.reward_tokens(author).await?;
+                Ok(())
+            }
             Err(err) => Err(ContractError::StateError(err)),
         }
     }

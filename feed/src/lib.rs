@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 pub struct FeedAbi;
 
 impl ContractAbi for FeedAbi {
-    type Parameters = ApplicationId<credit::CreditAbi>;
+    type Parameters = FeedParameters;
     type InitializationArgument = InitialState;
     type Operation = Operation;
     type Message = Message;
@@ -18,9 +18,15 @@ impl ContractAbi for FeedAbi {
 }
 
 impl ServiceAbi for FeedAbi {
-    type Parameters = ApplicationId<credit::CreditAbi>;
+    type Parameters = FeedParameters;
     type Query = Request;
     type QueryResponse = Response;
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct FeedParameters {
+    pub credit_app_id: ApplicationId<credit::CreditAbi>,
+    pub foundation_app_id: ApplicationId<foundation::FoundationAbi>,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, SimpleObject, Eq, PartialEq)]

@@ -8,6 +8,7 @@ use self::state::Review;
 use async_trait::async_trait;
 use credit::CreditAbi;
 use feed::FeedAbi;
+use foundation::FoundationAbi;
 use linera_sdk::{
     base::{
         Amount, ApplicationId, ChainId, ChannelName, Destination, Owner, SessionId, WithContractAbi,
@@ -234,12 +235,30 @@ impl Review {
         Ok(Self::parameters()?.credit_app_id)
     }
 
+    fn foundation_app_id() -> Result<ApplicationId<FoundationAbi>, ContractError> {
+        Ok(Self::parameters()?.foundation_app_id)
+    }
+
     async fn reward_credits(&mut self, owner: Owner, amount: Amount) -> Result<(), ContractError> {
-        log::info!("Reward owner {:?} amount {:?}", owner, amount);
+        log::info!("Reward credits owner {:?} amount {:?}", owner, amount);
         let call = credit::ApplicationCall::Reward { owner, amount };
         self.call_application(true, Self::credit_app_id()?, &call, vec![])
             .await?;
-        log::info!("Rewarded owner {:?} amount {:?}", owner, amount);
+        log::info!("Rewarded credits owner {:?} amount {:?}", owner, amount);
+        Ok(())
+    }
+
+    async fn reward_tokens(&mut self, reviewer: Owner) -> Result<(), ContractError> {
+        log::info!("Reward tokens owner {:?}", reviewer);
+        let call = foundation::ApplicationCall::Reward {
+            reward_user: None,
+            reward_type: foundation::RewardType::Review,
+            amount: None,
+            activity_id: None,
+        };
+        self.call_application(true, Self::foundation_app_id()?, &call, vec![])
+            .await?;
+        log::info!("Rewarded tokens owner {:?}", reviewer);
         Ok(())
     }
 
@@ -269,15 +288,15 @@ impl Review {
         reason_cid: String,
         reason: String,
     ) -> Result<(), ContractError> {
-        log::info!("Recommend content {:?}", cid);
+        log::info!("Recommend content {:?} reason {:?}", cid, reason_cid);
         let call = feed::ApplicationCall::Recommend {
             cid: cid.clone(),
-            reason_cid,
+            reason_cid: reason_cid.clone(),
             reason,
         };
         self.call_application(true, Self::feed_app_id()?, &call, vec![])
             .await?;
-        log::info!("Recommended content {:?}", cid);
+        log::info!("Recommended content {:?} reason {:?}", cid, reason_cid);
         Ok(())
     }
 
@@ -387,6 +406,7 @@ impl Review {
         }
         self.reward_credits(reviewer, Amount::from_tokens(50))
             .await?;
+        self.reward_tokens(reviewer).await?;
         Ok(())
     }
 
@@ -400,7 +420,7 @@ impl Review {
             .reject_content(reviewer, content_cid, reason.unwrap_or_default())
             .await?
         {
-            Some(content) => {
+            Some(_content) => {
                 // TODO: notify author content is rejected
             }
             _ => {
@@ -409,6 +429,7 @@ impl Review {
         }
         self.reward_credits(reviewer, Amount::from_tokens(50))
             .await?;
+        self.reward_tokens(reviewer).await?;
         Ok(())
     }
 
@@ -416,7 +437,7 @@ impl Review {
         &mut self,
         reviewer: Owner,
         collection_id: u64,
-        reason_cid: Option<String>,
+        _reason_cid: Option<String>,
         _reason: Option<String>,
     ) -> Result<(), ContractError> {
         self.approve_asset(reviewer, collection_id).await?;

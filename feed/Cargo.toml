@@ -16,6 +16,7 @@ thiserror = "1.0.38"
 cid = "0.10.1"
 log = { workspace = true }
 credit = { workspace = true }
+foundation = { workspace = true }
 tokio-stream = { workspace = true }
 tokio = { workspace = true }
 futures-util = { workspace = true }
