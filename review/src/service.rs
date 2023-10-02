@@ -10,7 +10,7 @@ use linera_sdk::{
     QueryContext, Service, ViewStateStorage,
 };
 use review::Operation;
-use std::{string, sync::Arc};
+use std::sync::Arc;
 use thiserror::Error;
 
 linera_sdk::service!(Review);
