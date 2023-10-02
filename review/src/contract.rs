@@ -6,6 +6,7 @@ use std::{collections::HashMap, str::FromStr};
 
 use self::state::Review;
 use async_trait::async_trait;
+use credit::CreditAbi;
 use feed::FeedAbi;
 use linera_sdk::{
     base::{ApplicationId, ChainId, ChannelName, Owner, SessionId, WithContractAbi},
@@ -185,8 +186,12 @@ impl Contract for Review {
 }
 
 impl Review {
-    fn feed_id() -> Result<ApplicationId<FeedAbi>, ContractError> {
-        Self::parameters()
+    fn feed_app_id() -> Result<ApplicationId<FeedAbi>, ContractError> {
+        Ok(Self::parameters()?.feed_app_id)
+    }
+
+    fn credit_app_id() -> Result<ApplicationId<CreditAbi>, ContractError> {
+        Ok(Self::parameters()?.credit_app_id)
     }
 
     async fn _initialize(
@@ -252,6 +257,7 @@ impl Review {
             reviewers: HashMap::default(),
             approved: 0,
             rejected: 0,
+            created_at: system_api::current_system_time(),
         })
         .await?;
         // TODO: reward credits

@@ -1,13 +1,13 @@
 use std::collections::HashMap;
 
 use async_graphql::{Request, Response, SimpleObject};
-use linera_sdk::base::{ApplicationId, ContractAbi, Owner, ServiceAbi};
+use linera_sdk::base::{ApplicationId, ContractAbi, Owner, ServiceAbi, Timestamp};
 use serde::{Deserialize, Serialize};
 
 pub struct ReviewAbi;
 
 impl ContractAbi for ReviewAbi {
-    type Parameters = ApplicationId<feed::FeedAbi>;
+    type Parameters = ReviewParameters;
     type InitializationArgument = InitialState;
     type Operation = Operation;
     type Message = Message;
@@ -18,9 +18,15 @@ impl ContractAbi for ReviewAbi {
 }
 
 impl ServiceAbi for ReviewAbi {
-    type Parameters = ApplicationId<feed::FeedAbi>;
+    type Parameters = ReviewParameters;
     type Query = Request;
     type QueryResponse = Response;
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct ReviewParameters {
+    pub feed_app_id: ApplicationId<feed::FeedAbi>,
+    pub credit_app_id: ApplicationId<credit::CreditAbi>
 }
 
 #[derive(Clone, Debug, Deserialize, PartialEq, PartialOrd, Serialize)]
@@ -59,6 +65,7 @@ pub struct Content {
     pub reviewers: HashMap<Owner, Review>,
     pub approved: u16,
     pub rejected: u16,
+    pub created_at: Timestamp
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, SimpleObject, Eq, PartialEq)]

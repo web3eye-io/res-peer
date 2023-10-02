@@ -15,6 +15,7 @@ serde_json = "1.0.93"
 thiserror = "1.0.38"
 log = { workspace = true }
 feed = { workspace = true }
+credit = { workspace = true }
 
 [dev-dependencies]
 linera-sdk = { workspace = true, features = ["test"] }
