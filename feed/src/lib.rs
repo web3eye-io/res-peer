@@ -57,6 +57,11 @@ pub enum Message {
         content: String,
         author: Owner,
     },
+    Recommend {
+        cid: String,
+        reason_cid: String,
+        reason: String,
+    },
     RequestPublishedSubscribe,
 }
 

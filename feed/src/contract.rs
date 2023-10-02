@@ -108,6 +108,30 @@ impl Contract for Feed {
                     },
                 ));
             }
+            Message::Recommend { cid, reason_cid, reason } => {
+                let author = context.authenticated_signer.unwrap();
+                self.publish(reason_cid.clone(), String::default(), reason.clone(), author)
+                    .await?;
+                self.recommend_content(cid.clone(), reason_cid.clone()).await?;
+                log::info!("Recommend cid {:?} sender {:?}", cid, author);
+                let dest = Destination::Subscribers(ChannelName::from(
+                    PUBLISHED_CONTENT_CHANNEL_NAME.to_vec(),
+                ));
+                log::info!(
+                    "Broadcast recommend cid {:?} to {:?} at {}",
+                    cid,
+                    dest,
+                    context.chain_id
+                );
+                return Ok(ExecutionResult::default().with_message(
+                    dest,
+                    Message::Recommend {
+                        cid,
+                        reason_cid,
+                        reason,
+                    },
+                ));
+            }
             Message::RequestPublishedSubscribe => {
                 let mut result = ExecutionResult::default();
                 log::info!(
@@ -144,9 +168,20 @@ impl Contract for Feed {
                 reason,
             } => {
                 let author = context.authenticated_signer.unwrap();
-                self.publish(reason_cid.clone(), String::default(), reason, author)
+                self.publish(reason_cid.clone(), String::default(), reason.clone(), author)
                     .await?;
-                self.recommend_content(cid, reason_cid).await?;
+                self.recommend_content(cid.clone(), reason_cid.clone()).await?;
+                log::info!("Recommend cid {:?} sender {:?}", cid, author);
+                let mut result = ApplicationCallResult::default();
+                result.execution_result = ExecutionResult::default().with_authenticated_message(
+                    ChainId::from_str(CREATION_CHAIN_ID).unwrap(),
+                    Message::Recommend {
+                        cid,
+                        reason_cid,
+                        reason,
+                    },
+                );
+                return Ok(result);
             }
             ApplicationCall::Publish {
                 cid,
