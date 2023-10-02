@@ -104,7 +104,6 @@ pub enum Operation {
     },
     RejectContent {
         content_cid: String,
-        reason_cid: Option<String>,
         reason: Option<String>,
     },
     ApproveAsset {
@@ -114,7 +113,6 @@ pub enum Operation {
     },
     RejectAsset {
         collection_id: u64,
-        reason_cid: Option<String>,
         reason: Option<String>,
     },
     RequestSubmittedSubscribe,

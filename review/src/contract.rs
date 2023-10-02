@@ -107,16 +107,10 @@ impl Contract for Review {
             }
             Operation::RejectContent {
                 content_cid,
-                reason_cid,
                 reason,
             } => {
-                self._reject_content(
-                    context.authenticated_signer.unwrap(),
-                    content_cid,
-                    reason_cid,
-                    reason,
-                )
-                .await?;
+                self._reject_content(context.authenticated_signer.unwrap(), content_cid, reason)
+                    .await?;
             }
             Operation::ApproveAsset {
                 collection_id,
@@ -133,16 +127,10 @@ impl Contract for Review {
             }
             Operation::RejectAsset {
                 collection_id,
-                reason_cid,
                 reason,
             } => {
-                self._reject_asset(
-                    context.authenticated_signer.unwrap(),
-                    collection_id,
-                    reason_cid,
-                    reason,
-                )
-                .await?;
+                self._reject_asset(context.authenticated_signer.unwrap(), collection_id, reason)
+                    .await?;
             }
             Operation::RequestSubmittedSubscribe => {
                 return Ok(ExecutionResult::default().with_message(
@@ -275,6 +263,24 @@ impl Review {
         Ok(())
     }
 
+    async fn recommend_content(
+        &mut self,
+        cid: String,
+        reason_cid: String,
+        reason: String,
+    ) -> Result<(), ContractError> {
+        log::info!("Recommend content {:?}", cid);
+        let call = feed::ApplicationCall::Recommend {
+            cid: cid.clone(),
+            reason_cid,
+            reason,
+        };
+        self.call_application(true, Self::feed_app_id()?, &call, vec![])
+            .await?;
+        log::info!("Recommended content {:?}", cid);
+        Ok(())
+    }
+
     async fn _initialize(
         &mut self,
         chain_id: ChainId,
@@ -356,13 +362,23 @@ impl Review {
         reason: Option<String>,
     ) -> Result<(), ContractError> {
         match self
-            .approve_content(reviewer, content_cid, reason.unwrap_or_default())
+            .approve_content(
+                reviewer,
+                content_cid.clone(),
+                reason.clone().unwrap_or_default(),
+            )
             .await?
         {
             Some(content) => {
                 self.publish_content(content.cid, content.title, content.content, content.author)
                     .await?;
-                // TODO: add reason as recommend
+                match reason_cid {
+                    Some(cid) => {
+                        self.recommend_content(content_cid, cid, reason.unwrap_or_default())
+                            .await?
+                    }
+                    _ => {}
+                }
                 // TODO: notify author content is published
             }
             _ => {
@@ -378,7 +394,6 @@ impl Review {
         &mut self,
         reviewer: Owner,
         content_cid: String,
-        reason_cid: Option<String>,
         reason: Option<String>,
     ) -> Result<(), ContractError> {
         match self
@@ -415,7 +430,6 @@ impl Review {
         &mut self,
         reviewer: Owner,
         collection_id: u64,
-        reason_cid: Option<String>,
         _reason: Option<String>,
     ) -> Result<(), ContractError> {
         self.reject_asset(reviewer, collection_id).await?;
