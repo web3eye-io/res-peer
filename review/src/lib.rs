@@ -26,7 +26,7 @@ impl ServiceAbi for ReviewAbi {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ReviewParameters {
     pub feed_app_id: ApplicationId<feed::FeedAbi>,
-    pub credit_app_id: ApplicationId<credit::CreditAbi>
+    pub credit_app_id: ApplicationId<credit::CreditAbi>,
 }
 
 #[derive(Clone, Debug, Deserialize, PartialEq, PartialOrd, Serialize)]
@@ -65,7 +65,7 @@ pub struct Content {
     pub reviewers: HashMap<Owner, Review>,
     pub approved: u16,
     pub rejected: u16,
-    pub created_at: Timestamp
+    pub created_at: Timestamp,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, SimpleObject, Eq, PartialEq)]

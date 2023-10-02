@@ -9,7 +9,7 @@ use async_trait::async_trait;
 use credit::CreditAbi;
 use feed::FeedAbi;
 use linera_sdk::{
-    base::{ApplicationId, ChainId, ChannelName, Owner, SessionId, WithContractAbi},
+    base::{Amount, ApplicationId, ChainId, ChannelName, Owner, SessionId, WithContractAbi},
     contract::system_api,
     ApplicationCallResult, CalleeContext, Contract, ExecutionResult, MessageContext,
     OperationContext, SessionCallResult, ViewStateStorage,
@@ -194,6 +194,15 @@ impl Review {
         Ok(Self::parameters()?.credit_app_id)
     }
 
+    async fn reward_credits(&mut self, owner: Owner, amount: Amount) -> Result<(), ContractError> {
+        log::info!("Reward owner {:?} amount {:?}", owner, amount);
+        let call = credit::ApplicationCall::Reward { owner, amount };
+        self.call_application(true, Self::credit_app_id()?, &call, vec![])
+            .await?;
+        log::info!("Rewarded owner {:?} amount {:?}", owner, amount);
+        Ok(())
+    }
+
     async fn _initialize(
         &mut self,
         creator: Owner,
@@ -261,6 +270,7 @@ impl Review {
         })
         .await?;
         // TODO: reward credits
+        self.reward_credits(author, Amount::from_tokens(10)).await?;
         Ok(())
     }
 
