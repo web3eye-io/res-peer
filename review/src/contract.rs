@@ -27,7 +27,7 @@ impl WithContractAbi for Review {
 }
 
 const CREATION_CHAIN_ID: &str = "e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65";
-const SUBMITTED_CONTENT_CHANNEL_NAME: &[u8] = b"submitted_contents";
+const SUBSCRIPTION_CHANNEL: &[u8] = b"subscriptions";
 
 #[async_trait]
 impl Contract for Review {
@@ -55,12 +55,14 @@ impl Contract for Review {
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
         match operation {
             Operation::ApplyReviewer { resume } => {
-                self._apply_reviewer(
-                    context.chain_id,
-                    context.authenticated_signer.unwrap(),
-                    resume,
-                )
-                .await?;
+                log::info!(
+                    "Applu reviewer from {:?}",
+                    context.authenticated_signer.unwrap()
+                );
+                return Ok(ExecutionResult::default().with_authenticated_message(
+                    ChainId::from_str(CREATION_CHAIN_ID).unwrap(),
+                    Message::ApplyReviewer { resume },
+                ));
             }
             Operation::UpdateReviewerResume { resume } => {
                 self._update_reviewer_resume(context.authenticated_signer.unwrap(), resume)
@@ -133,10 +135,15 @@ impl Contract for Review {
                 self._reject_asset(context.authenticated_signer.unwrap(), collection_id, reason)
                     .await?;
             }
-            Operation::RequestSubmittedSubscribe => {
+            Operation::RequestSubscribe => {
+                log::info!(
+                    "Subscribe from {} creation {}",
+                    context.chain_id,
+                    system_api::current_application_id().creation.chain_id
+                );
                 return Ok(ExecutionResult::default().with_message(
                     ChainId::from_str(CREATION_CHAIN_ID).unwrap(),
-                    Message::RequestSubmittedSubscribe,
+                    Message::RequestSubscribe,
                 ));
             }
         }
@@ -149,6 +156,16 @@ impl Contract for Review {
         message: Self::Message,
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
         match message {
+            Message::ApplyReviewer { resume } => {
+                let candidate = context.authenticated_signer.unwrap();
+                self._apply_reviewer(context.chain_id, candidate, resume.clone())
+                    .await?;
+                // TODO: broadcast to other chains
+                let dest =
+                    Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
+                return Ok(ExecutionResult::default()
+                    .with_authenticated_message(dest, Message::ApplyReviewer { resume }));
+            }
             Message::SubmitContent {
                 cid,
                 title,
@@ -164,9 +181,8 @@ impl Contract for Review {
                     .await?;
                 // TODO: broadcast to other chains
                 log::info!("Submitted cid {:?} sender {:?}", cid, author);
-                let dest = Destination::Subscribers(ChannelName::from(
-                    SUBMITTED_CONTENT_CHANNEL_NAME.to_vec(),
-                ));
+                let dest =
+                    Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
                 log::info!(
                     "Broadcast submitted cid {:?} to {:?} at {}",
                     cid,
@@ -182,7 +198,7 @@ impl Contract for Review {
                     },
                 ));
             }
-            Message::RequestSubmittedSubscribe => {
+            Message::RequestSubscribe => {
                 let mut result = ExecutionResult::default();
                 log::info!(
                     "Subscribe to {} at {} creation {}",
@@ -196,7 +212,7 @@ impl Contract for Review {
                     return Ok(result);
                 }
                 result.subscribe.push((
-                    ChannelName::from(SUBMITTED_CONTENT_CHANNEL_NAME.to_vec()),
+                    ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()),
                     context.message_id.chain_id,
                 ));
                 return Ok(result);

@@ -116,15 +116,18 @@ pub enum Operation {
         collection_id: u64,
         reason: Option<String>,
     },
-    RequestSubmittedSubscribe,
+    RequestSubscribe,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub enum Message {
+    ApplyReviewer {
+        resume: String,
+    },
     SubmitContent {
         cid: String,
         title: String,
         content: String,
     },
-    RequestSubmittedSubscribe,
+    RequestSubscribe,
 }
