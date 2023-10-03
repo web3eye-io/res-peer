@@ -117,20 +117,38 @@ impl Contract for Review {
                 reason_cid,
                 reason,
             } => {
-                self._approve_content(
-                    context.authenticated_signer.unwrap(),
+                log::info!(
+                    "Approve cid {:?} by {:?} with reason {:?}",
                     content_cid,
+                    context.authenticated_signer.unwrap(),
                     reason_cid,
-                    reason,
-                )
-                .await?;
+                );
+                return Ok(ExecutionResult::default().with_authenticated_message(
+                    system_api::current_application_id().creation.chain_id,
+                    Message::ApproveContent {
+                        content_cid,
+                        reason_cid,
+                        reason,
+                    },
+                ));
             }
             Operation::RejectContent {
                 content_cid,
                 reason,
             } => {
-                self._reject_content(context.authenticated_signer.unwrap(), content_cid, reason)
-                    .await?;
+                log::info!(
+                    "Reject cid {:?} by {:?} with reason {:?}",
+                    content_cid,
+                    context.authenticated_signer.unwrap(),
+                    reason,
+                );
+                return Ok(ExecutionResult::default().with_authenticated_message(
+                    system_api::current_application_id().creation.chain_id,
+                    Message::RejectContent {
+                        content_cid,
+                        reason,
+                    },
+                ));
             }
             Operation::ApproveAsset {
                 collection_id,
@@ -239,6 +257,59 @@ impl Contract for Review {
                         cid,
                         title,
                         content,
+                    },
+                ));
+            }
+            Message::ApproveContent {
+                content_cid,
+                reason_cid,
+                reason,
+            } => {
+                let reviewer = context.authenticated_signer.unwrap();
+                log::info!(
+                    "Message approve content cid {:?} by {:?} with reason {:?}",
+                    content_cid,
+                    reviewer,
+                    reason_cid,
+                );
+                self._approve_content(
+                    reviewer,
+                    content_cid.clone(),
+                    reason_cid.clone(),
+                    reason.clone(),
+                )
+                .await?;
+                let dest =
+                    Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
+                return Ok(ExecutionResult::default().with_authenticated_message(
+                    dest,
+                    Message::ApproveContent {
+                        content_cid,
+                        reason_cid,
+                        reason,
+                    },
+                ));
+            }
+            Message::RejectContent {
+                content_cid,
+                reason,
+            } => {
+                let reviewer = context.authenticated_signer.unwrap();
+                log::info!(
+                    "Message reject content cid {:?} by {:?} with reason {:?}",
+                    content_cid,
+                    reviewer,
+                    reason,
+                );
+                self._reject_content(reviewer, content_cid.clone(), reason.clone())
+                    .await?;
+                let dest =
+                    Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
+                return Ok(ExecutionResult::default().with_authenticated_message(
+                    dest,
+                    Message::RejectContent {
+                        content_cid,
+                        reason,
                     },
                 ));
             }
@@ -391,22 +462,39 @@ impl Review {
 
     async fn _approve_reviewer(
         &mut self,
-        owner: Owner,
+        reviewer: Owner,
         candidate: Owner,
     ) -> Result<(), ContractError> {
-        self.approve_reviewer(owner, candidate).await?;
-        // TODO: if approved, subscribe submitted content
-        // TODO: notify reviewer
+        match self.approve_reviewer(reviewer, candidate).await? {
+            Some(_reviewer) => {
+                // TODO: notify candidate is reviewer
+            }
+            _ => {
+                // TODO: notify candidate is approved
+            }
+        }
+        self.reward_credits(reviewer, Amount::from_tokens(100))
+            .await?;
+        self.reward_tokens(reviewer).await?;
         Ok(())
     }
 
     async fn _reject_reviewer(
         &mut self,
-        owner: Owner,
+        reviewer: Owner,
         candidate: Owner,
     ) -> Result<(), ContractError> {
-        self.reject_reviewer(owner, candidate).await?;
-        // TODO: notify reviewer
+        match self.reject_reviewer(reviewer, candidate).await? {
+            Some(_reviewer) => {
+                // TODO: notify candidate is reviewer
+            }
+            _ => {
+                // TODO: notify candidate is approved
+            }
+        }
+        self.reward_credits(reviewer, Amount::from_tokens(100))
+            .await?;
+        self.reward_tokens(reviewer).await?;
         Ok(())
     }
 

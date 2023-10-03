@@ -138,5 +138,14 @@ pub enum Message {
         title: String,
         content: String,
     },
+    ApproveContent {
+        content_cid: String,
+        reason_cid: Option<String>,
+        reason: Option<String>,
+    },
+    RejectContent {
+        content_cid: String,
+        reason: Option<String>,
+    },
     RequestSubscribe,
 }

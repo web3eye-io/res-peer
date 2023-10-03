@@ -10,9 +10,7 @@ use credit::CreditAbi;
 use feed::{ApplicationCall, Content, Message, Operation};
 use foundation::FoundationAbi;
 use linera_sdk::{
-    base::{
-        Amount, ApplicationId, ChannelName, Destination, Owner, SessionId, WithContractAbi,
-    },
+    base::{Amount, ApplicationId, ChannelName, Destination, Owner, SessionId, WithContractAbi},
     contract::system_api::{self, current_system_time},
     ApplicationCallResult, CalleeContext, Contract, ExecutionResult, MessageContext,
     OperationContext, SessionCallResult, ViewStateStorage,
