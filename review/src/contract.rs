@@ -2,7 +2,7 @@
 
 mod state;
 
-use std::{collections::HashMap, str::FromStr};
+use std::collections::HashMap;
 
 use self::state::Review;
 use async_trait::async_trait;
@@ -26,7 +26,6 @@ impl WithContractAbi for Review {
     type Abi = review::ReviewAbi;
 }
 
-const CREATION_CHAIN_ID: &str = "e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65";
 const SUBSCRIPTION_CHANNEL: &[u8] = b"subscriptions";
 
 #[async_trait]
@@ -56,25 +55,43 @@ impl Contract for Review {
         match operation {
             Operation::ApplyReviewer { resume } => {
                 log::info!(
-                    "Applu reviewer from {:?}",
+                    "Apply reviewer from {:?}",
                     context.authenticated_signer.unwrap()
                 );
                 return Ok(ExecutionResult::default().with_authenticated_message(
-                    ChainId::from_str(CREATION_CHAIN_ID).unwrap(),
+                    system_api::current_application_id().creation.chain_id,
                     Message::ApplyReviewer { resume },
                 ));
             }
             Operation::UpdateReviewerResume { resume } => {
-                self._update_reviewer_resume(context.authenticated_signer.unwrap(), resume)
-                    .await?;
+                log::info!(
+                    "Update reviewer resume from {:?}",
+                    context.authenticated_signer.unwrap()
+                );
+                return Ok(ExecutionResult::default().with_authenticated_message(
+                    system_api::current_application_id().creation.chain_id,
+                    Message::ApplyReviewer { resume },
+                ));
             }
             Operation::ApproveReviewer { candidate } => {
-                self._approve_reviewer(context.authenticated_signer.unwrap(), candidate)
-                    .await?;
+                log::info!(
+                    "Approve reviewer from {:?}",
+                    context.authenticated_signer.unwrap()
+                );
+                return Ok(ExecutionResult::default().with_authenticated_message(
+                    system_api::current_application_id().creation.chain_id,
+                    Message::ApproveReviewer { candidate },
+                ));
             }
             Operation::RejectReviewer { candidate } => {
-                self._reject_reviewer(context.authenticated_signer.unwrap(), candidate)
-                    .await?;
+                log::info!(
+                    "Reject reviewer from {:?}",
+                    context.authenticated_signer.unwrap()
+                );
+                return Ok(ExecutionResult::default().with_authenticated_message(
+                    system_api::current_application_id().creation.chain_id,
+                    Message::RejectReviewer { candidate },
+                ));
             }
             Operation::SubmitContent {
                 cid,
@@ -87,7 +104,7 @@ impl Contract for Review {
                     context.authenticated_signer.unwrap()
                 );
                 return Ok(ExecutionResult::default().with_authenticated_message(
-                    ChainId::from_str(CREATION_CHAIN_ID).unwrap(),
+                    system_api::current_application_id().creation.chain_id,
                     Message::SubmitContent {
                         cid,
                         title,
@@ -142,7 +159,7 @@ impl Contract for Review {
                     system_api::current_application_id().creation.chain_id
                 );
                 return Ok(ExecutionResult::default().with_message(
-                    ChainId::from_str(CREATION_CHAIN_ID).unwrap(),
+                    system_api::current_application_id().creation.chain_id,
                     Message::RequestSubscribe,
                 ));
             }
@@ -166,6 +183,34 @@ impl Contract for Review {
                 return Ok(ExecutionResult::default()
                     .with_authenticated_message(dest, Message::ApplyReviewer { resume }));
             }
+            Message::UpdateReviewerResume { resume } => {
+                let candidate = context.authenticated_signer.unwrap();
+                self._update_reviewer_resume(candidate, resume.clone())
+                    .await?;
+                // TODO: broadcast to other chains
+                let dest =
+                    Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
+                return Ok(ExecutionResult::default()
+                    .with_authenticated_message(dest, Message::UpdateReviewerResume { resume }));
+            }
+            Message::ApproveReviewer { candidate } => {
+                self._approve_reviewer(context.authenticated_signer.unwrap(), candidate)
+                    .await?;
+                // TODO: broadcast to other chains
+                let dest =
+                    Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
+                return Ok(ExecutionResult::default()
+                    .with_authenticated_message(dest, Message::ApproveReviewer { candidate }));
+            }
+            Message::RejectReviewer { candidate } => {
+                self._reject_reviewer(context.authenticated_signer.unwrap(), candidate)
+                    .await?;
+                // TODO: broadcast to other chains
+                let dest =
+                    Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
+                return Ok(ExecutionResult::default()
+                    .with_authenticated_message(dest, Message::RejectReviewer { candidate }));
+            }
             Message::SubmitContent {
                 cid,
                 title,
@@ -179,7 +224,6 @@ impl Contract for Review {
                 let author = context.authenticated_signer.unwrap();
                 self._submit_content(cid.clone(), title.clone(), content.clone(), author)
                     .await?;
-                // TODO: broadcast to other chains
                 log::info!("Submitted cid {:?} sender {:?}", cid, author);
                 let dest =
                     Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));

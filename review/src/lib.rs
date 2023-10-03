@@ -124,6 +124,15 @@ pub enum Message {
     ApplyReviewer {
         resume: String,
     },
+    UpdateReviewerResume {
+        resume: String,
+    },
+    ApproveReviewer {
+        candidate: Owner,
+    },
+    RejectReviewer {
+        candidate: Owner,
+    },
     SubmitContent {
         cid: String,
         title: String,

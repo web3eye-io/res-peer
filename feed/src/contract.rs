@@ -2,7 +2,7 @@
 
 mod state;
 
-use std::{collections::HashMap, str::FromStr};
+use std::collections::HashMap;
 
 use self::state::Feed;
 use async_trait::async_trait;
@@ -11,7 +11,7 @@ use feed::{ApplicationCall, Content, Message, Operation};
 use foundation::FoundationAbi;
 use linera_sdk::{
     base::{
-        Amount, ApplicationId, ChainId, ChannelName, Destination, Owner, SessionId, WithContractAbi,
+        Amount, ApplicationId, ChannelName, Destination, Owner, SessionId, WithContractAbi,
     },
     contract::system_api::{self, current_system_time},
     ApplicationCallResult, CalleeContext, Contract, ExecutionResult, MessageContext,
@@ -25,7 +25,6 @@ impl WithContractAbi for Feed {
     type Abi = feed::FeedAbi;
 }
 
-const CREATION_CHAIN_ID: &str = "e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65";
 const PUBLISHED_CONTENT_CHANNEL_NAME: &[u8] = b"published_contents";
 
 #[async_trait]
@@ -67,7 +66,7 @@ impl Contract for Feed {
             }
             Operation::RequestPublishedSubscribe => {
                 return Ok(ExecutionResult::default().with_message(
-                    ChainId::from_str(CREATION_CHAIN_ID).unwrap(),
+                    system_api::current_application_id().creation.chain_id,
                     Message::RequestPublishedSubscribe,
                 ));
             }
@@ -181,7 +180,7 @@ impl Contract for Feed {
                 log::info!("Recommend cid {:?} reason {:?}", cid, reason_cid);
                 let mut result = ApplicationCallResult::default();
                 result.execution_result = ExecutionResult::default().with_authenticated_message(
-                    ChainId::from_str(CREATION_CHAIN_ID).unwrap(),
+                    system_api::current_application_id().creation.chain_id,
                     Message::Recommend {
                         cid,
                         reason_cid,
