@@ -17,6 +17,7 @@ use linera_sdk::{
     ApplicationCallResult, CalleeContext, Contract, ExecutionResult, MessageContext,
     OperationContext, SessionCallResult, ViewStateStorage,
 };
+use linera_views::views::ViewError;
 use review::{Content, InitialState, Message, Operation};
 use thiserror::Error;
 
@@ -35,16 +36,14 @@ impl Contract for Review {
 
     async fn initialize(
         &mut self,
-        context: &OperationContext,
+        _context: &OperationContext,
         state: Self::InitializationArgument,
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
-        self._initialize(
-            context.chain_id,
-            context.authenticated_signer.unwrap(),
-            state,
-        )
-        .await?;
-        Ok(ExecutionResult::default())
+        self._initialize(state).await?;
+        return Ok(ExecutionResult::default().with_authenticated_message(
+            system_api::current_application_id().creation.chain_id,
+            Message::GenesisReviewer,
+        ));
     }
 
     async fn execute_operation(
@@ -54,40 +53,24 @@ impl Contract for Review {
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
         match operation {
             Operation::ApplyReviewer { resume } => {
-                log::info!(
-                    "Apply reviewer from {:?}",
-                    context.authenticated_signer.unwrap()
-                );
                 return Ok(ExecutionResult::default().with_authenticated_message(
                     system_api::current_application_id().creation.chain_id,
                     Message::ApplyReviewer { resume },
                 ));
             }
             Operation::UpdateReviewerResume { resume } => {
-                log::info!(
-                    "Update reviewer resume from {:?}",
-                    context.authenticated_signer.unwrap()
-                );
                 return Ok(ExecutionResult::default().with_authenticated_message(
                     system_api::current_application_id().creation.chain_id,
                     Message::ApplyReviewer { resume },
                 ));
             }
             Operation::ApproveReviewer { candidate } => {
-                log::info!(
-                    "Approve reviewer from {:?}",
-                    context.authenticated_signer.unwrap()
-                );
                 return Ok(ExecutionResult::default().with_authenticated_message(
                     system_api::current_application_id().creation.chain_id,
                     Message::ApproveReviewer { candidate },
                 ));
             }
             Operation::RejectReviewer { candidate } => {
-                log::info!(
-                    "Reject reviewer from {:?}",
-                    context.authenticated_signer.unwrap()
-                );
                 return Ok(ExecutionResult::default().with_authenticated_message(
                     system_api::current_application_id().creation.chain_id,
                     Message::RejectReviewer { candidate },
@@ -98,11 +81,6 @@ impl Contract for Review {
                 title,
                 content,
             } => {
-                log::info!(
-                    "Submit cid {:?} by {:?}",
-                    cid,
-                    context.authenticated_signer.unwrap()
-                );
                 return Ok(ExecutionResult::default().with_authenticated_message(
                     system_api::current_application_id().creation.chain_id,
                     Message::SubmitContent {
@@ -117,12 +95,6 @@ impl Contract for Review {
                 reason_cid,
                 reason,
             } => {
-                log::info!(
-                    "Approve cid {:?} by {:?} with reason {:?}",
-                    content_cid,
-                    context.authenticated_signer.unwrap(),
-                    reason_cid,
-                );
                 return Ok(ExecutionResult::default().with_authenticated_message(
                     system_api::current_application_id().creation.chain_id,
                     Message::ApproveContent {
@@ -136,12 +108,6 @@ impl Contract for Review {
                 content_cid,
                 reason,
             } => {
-                log::info!(
-                    "Reject cid {:?} by {:?} with reason {:?}",
-                    content_cid,
-                    context.authenticated_signer.unwrap(),
-                    reason,
-                );
                 return Ok(ExecutionResult::default().with_authenticated_message(
                     system_api::current_application_id().creation.chain_id,
                     Message::RejectContent {
@@ -171,11 +137,6 @@ impl Contract for Review {
                     .await?;
             }
             Operation::RequestSubscribe => {
-                log::info!(
-                    "Subscribe from {} creation {}",
-                    context.chain_id,
-                    system_api::current_application_id().creation.chain_id
-                );
                 return Ok(ExecutionResult::default().with_message(
                     system_api::current_application_id().creation.chain_id,
                     Message::RequestSubscribe,
@@ -191,6 +152,18 @@ impl Contract for Review {
         message: Self::Message,
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
         match message {
+            Message::GenesisReviewer {} => {
+                let chain_id = context.chain_id;
+                let reviewer = context.authenticated_signer.unwrap();
+                self.genesis_reviewer(chain_id, reviewer).await?;
+                let dest =
+                    Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
+                return Ok(ExecutionResult::default()
+                    .with_authenticated_message(dest, Message::GenesisReviewer));
+            }
+            Message::ExistReviewer { reviewer } => {
+                self.add_exist_reviewer(reviewer).await?;
+            }
             Message::ApplyReviewer { resume } => {
                 let candidate = context.authenticated_signer.unwrap();
                 self._apply_reviewer(context.chain_id, candidate, resume.clone())
@@ -234,23 +207,17 @@ impl Contract for Review {
                 title,
                 content,
             } => {
-                log::info!(
-                    "Message submit content cid {:?} by {:?}",
-                    cid,
-                    context.authenticated_signer.unwrap()
-                );
                 let author = context.authenticated_signer.unwrap();
+                log::info!(
+                    "Message submit content cid {:?} by {:?} at {:?}",
+                    cid,
+                    author,
+                    context.chain_id,
+                );
                 self._submit_content(cid.clone(), title.clone(), content.clone(), author)
                     .await?;
-                log::info!("Submitted cid {:?} sender {:?}", cid, author);
                 let dest =
                     Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
-                log::info!(
-                    "Broadcast submitted cid {:?} to {:?} at {}",
-                    cid,
-                    dest,
-                    context.chain_id
-                );
                 return Ok(ExecutionResult::default().with_authenticated_message(
                     dest,
                     Message::SubmitContent {
@@ -267,10 +234,11 @@ impl Contract for Review {
             } => {
                 let reviewer = context.authenticated_signer.unwrap();
                 log::info!(
-                    "Message approve content cid {:?} by {:?} with reason {:?}",
+                    "Message approve content cid {:?} by {:?} with reason {:?} at {:?}",
                     content_cid,
                     reviewer,
                     reason_cid,
+                    context.chain_id,
                 );
                 self._approve_content(
                     reviewer,
@@ -330,9 +298,24 @@ impl Contract for Review {
                     ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()),
                     context.message_id.chain_id,
                 ));
+                let mut reviewers = Vec::new();
+                self.reviewers
+                    .for_each_index_value(|_index, reviewer| -> Result<(), ViewError> {
+                        reviewers.push(reviewer);
+                        Ok(())
+                    })
+                    .await
+                    .unwrap();
+                for reviewer in reviewers {
+                    result = result.with_authenticated_message(
+                        context.message_id.chain_id,
+                        Message::ExistReviewer { reviewer },
+                    );
+                }
                 return Ok(result);
             }
         }
+        Ok(ExecutionResult::default())
     }
 
     async fn handle_application_call(
@@ -431,13 +414,8 @@ impl Review {
         Ok(())
     }
 
-    async fn _initialize(
-        &mut self,
-        chain_id: ChainId,
-        creator: Owner,
-        state: InitialState,
-    ) -> Result<(), ContractError> {
-        self.initialize(chain_id, creator, state).await?;
+    async fn _initialize(&mut self, state: InitialState) -> Result<(), ContractError> {
+        self.initialize(state).await?;
         Ok(())
     }
 

@@ -121,6 +121,10 @@ pub enum Operation {
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub enum Message {
+    GenesisReviewer,
+    ExistReviewer {
+        reviewer: Reviewer,
+    },
     ApplyReviewer {
         resume: String,
     },

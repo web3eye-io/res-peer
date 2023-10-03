@@ -26,12 +26,7 @@ pub struct Review {
 
 #[allow(dead_code)]
 impl Review {
-    pub(crate) async fn initialize(
-        &mut self,
-        chain_id: ChainId,
-        creator: Owner,
-        state: InitialState,
-    ) -> Result<(), StateError> {
+    pub(crate) async fn initialize(&mut self, state: InitialState) -> Result<(), StateError> {
         self.content_approved_threshold
             .set(state.content_approved_threshold);
         self.content_rejected_threshold
@@ -44,6 +39,14 @@ impl Review {
             .set(state.reviewer_rejected_threshold);
         self.reviewer_rejected_threshold
             .set(state.reviewer_rejected_threshold);
+        Ok(())
+    }
+
+    pub(crate) async fn genesis_reviewer(
+        &mut self,
+        chain_id: ChainId,
+        creator: Owner,
+    ) -> Result<(), StateError> {
         self.reviewers.insert(
             &creator,
             Reviewer {
@@ -56,6 +59,15 @@ impl Review {
             },
         )?;
         self.reviewer_number.set(1);
+        Ok(())
+    }
+
+    pub(crate) async fn add_exist_reviewer(
+        &mut self,
+        reviewer: Reviewer,
+    ) -> Result<(), StateError> {
+        self.reviewers
+            .insert(&reviewer.clone().reviewer, reviewer)?;
         Ok(())
     }
 
