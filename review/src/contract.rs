@@ -298,20 +298,40 @@ impl Contract for Review {
                     ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()),
                     context.message_id.chain_id,
                 ));
+                log::info!(
+                    "Sync reviewers to {} at {} creation {}",
+                    context.message_id.chain_id,
+                    context.chain_id,
+                    system_api::current_application_id().creation.chain_id
+                );
+                /* Will be stuck in the for each */
+                /*
                 let mut reviewers = Vec::new();
                 self.reviewers
                     .for_each_index_value(|_index, reviewer| -> Result<(), ViewError> {
                         reviewers.push(reviewer);
                         Ok(())
                     })
-                    .await
-                    .unwrap();
+                    .await?;
+                log::info!(
+                    "Synced reviewers to {} at {} creation {}",
+                    context.message_id.chain_id,
+                    context.chain_id,
+                    system_api::current_application_id().creation.chain_id
+                );
                 for reviewer in reviewers {
                     result = result.with_authenticated_message(
                         context.message_id.chain_id,
                         Message::ExistReviewer { reviewer },
                     );
                 }
+                log::info!(
+                    "Subscribed to {} at {} creation {}",
+                    context.message_id.chain_id,
+                    context.chain_id,
+                    system_api::current_application_id().creation.chain_id
+                );
+                */
                 return Ok(result);
             }
         }
@@ -606,4 +626,7 @@ pub enum ContractError {
 
     #[error("Cross-application sessions not supported")]
     SessionsNotSupported,
+
+    #[error("View error")]
+    ViewError(#[from] linera_views::views::ViewError),
 }

@@ -94,7 +94,7 @@ impl Review {
         self.reviewer_applications.insert(
             &owner,
             Reviewer {
-                chain_id: chain_id,
+                chain_id,
                 reviewer: owner,
                 resume: Some(resume),
                 reviewers: HashMap::default(),
