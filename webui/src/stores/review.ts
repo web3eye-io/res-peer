@@ -8,13 +8,14 @@ export interface Review {
 
 export interface Content {
   cid: string
-  comment_to_cid?: string
+  commentToCid?: string
   author: string
   title: string
   content: string
-  reviewers: Map<string, Review>
+  reviewers: Record<string, Review>
   approved: number
   rejected: number
+  createdAt: number
 }
 
 export const useReviewStore = defineStore('review', {
@@ -28,6 +29,12 @@ export const useReviewStore = defineStore('review', {
     reviewerApprovedThreshold: 0,
     reviewerRejectedThreshold: 0
   }),
-  getters: {},
+  getters: {
+    reviewed (): (cid: string, owner: string) => boolean {
+      return (cid: string, owner: string) => {
+        return Object.keys(this.contentApplications.get(cid)?.reviewers || {})?.find((el) => el === owner) !== undefined
+      }
+    }
+  },
   actions: {}
 })
