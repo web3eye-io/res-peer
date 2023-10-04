@@ -52,7 +52,7 @@ const onPublishClick = async () => {
 
   const { mutate, onDone, onError } = provideApolloClient(apolloClient)(() => useMutation(gql`
     mutation submitContent ($cid: String!, $title: String!, $content: String!) {
-      submitContent(ccid: $cid, title: $title, content: $content)
+      submitContent(cid: $cid, title: $title, content: $content)
     }
   `))
   onDone(() => {

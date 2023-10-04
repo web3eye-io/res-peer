@@ -44,7 +44,9 @@
       <feed-contents-query />
       <market-info-query />
       <market-collections-query />
-      <request-subscribe />
+      <request-feed-subscribe />
+      <request-review-subscribe />
+      <user-reviewer-query />
     </q-page-container>
 
     <q-footer elevated :style='{height: "32px", lineHeight: "32px"}'>
@@ -111,8 +113,10 @@ import FeedContentsQuery from 'src/components/FeedContentsQuery.vue'
 import MarketInfoQuery from 'src/components/MarketInfoQuery.vue'
 import MarketCollectionsQuery from 'src/components/MarketCollectionsQuery.vue'
 import RequestApplication from 'src/components/RequestApplication.vue'
-import RequestSubscribe from 'src/components/RequestSubscribe.vue'
+import RequestFeedSubscribe from 'src/components/RequestFeedSubscribe.vue'
 import ChainQuery from 'src/components/ChainQuery.vue'
+import UserReviewerQuery from 'src/components/UserReviewerQuery.vue'
+import RequestReviewSubscribe from 'src/components/RequestReviewSubscribe.vue'
 
 const router = useRouter()
 const account = ref('')
