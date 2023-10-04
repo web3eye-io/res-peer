@@ -48,6 +48,7 @@
       <request-review-subscribe />
       <user-reviewer-query />
       <content-applications-keys-query />
+      <content-applications-query />
     </q-page-container>
 
     <q-footer elevated :style='{height: "32px", lineHeight: "32px"}'>
@@ -119,6 +120,7 @@ import ChainQuery from 'src/components/ChainQuery.vue'
 import UserReviewerQuery from 'src/components/UserReviewerQuery.vue'
 import RequestReviewSubscribe from 'src/components/RequestReviewSubscribe.vue'
 import ContentApplicationsKeysQuery from 'src/components/ContentApplicationsKeysQuery.vue'
+import ContentApplicationsQuery from 'src/components/ContentApplicationsQuery.vue'
 
 const router = useRouter()
 const account = ref('')

@@ -33,9 +33,7 @@ const getContentApplicationsKeys = () => {
   })
 
   onResult((res) => {
-    if (res.loading) {
-      return
-    }
+    if (res.loading) return
     review.contentApplicationsKeys = (res.data as Record<string, Array<string>>).contentApplicationsKeys
   })
 }
