@@ -51,8 +51,8 @@ const onPublishClick = async () => {
   const apolloClient = new ApolloClient(options)
 
   const { mutate, onDone, onError } = provideApolloClient(apolloClient)(() => useMutation(gql`
-    mutation publish ($cid: String!, $title: String!, $content: String!) {
-      publish(ccid: $cid, title: $title, content: $content)
+    mutation submitContent ($cid: String!, $title: String!, $content: String!) {
+      submitContent(ccid: $cid, title: $title, content: $content)
     }
   `))
   onDone(() => {
@@ -65,7 +65,7 @@ const onPublishClick = async () => {
     cid,
     title: title.value,
     content: content.value,
-    endpoint: 'feed',
+    endpoint: 'review',
     chainId: targetChain.value
   })
 }

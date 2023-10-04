@@ -56,7 +56,7 @@ impl MutationRoot {
         bcs::to_bytes(&Operation::Tip { cid: ccid, amount }).unwrap()
     }
 
-    async fn request_published_subscribe(&self) -> Vec<u8> {
+    async fn request_subscribe(&self) -> Vec<u8> {
         bcs::to_bytes(&Operation::RequestSubscribe).unwrap()
     }
 }

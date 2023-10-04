@@ -55,7 +55,7 @@
             <avatar-setting />
           </q-tab-panel>
           <q-tab-panel name='contents'>
-            <create-content />
+            <submit-content />
             <q-separator :style='{margin: "32px 0"}' />
             <article-list article-type='MY_ARTICLE' :style='{margin: "32px 0"}' />
             <article-list article-type='MY_LIKE' :style='{margin: "32px 0"}' />
@@ -87,7 +87,7 @@ import { computed, ref } from 'vue'
 import { useUserStore } from 'src/stores/user'
 import { useCollectionStore } from 'src/stores/collection'
 
-import CreateContent from 'src/components/CreateContent.vue'
+import SubmitContent from 'src/components/SubmitContent.vue'
 import UserBalance from 'src/components/UserBalance.vue'
 import ArticleList from 'src/components/ArticleList.vue'
 import CreateCollection from 'src/components/CreateCollection.vue'

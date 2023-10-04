@@ -39,6 +39,8 @@ const requestApplication = async (index: number, retry: boolean) => {
       case 2:
         application.marketApp = constants.Apps.marketApp
         break
+      case 3:
+        application.reviewApp = constants.Apps.reviewApp
     }
     void requestApplication(index + 1, false)
   })
