@@ -20,7 +20,13 @@ export interface Content {
 export const useReviewStore = defineStore('review', {
   state: () => ({
     contentApplicationsKeys: [] as Array<string>,
-    contentApplications: new Map<string, Content>()
+    contentApplications: new Map<string, Content>(),
+    contentApprovedThreshold: 0,
+    contentRejectedThreshold: 0,
+    assetApprovedThreshold: 0,
+    assetRejectedThreshold: 0,
+    reviewerApprovedThreshold: 0,
+    reviewerRejectedThreshold: 0
   }),
   getters: {},
   actions: {}

@@ -35,8 +35,8 @@ impl Review {
             .set(state.asset_approved_threshold);
         self.asset_rejected_threshold
             .set(state.asset_rejected_threshold);
-        self.reviewer_rejected_threshold
-            .set(state.reviewer_rejected_threshold);
+        self.reviewer_approved_threshold
+            .set(state.reviewer_approved_threshold);
         self.reviewer_rejected_threshold
             .set(state.reviewer_rejected_threshold);
         Ok(())
