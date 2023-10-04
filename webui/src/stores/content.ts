@@ -3,8 +3,8 @@ import { defineStore } from 'pinia'
 export interface Content {
   cid: string
   author: string
-  content: string
   title: string
+  content: string
   likes: number
   dislikes: number
   accounts: Record<string, boolean>
