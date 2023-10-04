@@ -119,6 +119,23 @@ impl Feed {
         }
         Ok(())
     }
+
+    pub(crate) async fn comment_content(
+        &mut self,
+        cid: String,
+        comment_cid: String,
+    ) -> Result<(), StateError> {
+        match self.content_comments.get(&cid).await? {
+            Some(mut comments) => {
+                comments.push(comment_cid);
+                self.content_comments.insert(&cid, comments)?;
+            }
+            _ => {
+                self.content_comments.insert(&cid, vec![comment_cid])?;
+            }
+        }
+        Ok(())
+    }
 }
 
 /// Attempts to debit from an account with insufficient funds.

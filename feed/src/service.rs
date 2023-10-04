@@ -57,7 +57,7 @@ impl MutationRoot {
     }
 
     async fn request_published_subscribe(&self) -> Vec<u8> {
-        bcs::to_bytes(&Operation::RequestPublishedSubscribe).unwrap()
+        bcs::to_bytes(&Operation::RequestSubscribe).unwrap()
     }
 }
 

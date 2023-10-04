@@ -23,7 +23,7 @@ impl WithContractAbi for Feed {
     type Abi = feed::FeedAbi;
 }
 
-const PUBLISHED_CONTENT_CHANNEL_NAME: &[u8] = b"published_contents";
+const SUBSCRIPTION_CHANNEL: &[u8] = b"subscriptions";
 
 #[async_trait]
 impl Contract for Feed {
@@ -62,10 +62,10 @@ impl Contract for Feed {
                     context.chain_id
                 );
             }
-            Operation::RequestPublishedSubscribe => {
+            Operation::RequestSubscribe => {
                 return Ok(ExecutionResult::default().with_message(
                     system_api::current_application_id().creation.chain_id,
-                    Message::RequestPublishedSubscribe,
+                    Message::RequestSubscribe,
                 ));
             }
         }
@@ -87,9 +87,8 @@ impl Contract for Feed {
                 self.publish(cid.clone(), title.clone(), content.clone(), author)
                     .await?;
                 log::info!("Published cid {:?} sender {:?}", cid, author);
-                let dest = Destination::Subscribers(ChannelName::from(
-                    PUBLISHED_CONTENT_CHANNEL_NAME.to_vec(),
-                ));
+                let dest =
+                    Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
                 log::info!(
                     "Broadcast published cid {:?} to {:?} at {}",
                     cid,
@@ -122,9 +121,8 @@ impl Contract for Feed {
                 self.recommend_content(cid.clone(), reason_cid.clone())
                     .await?;
                 log::info!("Recommend cid {:?} sender {:?}", cid, author);
-                let dest = Destination::Subscribers(ChannelName::from(
-                    PUBLISHED_CONTENT_CHANNEL_NAME.to_vec(),
-                ));
+                let dest =
+                    Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
                 log::info!(
                     "Broadcast recommend cid {:?} to {:?} at {}",
                     cid,
@@ -140,7 +138,41 @@ impl Contract for Feed {
                     },
                 ));
             }
-            Message::RequestPublishedSubscribe => {
+            Message::Comment {
+                cid,
+                comment_cid,
+                comment,
+                commentor,
+            } => {
+                self.publish(
+                    comment_cid.clone(),
+                    String::default(),
+                    comment.clone(),
+                    commentor,
+                )
+                .await?;
+                self.comment_content(cid.clone(), comment_cid.clone())
+                    .await?;
+                log::info!("Comment cid {:?} sender {:?}", cid, commentor);
+                let dest =
+                    Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
+                log::info!(
+                    "Broadcast recommend cid {:?} to {:?} at {}",
+                    cid,
+                    dest,
+                    context.chain_id
+                );
+                return Ok(ExecutionResult::default().with_message(
+                    dest,
+                    Message::Comment {
+                        cid,
+                        comment_cid,
+                        comment,
+                        commentor,
+                    },
+                ));
+            }
+            Message::RequestSubscribe => {
                 let mut result = ExecutionResult::default();
                 log::info!(
                     "Subscribe to {} at {} creation {}",
@@ -154,7 +186,7 @@ impl Contract for Feed {
                     return Ok(result);
                 }
                 result.subscribe.push((
-                    ChannelName::from(PUBLISHED_CONTENT_CHANNEL_NAME.to_vec()),
+                    ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()),
                     context.message_id.chain_id,
                 ));
                 return Ok(result);
@@ -183,6 +215,25 @@ impl Contract for Feed {
                         cid,
                         reason_cid,
                         reason,
+                    },
+                );
+                return Ok(result);
+            }
+            ApplicationCall::Comment {
+                cid,
+                comment_cid,
+                comment,
+                commentor,
+            } => {
+                log::info!("Comment cid {:?} comment {:?}", cid, comment_cid);
+                let mut result = ApplicationCallResult::default();
+                result.execution_result = ExecutionResult::default().with_authenticated_message(
+                    system_api::current_application_id().creation.chain_id,
+                    Message::Comment {
+                        cid,
+                        comment_cid,
+                        comment,
+                        commentor,
                     },
                 );
                 return Ok(result);

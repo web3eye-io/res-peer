@@ -17,7 +17,7 @@ use linera_sdk::{
     ApplicationCallResult, CalleeContext, Contract, ExecutionResult, MessageContext,
     OperationContext, SessionCallResult, ViewStateStorage,
 };
-use linera_views::views::ViewError;
+// use linera_views::views::ViewError;
 use review::{Content, InitialState, Message, Operation};
 use thiserror::Error;
 
@@ -113,6 +113,20 @@ impl Contract for Review {
                     Message::RejectContent {
                         content_cid,
                         reason,
+                    },
+                ));
+            }
+            Operation::SubmitComment {
+                cid,
+                comment_cid,
+                comment,
+            } => {
+                return Ok(ExecutionResult::default().with_authenticated_message(
+                    system_api::current_application_id().creation.chain_id,
+                    Message::SubmitComment {
+                        cid,
+                        comment_cid,
+                        comment,
                     },
                 ));
             }
@@ -281,6 +295,32 @@ impl Contract for Review {
                     },
                 ));
             }
+            Message::SubmitComment {
+                cid,
+                comment_cid,
+                comment,
+            } => {
+                let author = context.authenticated_signer.unwrap();
+                log::info!(
+                    "Message comment content cid {:?} comment {:?} by {:?} at {:?}",
+                    cid,
+                    comment_cid,
+                    author,
+                    context.chain_id,
+                );
+                self._submit_comment(comment_cid.clone(), cid.clone(), comment.clone(), author)
+                    .await?;
+                let dest =
+                    Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
+                return Ok(ExecutionResult::default().with_authenticated_message(
+                    dest,
+                    Message::SubmitComment {
+                        cid,
+                        comment_cid,
+                        comment,
+                    },
+                ));
+            }
             Message::RequestSubscribe => {
                 let mut result = ExecutionResult::default();
                 log::info!(
@@ -434,6 +474,26 @@ impl Review {
         Ok(())
     }
 
+    async fn comment_content(
+        &mut self,
+        cid: String,
+        comment_cid: String,
+        comment: String,
+        commentor: Owner,
+    ) -> Result<(), ContractError> {
+        log::info!("Comment content {:?} comment {:?}", cid, comment_cid);
+        let call = feed::ApplicationCall::Comment {
+            cid: cid.clone(),
+            comment_cid: comment_cid.clone(),
+            comment,
+            commentor,
+        };
+        self.call_application(true, Self::feed_app_id()?, &call, vec![])
+            .await?;
+        log::info!("Commented content {:?} comment {:?}", cid, comment_cid);
+        Ok(())
+    }
+
     async fn _initialize(&mut self, state: InitialState) -> Result<(), ContractError> {
         self.initialize(state).await?;
         Ok(())
@@ -506,8 +566,33 @@ impl Review {
         self.submit_content(Content {
             // TODO: notify author
             cid,
+            comment_to_cid: None,
             title,
             content,
+            author,
+            reviewers: HashMap::default(),
+            approved: 0,
+            rejected: 0,
+            created_at: system_api::current_system_time(),
+        })
+        .await?;
+        self.reward_credits(author, Amount::from_tokens(10)).await?;
+        Ok(())
+    }
+
+    async fn _submit_comment(
+        &mut self,
+        cid: String,
+        comment_to_cid: String,
+        comment: String,
+        author: Owner,
+    ) -> Result<(), ContractError> {
+        self.submit_content(Content {
+            // TODO: notify author
+            cid,
+            comment_to_cid: Some(comment_to_cid),
+            title: String::default(),
+            content: comment,
             author,
             reviewers: HashMap::default(),
             approved: 0,
@@ -535,8 +620,26 @@ impl Review {
             .await?
         {
             Some(content) => {
-                self.publish_content(content.cid, content.title, content.content, content.author)
-                    .await?;
+                match content.comment_to_cid {
+                    Some(comment_to_cid) => {
+                        self.comment_content(
+                            comment_to_cid,
+                            content.cid,
+                            content.content,
+                            content.author,
+                        )
+                        .await?;
+                    }
+                    _ => {
+                        self.publish_content(
+                            content.cid,
+                            content.title,
+                            content.content,
+                            content.author,
+                        )
+                        .await?
+                    }
+                }
                 match reason_cid {
                     Some(cid) => {
                         self.recommend_content(content_cid, cid, reason.unwrap_or_default())

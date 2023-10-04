@@ -52,7 +52,7 @@ pub enum Operation {
     Like { cid: String },
     Dislike { cid: String },
     Tip { cid: String, amount: Amount },
-    RequestPublishedSubscribe,
+    RequestSubscribe,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
@@ -68,7 +68,13 @@ pub enum Message {
         reason_cid: String,
         reason: String,
     },
-    RequestPublishedSubscribe,
+    Comment {
+        cid: String,
+        comment_cid: String,
+        comment: String,
+        commentor: Owner,
+    },
+    RequestSubscribe,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -83,5 +89,11 @@ pub enum ApplicationCall {
         cid: String,
         reason_cid: String,
         reason: String,
+    },
+    Comment {
+        cid: String,
+        comment_cid: String,
+        comment: String,
+        commentor: Owner,
     },
 }
