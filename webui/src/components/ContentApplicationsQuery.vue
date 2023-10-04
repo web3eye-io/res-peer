@@ -41,7 +41,7 @@ const getContentApplication = (contentApplicationKey: string, done?: () => void)
   }))
 
   watch(result, () => {
-    contentApplications.value.set(contentApplicationKey, (result.value as Record<string, Content>).contents)
+    contentApplications.value.set(contentApplicationKey, (result.value as Record<string, Content>).contentApplications)
     done?.()
   })
 }
@@ -56,7 +56,6 @@ watch(contentApplicationKey, () => {
 })
 
 watch(contentApplicationsKeys, () => {
-  console.log(contentApplicationsKeys.value)
   if (contentApplicationsKeys.value.length === 0) {
     return
   }

@@ -39,6 +39,7 @@
           <q-tab name='contents' label='Contents' />
           <q-tab name='credits' label='Credits' />
           <q-tab name='assets' label='Assets' />
+          <q-tab v-if='reviewer' name='review-contents' label='Review Content' />
         </q-tabs>
       </template>
       <template #after>
@@ -60,6 +61,9 @@
             <article-list article-type='MY_ARTICLE' :style='{margin: "32px 0"}' />
             <article-list article-type='MY_LIKE' :style='{margin: "32px 0"}' />
             <article-list article-type='MY_DISLIKE' :style='{margin: "32px 0"}' />
+          </q-tab-panel>
+          <q-tab-panel name='review-contents'>
+            <review-content />
           </q-tab-panel>
           <q-tab-panel name='credits'>
             <user-balance />
@@ -96,9 +100,11 @@ import CollectionList from 'src/components/CollectionList.vue'
 import NftList from 'src/components/NftList.vue'
 import DepositBalance from 'src/components/DepositBalance.vue'
 import AvatarSetting from 'src/components/AvatarSetting.vue'
+import ReviewContent from 'src/components/ReviewContent.vue'
 
 const user = useUserStore()
 const account = computed(() => user.account)
+const reviewer = computed(() => user.reviewer)
 const collection = useCollectionStore()
 const creditsPerLinera = computed(() => collection.creditsPerLinera)
 const spendableCredits = computed(() => user.spendable)
