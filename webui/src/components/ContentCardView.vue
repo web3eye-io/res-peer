@@ -54,21 +54,49 @@
       <div v-for='recommend in recommends' :key='recommend.cid'>
         <div class='row'>
           <q-icon name='recommend' color='red' size='24px' />
-          <span :style='{color:"blue", marginLeft:"8px", lineHeight:"24px"}'>{{ recommend.author }}</span>
+          <div>
+            <span :style='{color:"blue", marginLeft:"8px", lineHeight:"24px"}'>{{ recommend.author }}</span>
+            <br>
+            <span :style='{marginLeft:"8px", lineHeight:"24px"}'>At <span :style='{color:"grey"}'>{{ date.formatDate(recommend.createdAt / 1000) }}</span></span>
+          </div>
         </div>
         <div :style='{marginLeft:"24px",marginTop:"8px"}'>
           {{ recommend.content }}
         </div>
+        <div class='row' :style='{marginLeft:"24px",marginTop:"16px"}'>
+          <div class='row cursor-pointer' @click='onLikeClick(recommend.cid)'>
+            <q-icon name='thumb_up' size='20px' :style='{marginRight: "6px"}' />
+            {{ recommend.likes }}
+          </div>
+          <div class='row cursor-pointer' :style='{marginLeft: "16px"}' @click='onDislikeClick(recommend.cid)'>
+            <q-icon name='thumb_down' size='20px' :style='{marginRight: "6px"}' />
+            {{ recommend.dislikes }}
+          </div>
+        </div>
       </div>
     </div>
-    <div v-if='comments.length' :style='{marginTop:"16px", padding:"8px", borderRadius:"8px"}' class='bg-grey-3'>
+    <div v-if='comments.length && expand' :style='{marginTop:"16px", padding:"8px", borderRadius:"8px"}' class='bg-grey-2'>
       <div v-for='comment in comments' :key='comment.cid'>
         <div class='row'>
           <q-icon name='comment' color='blue' size='24px' />
-          <span :style='{color:"blue", marginLeft:"8px", lineHeight:"24px"}'>{{ comment.author }}</span>
+          <div>
+            <span :style='{color:"blue", marginLeft:"8px", lineHeight:"24px"}'>{{ comment.author }}</span>
+            <br>
+            <span :style='{marginLeft:"8px", lineHeight:"24px"}'>At <span :style='{color:"grey"}'>{{ date.formatDate(comment.createdAt / 1000) }}</span></span>
+          </div>
         </div>
         <div :style='{marginLeft:"24px",marginTop:"8px"}'>
           {{ comment.content }}
+        </div>
+        <div class='row' :style='{marginLeft:"24px",marginTop:"16px"}'>
+          <div class='row cursor-pointer' @click='onLikeClick(comment.cid)'>
+            <q-icon name='thumb_up' size='20px' :style='{marginRight: "6px"}' />
+            {{ comment.likes }}
+          </div>
+          <div class='row cursor-pointer' :style='{marginLeft: "16px"}' @click='onDislikeClick(comment.cid)'>
+            <q-icon name='thumb_down' size='20px' :style='{marginRight: "6px"}' />
+            {{ comment.dislikes }}
+          </div>
         </div>
       </div>
     </div>
@@ -101,7 +129,7 @@ const list = toRef(props, 'list')
 
 const content = useContentStore()
 const _content = computed(() => content.content(cid.value) as Content)
-const comments = computed(() => expand.value ? content._comments(cid.value) : [])
+const comments = computed(() => content._comments(cid.value))
 const recommends = computed(() => content._recommends(cid.value).slice(0, expand.value ? undefined : 1))
 const collection = useCollectionStore()
 const options = /* await */ getClientOptions(/* {app, router ...} */)

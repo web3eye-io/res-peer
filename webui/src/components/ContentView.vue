@@ -3,7 +3,7 @@
     <q-space />
     <div>
       <div :style='{paddingTop:"48px"}'>
-        <content-card-view :cid='cid' @comment='onCommentClick' :list='false' />
+        <content-card-view :cid='cid' @comment='onCommentClick' :list='false' :expand='true' />
       </div>
       <div v-if='commenting'>
         <q-input v-model='comment' :label='$t("MSG_COMMENT")' :placeholder='placeHolder' />
