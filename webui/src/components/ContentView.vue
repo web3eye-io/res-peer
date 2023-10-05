@@ -1,174 +1,83 @@
 <template>
-  <div :style='{width: "720px", paddingBottom: "48px"}'>
-    <div :style='{fontWeight: "bold", fontSize: "28px", wordBreak: "break-word", marginBottom: "16px"}'>
-      {{ _content.title?.length ? _content.title : 'You should have a title!' }}
-    </div>
+  <div class='row'>
+    <q-space />
     <div>
-      By
-      <span class='text-grey-6 text-bold cursor-pointer'>
-        {{ _content.author?.length ? _content.author : 'Anonymous' }}
-      </span>
-      <q-avatar :style='{marginLeft: "8px"}'>
-        <q-img
-          :src='userAvatar(_content.author) ? userAvatar(_content.author) : "~/assets/ResPeer.png"'
-          width='32px'
-          height='32px'
-          fit='cover'
-          :style='{borderRadius: "50%"}'
-        >
-          <template #error>
-            <div class='absolute-full flex flex-center error' />
-          </template>
-        </q-img>
-      </q-avatar>
-    </div>
-    <div>
-      At
-      <span class='text-grey-6 text-bold'>{{ date.formatDate(_content.createdAt / 1000) }}</span>
-    </div>
-    <div>
-      Cid
-      <span class='text-grey-6 text-bold cursor-pointer'>
-        {{ _content.cid }}
-      </span>
-    </div>
-    <div
-      :style='{margin: "24px 0 24px 0", fontSize: "16px", wordBreak: "break-word"}'
-      v-html='_content.content?.length ? _content.content : "You should have some content!"'
-    />
-    <div class='row'>
-      <div class='row cursor-pointer' @click='onLikeClick(_content.cid)'>
-        <q-icon name='thumb_up' size='20px' :style='{marginRight: "6px"}' />
-        {{ _content.likes }}
+      <div :style='{paddingTop:"48px"}'>
+        <content-card-view :cid='cid' @comment='onCommentClick' :list='false' />
       </div>
-      <div class='row cursor-pointer' :style='{marginLeft: "16px"}' @click='onDislikeClick(_content.cid)'>
-        <q-icon name='thumb_down' size='20px' :style='{marginRight: "6px"}' />
-        {{ _content.dislikes }}
-      </div>
-      <div class='row cursor-pointer' :style='{marginLeft: "16px"}' @click='onDislikeClick(_content.cid)'>
-        <q-icon name='comment' size='20px' :style='{marginRight: "6px"}' />
-        {{ comments.length }}
-      </div>
-    </div>
-    <div v-if='recommends.length' :style='{marginTop:"16px", padding:"8px", borderRadius:"8px"}' class='bg-grey-4'>
-      <div v-for='recommend in recommends' :key='recommend.cid'>
-        <div class='row'>
-          <q-icon name='recommend' color='red' size='24px' />
-          <span :style='{color:"blue", marginLeft:"8px", lineHeight:"24px"}'>{{ recommend.author }}</span>
-        </div>
-        <div :style='{marginLeft:"24px",marginTop:"8px"}'>
-          {{ recommend.content }}
+      <div v-if='commenting'>
+        <q-input v-model='comment' :label='$t("MSG_COMMENT")' :placeholder='placeHolder' />
+        <div class='row' :style='{marginTop:"24px"}'>
+          <q-btn :label='$t("MSG_SUBMIT")' :style='{marginRight:"8px"}' @click='onSubmitClick' />
+          <q-btn :label='$t("MSG_CANCEL")' @click='onCancelClick' />
         </div>
       </div>
     </div>
+    <q-space />
   </div>
 </template>
 
 <script setup lang='ts'>
-import { useContentStore, Content } from 'src/stores/content'
-import { computed, onMounted, toRef, watch } from 'vue'
-import { provideApolloClient, useMutation, useQuery } from '@vue/apollo-composable'
-import { ApolloClient } from '@apollo/client/core'
+import { computed, ref } from 'vue'
+import { useRoute } from 'vue-router'
+import { provideApolloClient, useMutation } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
+import { CID } from 'multiformats/cid'
+import * as json from 'multiformats/codecs/json'
+import { sha256 } from 'multiformats/hashes/sha2'
 import { getClientOptions } from 'src/apollo'
-import { useCollectionStore } from 'src/stores/collection'
+import { ApolloClient } from '@apollo/client/core'
 import { targetChain } from 'src/stores/chain'
-import { date } from 'quasar'
 
-interface Props {
-  cid: string
-}
-const props = defineProps<Props>()
-const cid = toRef(props, 'cid')
+import ContentCardView from './ContentCardView.vue'
 
-const content = useContentStore()
-const _content = computed(() => content.content(cid.value) as Content)
-const comments = computed(() => content._comments(cid.value))
-const recommends = computed(() => content._recommends(cid.value).slice(0, 1))
-const collection = useCollectionStore()
 const options = /* await */ getClientOptions(/* {app, router ...} */)
 const apolloClient = new ApolloClient(options)
 
-const userAvatar = (account: string) => {
-  const ids = collection.avatars.get(account)
-  if (!ids) {
-    return collection.nftBannerByID(1001, 1000)
-  }
-  return collection.nftBannerByID(ids[0], ids[1])
+interface Query {
+  cid: string
+}
+const route = useRoute()
+const cid = computed(() => (route.query as unknown as Query).cid)
+const commenting = ref(false)
+const comment = ref('')
+const placeHolder = ref('Please enter meaningful comment :)')
+
+const onCommentClick = () => {
+  commenting.value = true
 }
 
-const ready = () => {
-  return targetChain.value?.length && _content.value
-}
-
-const getContentAvatar = () => {
-  const account = _content.value?.author
-  if (collection.avatars.get(account)) {
+const onSubmitClick = async () => {
+  if (comment.value.length <= 0) {
     return
   }
 
-  const { result /*, fetchMore, onResult, onError */ } = provideApolloClient(apolloClient)(() => useQuery(gql`
-    query getMarketInfo($account: String!) {
-        avatars(owner: $account)
-      }
-    `, {
-    account: `${account}`,
-    endpoint: 'market',
-    chainId: targetChain.value
-  }))
+  const bytes = json.encode({ comment })
+  const hash = await sha256.digest(bytes)
+  const commentCid = CID.create(1, json.code, hash).toString()
 
-  watch(result, () => {
-    const res = result.value as Record<string, Array<number>>
-    collection.avatars.set(account, res.avatars)
-  })
-}
-
-watch(targetChain, () => {
-  if (!ready()) return
-  getContentAvatar()
-})
-
-onMounted(() => {
-  if (!ready()) return
-  getContentAvatar()
-})
-
-const onLikeClick = async (cid: string) => {
   const { mutate, onDone, onError } = provideApolloClient(apolloClient)(() => useMutation(gql`
-    mutation like ($cid: String!) {
-      like(ccid: $cid)
+    mutation submitComment ($cid: String!, $commentCid: String!, $comment: String!) {
+      submitComment(cid: $cid, commentCid: $commentCid, comment: $comment)
     }
   `))
   onDone(() => {
-    content.mutateKeys.push(cid)
+    commenting.value = false
   })
   onError((error) => {
     console.log(error)
   })
   await mutate({
-    cid,
-    endpoint: 'feed',
+    cid: cid.value,
+    commentCid,
+    comment: comment.value,
+    endpoint: 'review',
     chainId: targetChain.value
   })
 }
 
-const onDislikeClick = async (cid: string) => {
-  const { mutate, onDone, onError } = provideApolloClient(apolloClient)(() => useMutation(gql`
-    mutation dislike ($cid: String!) {
-      dislike(ccid: $cid)
-    }
-  `))
-  onDone(() => {
-    content.mutateKeys.push(cid)
-  })
-  onError((error) => {
-    console.log(error)
-  })
-  await mutate({
-    cid,
-    endpoint: 'feed',
-    chainId: targetChain.value
-  })
+const onCancelClick = () => {
+  commenting.value = false
 }
 
 </script>

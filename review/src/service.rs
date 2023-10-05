@@ -86,6 +86,15 @@ impl MutationRoot {
         .unwrap()
     }
 
+    async fn submit_comment(&self, cid: String, comment_cid: String, comment: String) -> Vec<u8> {
+        bcs::to_bytes(&Operation::SubmitComment {
+            cid,
+            comment_cid,
+            comment,
+        })
+        .unwrap()
+    }
+
     async fn approve_asset(
         &self,
         collection_id: u64,

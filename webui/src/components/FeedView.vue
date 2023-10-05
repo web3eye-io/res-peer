@@ -7,7 +7,7 @@
   >
     <q-space />
     <div :style='{borderBottom: index < contents.length - 1 ? "1px solid grey" : ""}'>
-      <content-view :cid='_content.cid' />
+      <content-card-view :cid='_content.cid' />
     </div>
     <q-space />
   </div>
@@ -17,7 +17,7 @@
 import { useContentStore } from 'src/stores/content'
 import { computed } from 'vue'
 
-import ContentView from './ContentView.vue'
+import ContentCardView from './ContentCardView.vue'
 
 const content = useContentStore()
 const contents = computed(() => content._contents())
