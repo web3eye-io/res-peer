@@ -35,12 +35,18 @@ export const useContentStore = defineStore('content', {
     },
     _recommends (): (cid: string) => Array<Content> {
       return (cid: string) => {
-        return Array.from(this.contents.values()).filter((el) => this.recommends.get(cid)?.findIndex((el1) => el1 === el.cid)) || []
+        return Array.from(this.contents.values()).filter((el) => {
+          const index = this.recommends.get(cid)?.findIndex((el1) => el1 === el.cid)
+          return index !== undefined && index >= 0
+        })?.sort((a: Content, b: Content) => a.createdAt < b.createdAt ? 1 : -1) || []
       }
     },
     _comments (): (cid: string) => Array<Content> {
       return (cid: string) => {
-        return Array.from(this.contents.values()).filter((el) => this.comments.get(cid)?.findIndex((el1) => el1 === el.cid)) || []
+        return Array.from(this.contents.values()).filter((el) => {
+          const index = this.comments.get(cid)?.findIndex((el1) => el1 === el.cid)
+          return index !== undefined && index >= 0
+        })?.sort((a: Content, b: Content) => a.createdAt < b.createdAt ? 1 : -1) || []
       }
     }
   },

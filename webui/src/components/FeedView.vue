@@ -1,12 +1,12 @@
 <template>
   <div
-    v-for='_content in contents'
+    v-for='(_content, index) in contents'
     :key='_content.cid'
     :style='{width: "100%", margin: "16px 0 16px 0"}'
     class='row'
   >
     <q-space />
-    <div>
+    <div :style='{borderBottom: index < contents.length - 1 ? "1px solid grey" : ""}'>
       <content-view :cid='_content.cid' />
     </div>
     <q-space />

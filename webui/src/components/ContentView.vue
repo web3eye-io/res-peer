@@ -45,6 +45,21 @@
         <q-icon name='thumb_down' size='20px' :style='{marginRight: "6px"}' />
         {{ _content.dislikes }}
       </div>
+      <div class='row cursor-pointer' :style='{marginLeft: "16px"}' @click='onDislikeClick(_content.cid)'>
+        <q-icon name='comment' size='20px' :style='{marginRight: "6px"}' />
+        {{ comments.length }}
+      </div>
+    </div>
+    <div v-if='recommends.length' :style='{marginTop:"16px", padding:"8px", borderRadius:"8px"}' class='bg-grey-4'>
+      <div v-for='recommend in recommends' :key='recommend.cid'>
+        <div class='row'>
+          <q-icon name='recommend' color='red' size='24px' />
+          <span :style='{color:"blue", marginLeft:"8px", lineHeight:"24px"}'>{{ recommend.author }}</span>
+        </div>
+        <div :style='{marginLeft:"24px",marginTop:"8px"}'>
+          {{ recommend.content }}
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -68,6 +83,8 @@ const cid = toRef(props, 'cid')
 
 const content = useContentStore()
 const _content = computed(() => content.content(cid.value) as Content)
+const comments = computed(() => content._comments(cid.value))
+const recommends = computed(() => content._recommends(cid.value).slice(0, 1))
 const collection = useCollectionStore()
 const options = /* await */ getClientOptions(/* {app, router ...} */)
 const apolloClient = new ApolloClient(options)
