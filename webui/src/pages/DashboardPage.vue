@@ -63,7 +63,7 @@
             <article-list article-type='MY_DISLIKE' :style='{margin: "32px 0"}' />
           </q-tab-panel>
           <q-tab-panel name='review-contents'>
-            <review-content />
+            <review-contents />
           </q-tab-panel>
           <q-tab-panel name='credits'>
             <user-balance />
@@ -100,7 +100,7 @@ import CollectionList from 'src/components/CollectionList.vue'
 import NftList from 'src/components/NftList.vue'
 import DepositBalance from 'src/components/DepositBalance.vue'
 import AvatarSetting from 'src/components/AvatarSetting.vue'
-import ReviewContent from 'src/components/ReviewContent.vue'
+import ReviewContents from 'src/components/ReviewContents.vue'
 
 const user = useUserStore()
 const account = computed(() => user.account)

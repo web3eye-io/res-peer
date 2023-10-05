@@ -1,88 +1,72 @@
 <template>
-  <q-table
-    :rows='contents'
-    :columns='(columns as never)'
-    @row-click='(_evt, row, _index) => onContentClick(row as Content)'
-  />
-  <q-dialog
-    v-model='reviewing'
-    position='standard'
-  >
-    <q-card :style='{padding:"24px", width:"1280px"}'>
-      <q-card-section>
-        <q-item-label>CID: {{ target.cid }}</q-item-label>
-        <q-item-label>Author: {{ target.author }}</q-item-label>
-        <q-item-label v-if='target.commentToCid'>
-          Comment To CID: {{ target.commentToCid }}
-        </q-item-label>
-        <q-item-label>Title: {{ target.title }}</q-item-label>
-        <q-item-label>Content: <span v-html='target.content' /></q-item-label>
-        <q-item-label>Approved: {{ target.approved }}</q-item-label>
-        <q-item-label>Rejected: {{ target.rejected }}</q-item-label>
-        <q-item-label>CreatedAt: {{ date.formatDate(target.createdAt / 1000) }}</q-item-label>
-      </q-card-section>
-      <q-input v-model='reason' :label='$t("MSG_REVIEW_REASON")' type='textarea' />
-      <div class='row' :style='{marginTop: "24px"}'>
-        <q-btn @click='onApprove'>
-          {{ $t('MSG_APPROVE') }}
-        </q-btn>
-        <q-btn @click='onReject'>
-          {{ $t('MSG_REJECT') }}
-        </q-btn>
+  <div class='row'>
+    <q-space />
+    <div :style='{maxWidth:"800px"}'>
+      <div class='row' :style='{margin:"16px 0"}'>
+        <div class='row cursor-pointer' :style='{lineHeight:"32px"}'>
+          <q-icon name='arrow_back' size='32px' />
+          <span :style='{marginLeft:"8px"}'>{{ $t('MSG_REVIEW_CONTENT') }}</span>
+        </div>
+        <q-space />
+        <div class='row' :style='{lineHeight:"32px"}'>
+          <span><strong>{{ content?.title }}</strong></span>
+        </div>
       </div>
-    </q-card>
-  </q-dialog>
+      <q-separator />
+      <div :style='{marginTop:"24px"}'>
+        <div :style='{fontWeight: "bold", fontSize: "28px", wordBreak: "break-word", marginBottom: "16px"}'>
+          {{ content?.title?.length ? content?.title : 'You should have a title!' }}
+        </div>
+        <div>
+          By
+          <span class='text-grey-6 text-bold cursor-pointer'>
+            {{ content?.author?.length ? content?.author : 'Anonymous' }}
+          </span>
+        </div>
+        <div>
+          At
+          <span class='text-grey-6 text-bold'>
+            {{ content?.createdAt ? date.formatDate(content?.createdAt / 1000) : '' }}
+          </span>
+        </div>
+        <div>
+          Cid
+          <span class='text-grey-6 text-bold cursor-pointer'>
+            {{ content?.cid }}
+          </span>
+        </div>
+        <div
+          :style='{margin: "24px 0 24px 0", fontSize: "16px", wordBreak: "break-word"}'
+          v-html='content?.content?.length ? content?.content : "You should have some content!"'
+        />
+      </div>
+      <q-separator />
+      <div :style='{marginTop: "24px"}'>
+        <q-input v-model='reason' type='textarea' :label='$t("MSG_REVIEW_REASON")' />
+      </div>
+      <div :style='{marginTop: "24px"}' class='row'>
+        <q-btn :label='$t("MSG_APPROVE")' :style='{marginRight:"16px"}' />
+        <q-btn :label='$t("MSG_REJECT")' />
+      </div>
+    </div>
+    <q-space />
+  </div>
 </template>
 
-<script setup lang='ts'>
-import { Content, useReviewStore } from 'src/stores/review'
+<script lang='ts' setup>
+import { useReviewStore } from 'src/stores/review'
 import { computed, ref } from 'vue'
+import { useRoute } from 'vue-router'
 import { date } from 'quasar'
-import { useUserStore } from 'src/stores/user'
 
+interface Query {
+  cid: string
+}
+
+const route = useRoute()
+const cid = computed(() => (route.query as unknown as Query).cid)
 const review = useReviewStore()
-const contents = computed(() => Array.from(review.contentApplications.values()) || [])
-const user = useUserStore()
-const account = computed(() => user.account)
-const reviewing = ref(false)
-const target = ref(undefined as unknown as Content)
-const reason = ref('')
-
-const columns = computed(() => [
-  {
-    name: 'CID',
-    label: 'CID',
-    field: (row: Content) => row.cid
-  }, {
-    name: 'Title',
-    label: 'Title',
-    field: (row: Content) => row.title
-  }, {
-    name: 'Approved',
-    label: 'Approved',
-    field: (row: Content) => row.approved
-  }, {
-    name: 'Rejected',
-    label: 'Rejected',
-    field: (row: Content) => row.rejected
-  }, {
-    name: 'Reviewed',
-    label: 'Reviewed',
-    field: (row: Content) => review.reviewed(row.cid, account.value)
-  }
-])
-
-const onContentClick = (content: Content) => {
-  target.value = content
-  reviewing.value = true
-}
-
-const onApprove = () => {
-  reviewing.value = false
-}
-
-const onReject = () => {
-  reviewing.value = false
-}
+const content = computed(() => review.content(cid.value))
+const reason = ref('I supper like this article not only it\'s about Linera, but also it\'s write by KK.')
 
 </script>

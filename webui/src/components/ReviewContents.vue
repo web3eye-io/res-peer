@@ -1,0 +1,54 @@
+<template>
+  <q-table
+    :rows='contents'
+    :columns='(columns as never)'
+    @row-click='(_evt, row, _index) => onContentClick(row as Content)'
+  />
+</template>
+
+<script setup lang='ts'>
+import { Content, useReviewStore } from 'src/stores/review'
+import { computed } from 'vue'
+import { useUserStore } from 'src/stores/user'
+import { useRouter } from 'vue-router'
+
+const review = useReviewStore()
+const contents = computed(() => Array.from(review.contentApplications.values()) || [])
+const user = useUserStore()
+const account = computed(() => user.account)
+const router = useRouter()
+
+const columns = computed(() => [
+  {
+    name: 'CID',
+    label: 'CID',
+    field: (row: Content) => row.cid
+  }, {
+    name: 'Title',
+    label: 'Title',
+    field: (row: Content) => row.title
+  }, {
+    name: 'Approved',
+    label: 'Approved',
+    field: (row: Content) => row.approved
+  }, {
+    name: 'Rejected',
+    label: 'Rejected',
+    field: (row: Content) => row.rejected
+  }, {
+    name: 'Reviewed',
+    label: 'Reviewed',
+    field: (row: Content) => review.reviewed(row.cid, account.value)
+  }
+])
+
+const onContentClick = (content: Content) => {
+  void router.push({
+    path: '/reviewcontent',
+    query: {
+      cid: content.cid
+    }
+  })
+}
+
+</script>
