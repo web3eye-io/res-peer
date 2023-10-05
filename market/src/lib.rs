@@ -28,7 +28,7 @@ pub struct NFT {
     /// Sequence ID of NFT in collections
     pub token_id: u16,
     /// Storage location of http or ipfs
-    pub uri: Option<String>,
+    pub uri_index: u16,
     /// Price in Linera Token
     pub price: Option<Amount>,
     pub on_sale: bool,
@@ -40,6 +40,7 @@ pub struct NFT {
 pub struct Collection {
     pub collection_id: u64,
     pub base_uri: String,
+    pub uris: Vec<String>,
     pub nfts: HashMap<u16, NFT>,
     pub price: Option<Amount>,
     pub name: String,
@@ -60,10 +61,11 @@ pub enum Operation {
         base_uri: String,
         price: Option<Amount>,
         name: String,
+        uris: Vec<String>,
     },
     MintNFT {
         collection_id: u64,
-        uri: Option<String>,
+        uri_index: u16,
         price: Option<Amount>,
         name: String,
     },

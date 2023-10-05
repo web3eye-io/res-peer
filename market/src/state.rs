@@ -58,6 +58,7 @@ impl Market {
         base_uri: String,
         price: Option<Amount>,
         name: String,
+        uris: Vec<String>,
     ) -> Result<(), StateError> {
         if self.collection_uris.get().contains(&base_uri) {
             return Err(StateError::BaseURIALreadyExists);
@@ -66,6 +67,7 @@ impl Market {
         let collection = Collection {
             collection_id,
             base_uri,
+            uris,
             price,
             name,
             nfts: HashMap::new(),
@@ -109,12 +111,15 @@ impl Market {
         &mut self,
         owner: Owner,
         collection_id: u64,
-        uri: Option<String>,
+        uri_index: u16,
         price: Option<Amount>,
         name: String,
     ) -> Result<(), StateError> {
         match self.collections.get(&collection_id).await {
             Ok(Some(mut collection)) => {
+                if uri_index >= collection.uris.len() as u16 {
+                    return Err(StateError::InvalidUriIndex);
+                }
                 if collection.price.is_none() && price.is_none() {
                     return Err(StateError::InvalidPrice);
                 }
@@ -124,7 +129,7 @@ impl Market {
                             token_id,
                             NFT {
                                 token_id,
-                                uri,
+                                uri_index,
                                 price,
                                 on_sale: true,
                                 minted_at: system_api::current_system_time(),
@@ -447,6 +452,9 @@ pub enum StateError {
 
     #[error("Invalid price")]
     InvalidPrice,
+
     // #[error("Buyer is same as owner")]
     // BuyerIsOwner,
+    #[error("Invalid uri index")]
+    InvalidUriIndex,
 }

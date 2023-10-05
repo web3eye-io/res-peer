@@ -1,6 +1,6 @@
 <template>
   <div :style='{width: "720px", paddingBottom: "48px"}'>
-    <div class='cursor-pointer' :style='{fontWeight: "bold", fontSize: "28px", wordBreak: "break-word", marginBottom: "16px"}' @click='onTitleClick(_content.cid)'>
+    <div class='cursor-pointer' :style='{fontWeight: "bold", fontSize: "26px", wordBreak: "break-word", marginBottom: "16px"}' @click='onTitleClick(_content.cid)'>
       {{ _content.title?.length ? _content.title : 'You should have a title!' }}
     </div>
     <div>
@@ -33,7 +33,7 @@
       </span>
     </div>
     <div
-      :style='{margin: "24px 0 24px 0", fontSize: "16px", wordBreak: "break-word", overflow: "scroll"}'
+      :style='{margin: "24px 0 24px 0", fontSize: "16px", wordBreak: "break-word"}'
       v-html='_content.content?.length ? _content.content : "You should have some content!"'
     />
     <div class='row'>

@@ -48,13 +48,20 @@ impl Contract for Market {
                 base_uri,
                 price,
                 name,
+                uris,
             } => {
-                self.create_collection(context.authenticated_signer.unwrap(), base_uri, price, name)
-                    .await?
+                self.create_collection(
+                    context.authenticated_signer.unwrap(),
+                    base_uri,
+                    price,
+                    name,
+                    uris,
+                )
+                .await?
             }
             Operation::MintNFT {
                 collection_id,
-                uri,
+                uri_index,
                 price,
                 name,
             } => {
@@ -66,7 +73,7 @@ impl Contract for Market {
                 self.mint_nft(
                     context.authenticated_signer.unwrap(),
                     collection_id,
-                    uri,
+                    uri_index,
                     price,
                     name,
                 )
