@@ -46,7 +46,7 @@
       </div>
       <div :style='{marginTop: "24px"}' class='row'>
         <q-btn :label='$t("MSG_APPROVE")' :style='{marginRight:"16px",color: _review?.approved ? "blue" : ""}' @click='onApproveClick' :disable='reviewed' />
-        <q-btn :label='$t("MSG_REJECT")' :style='{color: _review?.approved ? "" : "red"}' @click='onRejectClick' :disable='reviewed' />
+        <q-btn :label='$t("MSG_REJECT")' :style='{color: _review && !_review?.approved ? "red" : ""}' @click='onRejectClick' :disable='reviewed' />
       </div>
     </div>
     <q-space />

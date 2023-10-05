@@ -28,6 +28,7 @@ const getContent = (contentKey: string, force: boolean, done?: () => void) => {
       contents(string: $contentKey) {
         accounts
         cid
+        commentToCid
         title
         content
         author

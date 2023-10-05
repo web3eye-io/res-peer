@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 
 export interface Content {
   cid: string
+  commentToCid?: string
   author: string
   title: string
   content: string
@@ -23,7 +24,7 @@ export const useContentStore = defineStore('content', {
     _contents (): () => Array<Content> {
       return () => {
         return Array.from(this.contents.values()).filter((el) => {
-          return !this.recommends.get(el.cid) && !this.comments.get(el.cid)
+          return !el.commentToCid
         }).sort((a: Content, b: Content) => a.createdAt < b.createdAt ? 1 : -1)
       }
     }
