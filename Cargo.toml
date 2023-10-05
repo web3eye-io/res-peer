@@ -35,6 +35,7 @@ credit = { path = "./credit" }
 feed = { path = "./feed" }
 review = { path = "./review" }
 foundation = { path = "./foundation" }
+market = { path = "./market" }
 
 [profile.release]
 debug = true

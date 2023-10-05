@@ -11,7 +11,7 @@ use linera_sdk::{
     ApplicationCallResult, CalleeContext, Contract, ExecutionResult, MessageContext,
     OperationContext, SessionCallResult, ViewStateStorage,
 };
-use market::Operation;
+use market::{ApplicationCall, Operation};
 use thiserror::Error;
 
 linera_sdk::contract!(Market);
@@ -44,21 +44,6 @@ impl Contract for Market {
             _ => return Err(ContractError::InvalidOwner),
         }
         match operation {
-            Operation::CreateCollection {
-                base_uri,
-                price,
-                name,
-                uris,
-            } => {
-                self.create_collection(
-                    context.authenticated_signer.unwrap(),
-                    base_uri,
-                    price,
-                    name,
-                    uris,
-                )
-                .await?
-            }
             Operation::MintNFT {
                 collection_id,
                 uri_index,
@@ -170,11 +155,28 @@ impl Contract for Market {
 
     async fn handle_application_call(
         &mut self,
-        _context: &CalleeContext,
-        _call: Self::ApplicationCall,
+        context: &CalleeContext,
+        call: Self::ApplicationCall,
         _forwarded_sessions: Vec<SessionId>,
     ) -> Result<ApplicationCallResult<Self::Message, Self::Response, Self::SessionState>, Self::Error>
     {
+        match call {
+            ApplicationCall::CreateCollection {
+                base_uri,
+                price,
+                name,
+                uris,
+            } => {
+                self.create_collection(
+                    context.authenticated_signer.unwrap(),
+                    base_uri,
+                    price,
+                    name,
+                    uris,
+                )
+                .await?
+            }
+        }
         Ok(ApplicationCallResult::default())
     }
 

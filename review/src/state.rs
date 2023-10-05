@@ -15,7 +15,7 @@ pub struct Review {
     pub reviewer_number: RegisterView<u16>,
     pub reviewer_applications: MapView<Owner, Reviewer>,
     pub content_applications: MapView<String, Content>,
-    pub asset_applications: MapView<u64, Asset>,
+    pub asset_applications: MapView<String, Asset>,
     pub content_approved_threshold: RegisterView<u16>,
     pub content_rejected_threshold: RegisterView<u16>,
     pub asset_approved_threshold: RegisterView<u16>,
@@ -303,12 +303,12 @@ impl Review {
     pub(crate) async fn validate_asset_review(
         &self,
         reviewer: Owner,
-        collection_id: u64,
+        cid: String,
     ) -> Result<(), StateError> {
         if !self.is_reviewer(reviewer).await? {
             return Err(StateError::InvalidReviewer);
         }
-        match self.asset_applications.get(&collection_id).await? {
+        match self.asset_applications.get(&cid).await? {
             Some(asset) => match asset.reviewers.get(&reviewer) {
                 Some(_) => Err(StateError::AlreadyReviewed),
                 _ => Ok(()),
@@ -320,17 +320,17 @@ impl Review {
     pub(crate) async fn approve_asset(
         &mut self,
         reviewer: Owner,
-        collection_id: u64,
+        cid: String,
     ) -> Result<Option<Asset>, StateError> {
-        self.validate_asset_review(reviewer, collection_id).await?;
-        match self.asset_applications.get(&collection_id).await? {
+        self.validate_asset_review(reviewer, cid.clone()).await?;
+        match self.asset_applications.get(&cid).await? {
             Some(mut asset) => {
                 asset.approved += 1;
-                self.asset_applications.insert(&collection_id, asset)?;
+                self.asset_applications.insert(&cid, asset)?;
             }
             _ => return Err(StateError::InvalidReviewer),
         }
-        match self.asset_applications.get(&collection_id).await? {
+        match self.asset_applications.get(&cid).await? {
             Some(asset) => {
                 let approved_threshold = *self.reviewer_approved_threshold.get();
                 let reviewer_number = *self.reviewer_number.get();
@@ -346,17 +346,17 @@ impl Review {
     pub(crate) async fn reject_asset(
         &mut self,
         reviewer: Owner,
-        collection_id: u64,
+        cid: String,
     ) -> Result<Option<Asset>, StateError> {
-        self.validate_asset_review(reviewer, collection_id).await?;
-        match self.asset_applications.get(&collection_id).await? {
+        self.validate_asset_review(reviewer, cid.clone()).await?;
+        match self.asset_applications.get(&cid).await? {
             Some(mut asset) => {
                 asset.rejected += 1;
-                self.asset_applications.insert(&collection_id, asset)?;
+                self.asset_applications.insert(&cid, asset)?;
             }
             _ => return Err(StateError::InvalidReviewer),
         }
-        match self.asset_applications.get(&collection_id).await? {
+        match self.asset_applications.get(&cid).await? {
             Some(asset) => {
                 let rejected_threshold = *self.reviewer_rejected_threshold.get();
                 let reviewer_number = *self.reviewer_number.get();
@@ -367,6 +367,16 @@ impl Review {
             _ => todo!(),
         }
         Ok(None)
+    }
+
+    pub(crate) async fn submit_asset(&mut self, asset: Asset) -> Result<(), StateError> {
+        match self.asset_applications.get(&asset.clone().cid).await? {
+            Some(_) => return Err(StateError::AlreadyExists),
+            _ => {
+                self.asset_applications.insert(&asset.clone().cid, asset)?;
+            }
+        }
+        Ok(())
     }
 }
 
@@ -386,4 +396,7 @@ pub enum StateError {
 
     #[error("Invalid content")]
     InvalidContent,
+
+    #[error("Already exists")]
+    AlreadyExists,
 }

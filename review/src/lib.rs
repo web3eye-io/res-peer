@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use async_graphql::{Request, Response, SimpleObject};
-use linera_sdk::base::{ApplicationId, ChainId, ContractAbi, Owner, ServiceAbi, Timestamp};
+use linera_sdk::base::{Amount, ApplicationId, ChainId, ContractAbi, Owner, ServiceAbi, Timestamp};
 use serde::{Deserialize, Serialize};
 
 pub struct ReviewAbi;
@@ -28,6 +28,7 @@ pub struct ReviewParameters {
     pub feed_app_id: ApplicationId<feed::FeedAbi>,
     pub credit_app_id: ApplicationId<credit::CreditAbi>,
     pub foundation_app_id: ApplicationId<foundation::FoundationAbi>,
+    pub market_app_id: ApplicationId<market::MarketAbi>,
 }
 
 #[derive(Clone, Debug, Deserialize, PartialEq, PartialOrd, Serialize)]
@@ -73,11 +74,16 @@ pub struct Content {
 
 #[derive(Debug, Deserialize, Serialize, Clone, SimpleObject, Eq, PartialEq)]
 pub struct Asset {
-    pub collection_id: u64,
+    pub cid: String,
+    pub base_uri: String,
+    pub uris: Vec<String>,
     pub author: Owner,
+    pub price: Option<Amount>,
+    pub name: String,
     pub reviewers: HashMap<Owner, Review>,
     pub approved: u16,
     pub rejected: u16,
+    pub created_at: Timestamp,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -114,13 +120,20 @@ pub enum Operation {
         comment: String,
     },
     ApproveAsset {
-        collection_id: u64,
+        cid: String,
         reason_cid: Option<String>,
         reason: Option<String>,
     },
     RejectAsset {
-        collection_id: u64,
+        cid: String,
         reason: Option<String>,
+    },
+    SubmitAsset {
+        cid: String,
+        base_uri: String,
+        uris: Vec<String>,
+        price: Option<Amount>,
+        name: String,
     },
     RequestSubscribe,
 }
@@ -161,6 +174,22 @@ pub enum Message {
         cid: String,
         comment_cid: String,
         comment: String,
+    },
+    ApproveAsset {
+        cid: String,
+        reason_cid: Option<String>,
+        reason: Option<String>,
+    },
+    RejectAsset {
+        cid: String,
+        reason: Option<String>,
+    },
+    SubmitAsset {
+        cid: String,
+        base_uri: String,
+        uris: Vec<String>,
+        price: Option<Amount>,
+        name: String,
     },
     RequestSubscribe,
 }

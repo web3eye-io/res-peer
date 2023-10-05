@@ -18,7 +18,7 @@ use linera_sdk::{
     OperationContext, SessionCallResult, ViewStateStorage,
 };
 // use linera_views::views::ViewError;
-use review::{Content, InitialState, Message, Operation};
+use review::{Asset, Content, InitialState, Message, Operation};
 use thiserror::Error;
 
 linera_sdk::contract!(Review);
@@ -48,7 +48,7 @@ impl Contract for Review {
 
     async fn execute_operation(
         &mut self,
-        context: &OperationContext,
+        _context: &OperationContext,
         operation: Self::Operation,
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
         match operation {
@@ -131,24 +131,42 @@ impl Contract for Review {
                 ));
             }
             Operation::ApproveAsset {
-                collection_id,
+                cid,
                 reason_cid,
                 reason,
             } => {
-                self._approve_asset(
-                    context.authenticated_signer.unwrap(),
-                    collection_id,
-                    reason_cid,
-                    reason,
-                )
-                .await?;
+                return Ok(ExecutionResult::default().with_authenticated_message(
+                    system_api::current_application_id().creation.chain_id,
+                    Message::ApproveAsset {
+                        cid,
+                        reason_cid,
+                        reason,
+                    },
+                ));
             }
-            Operation::RejectAsset {
-                collection_id,
-                reason,
+            Operation::RejectAsset { cid, reason } => {
+                return Ok(ExecutionResult::default().with_authenticated_message(
+                    system_api::current_application_id().creation.chain_id,
+                    Message::RejectAsset { cid, reason },
+                ));
+            }
+            Operation::SubmitAsset {
+                cid,
+                base_uri,
+                uris,
+                price,
+                name,
             } => {
-                self._reject_asset(context.authenticated_signer.unwrap(), collection_id, reason)
-                    .await?;
+                return Ok(ExecutionResult::default().with_authenticated_message(
+                    system_api::current_application_id().creation.chain_id,
+                    Message::SubmitAsset {
+                        cid,
+                        base_uri,
+                        uris,
+                        price,
+                        name,
+                    },
+                ));
             }
             Operation::RequestSubscribe => {
                 return Ok(ExecutionResult::default().with_message(
@@ -157,7 +175,6 @@ impl Contract for Review {
                 ));
             }
         }
-        Ok(ExecutionResult::default())
     }
 
     async fn execute_message(
@@ -318,6 +335,70 @@ impl Contract for Review {
                         cid,
                         comment_cid,
                         comment,
+                    },
+                ));
+            }
+            Message::ApproveAsset {
+                cid,
+                reason_cid,
+                reason,
+            } => {
+                self._approve_asset(
+                    context.authenticated_signer.unwrap(),
+                    cid.clone(),
+                    reason_cid.clone(),
+                    reason.clone(),
+                )
+                .await?;
+                let dest =
+                    Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
+                return Ok(ExecutionResult::default().with_authenticated_message(
+                    dest,
+                    Message::ApproveAsset {
+                        cid,
+                        reason_cid,
+                        reason,
+                    },
+                ));
+            }
+            Message::RejectAsset { cid, reason } => {
+                self._reject_asset(
+                    context.authenticated_signer.unwrap(),
+                    cid.clone(),
+                    reason.clone(),
+                )
+                .await?;
+                let dest =
+                    Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
+                return Ok(ExecutionResult::default()
+                    .with_authenticated_message(dest, Message::RejectAsset { cid, reason }));
+            }
+            Message::SubmitAsset {
+                cid,
+                base_uri,
+                uris,
+                price,
+                name,
+            } => {
+                self._submit_asset(
+                    context.authenticated_signer.unwrap(),
+                    cid.clone(),
+                    base_uri.clone(),
+                    uris.clone(),
+                    price.clone(),
+                    name.clone(),
+                )
+                .await?;
+                let dest =
+                    Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
+                return Ok(ExecutionResult::default().with_authenticated_message(
+                    dest,
+                    Message::SubmitAsset {
+                        cid,
+                        base_uri,
+                        uris,
+                        price,
+                        name,
                     },
                 ));
             }
@@ -685,11 +766,11 @@ impl Review {
     async fn _approve_asset(
         &mut self,
         reviewer: Owner,
-        collection_id: u64,
+        cid: String,
         _reason_cid: Option<String>,
         _reason: Option<String>,
     ) -> Result<(), ContractError> {
-        self.approve_asset(reviewer, collection_id).await?;
+        self.approve_asset(reviewer, cid).await?;
         // TODO: add reason
         // TODO: if already approved, publish asset
         // TODO: notify author
@@ -699,12 +780,37 @@ impl Review {
     async fn _reject_asset(
         &mut self,
         reviewer: Owner,
-        collection_id: u64,
+        cid: String,
         _reason: Option<String>,
     ) -> Result<(), ContractError> {
-        self.reject_asset(reviewer, collection_id).await?;
+        self.reject_asset(reviewer, cid).await?;
         // TODO: add reason
         // TODO: notify author
+        Ok(())
+    }
+
+    async fn _submit_asset(
+        &mut self,
+        author: Owner,
+        cid: String,
+        base_uri: String,
+        uris: Vec<String>,
+        price: Option<Amount>,
+        name: String,
+    ) -> Result<(), ContractError> {
+        self.submit_asset(Asset {
+            cid,
+            author,
+            base_uri,
+            uris,
+            price,
+            name,
+            reviewers: HashMap::default(),
+            approved: 0,
+            rejected: 0,
+            created_at: system_api::current_system_time(),
+        })
+        .await?;
         Ok(())
     }
 }

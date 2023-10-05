@@ -17,6 +17,7 @@ log = { workspace = true }
 feed = { workspace = true }
 credit = { workspace = true }
 foundation = { workspace = true }
+market = { workspace = true }
 
 [dev-dependencies]
 linera-sdk = { workspace = true, features = ["test"] }

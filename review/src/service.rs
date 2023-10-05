@@ -6,7 +6,7 @@ use self::state::Review;
 use async_graphql::{EmptySubscription, Object, Request, Response, Schema};
 use async_trait::async_trait;
 use linera_sdk::{
-    base::{Owner, WithServiceAbi},
+    base::{Amount, Owner, WithServiceAbi},
     QueryContext, Service, ViewStateStorage,
 };
 use review::Operation;
@@ -97,22 +97,36 @@ impl MutationRoot {
 
     async fn approve_asset(
         &self,
-        collection_id: u64,
+        cid: String,
         reason_cid: Option<String>,
         reason: Option<String>,
     ) -> Vec<u8> {
         bcs::to_bytes(&Operation::ApproveAsset {
-            collection_id,
+            cid,
             reason_cid,
             reason,
         })
         .unwrap()
     }
 
-    async fn reject_asset(&self, collection_id: u64, reason: Option<String>) -> Vec<u8> {
-        bcs::to_bytes(&Operation::RejectAsset {
-            collection_id,
-            reason,
+    async fn reject_asset(&self, cid: String, reason: Option<String>) -> Vec<u8> {
+        bcs::to_bytes(&Operation::RejectAsset { cid, reason }).unwrap()
+    }
+
+    async fn submit_asset(
+        &self,
+        cid: String,
+        base_uri: String,
+        uris: Vec<String>,
+        price: Option<Amount>,
+        name: String,
+    ) -> Vec<u8> {
+        bcs::to_bytes(&Operation::SubmitAsset {
+            cid,
+            base_uri,
+            uris,
+            price,
+            name,
         })
         .unwrap()
     }

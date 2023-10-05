@@ -11,7 +11,7 @@ impl ContractAbi for MarketAbi {
     type InitializationArgument = InitialState;
     type Operation = Operation;
     type Message = ();
-    type ApplicationCall = ();
+    type ApplicationCall = ApplicationCall;
     type SessionCall = ();
     type SessionState = ();
     type Response = ();
@@ -57,12 +57,6 @@ pub struct InitialState {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub enum Operation {
-    CreateCollection {
-        base_uri: String,
-        price: Option<Amount>,
-        name: String,
-        uris: Vec<String>,
-    },
     MintNFT {
         collection_id: u64,
         uri_index: u16,
@@ -96,5 +90,15 @@ pub enum Operation {
     SetAvatar {
         collection_id: u64,
         token_id: u16,
+    },
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub enum ApplicationCall {
+    CreateCollection {
+        base_uri: String,
+        price: Option<Amount>,
+        name: String,
+        uris: Vec<String>,
     },
 }
