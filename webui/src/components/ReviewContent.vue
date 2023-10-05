@@ -3,7 +3,7 @@
     <q-space />
     <div :style='{maxWidth:"800px"}'>
       <div class='row' :style='{margin:"16px 0"}'>
-        <div class='row cursor-pointer' :style='{lineHeight:"32px"}'>
+        <div class='row cursor-pointer' :style='{lineHeight:"32px"}' @click='onBackClick'>
           <q-icon name='arrow_back' size='32px' />
           <span :style='{marginLeft:"8px"}'>{{ $t('MSG_REVIEW_CONTENT') }}</span>
         </div>
@@ -42,11 +42,11 @@
       </div>
       <q-separator />
       <div :style='{marginTop: "24px"}'>
-        <q-input v-model='reason' type='textarea' :label='$t("MSG_REVIEW_REASON")' />
+        <q-input v-model='reason' type='textarea' :label='$t("MSG_REVIEW_REASON")' :disable='reviewed' />
       </div>
       <div :style='{marginTop: "24px"}' class='row'>
-        <q-btn :label='$t("MSG_APPROVE")' :style='{marginRight:"16px"}' @click='onApproveClick' />
-        <q-btn :label='$t("MSG_REJECT")' />
+        <q-btn :label='$t("MSG_APPROVE")' :style='{marginRight:"16px",color: _review?.approved ? "blue" : ""}' @click='onApproveClick' :disable='reviewed' />
+        <q-btn :label='$t("MSG_REJECT")' :style='{color: _review?.approved ? "" : "red"}' @click='onRejectClick' :disable='reviewed' />
       </div>
     </div>
     <q-space />
@@ -66,6 +66,7 @@ import { CID } from 'multiformats/cid'
 import * as json from 'multiformats/codecs/json'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { targetChain } from 'src/stores/chain'
+import { useUserStore } from 'src/stores/user'
 
 interface Query {
   cid: string
@@ -75,10 +76,14 @@ const route = useRoute()
 const cid = computed(() => (route.query as unknown as Query).cid)
 const review = useReviewStore()
 const content = computed(() => review.content(cid.value))
-const reason = ref('I supper like this article not only it\'s about Linera, but also it\'s write by KK.')
 const options = /* await */ getClientOptions(/* {app, router ...} */)
 const apolloClient = new ApolloClient(options)
 const router = useRouter()
+const user = useUserStore()
+const account = computed(() => user.account)
+const reviewed = computed(() => review.reviewed(cid.value, account.value))
+const _review = computed(() => review.review(cid.value, account.value))
+const reason = ref(_review.value?.reason || 'I supper like this article not only it\'s about Linera, but also it\'s write by KK.')
 
 const onApproveClick = async () => {
   if (!content.value || !reason.value.length) {
@@ -108,6 +113,45 @@ const onApproveClick = async () => {
     chainId: targetChain.value
   })
   void router.push({ path: '/' })
+}
+
+const onRejectClick = async () => {
+  if (!content.value || !reason.value.length) {
+    return
+  }
+
+  const { mutate, onDone, onError } = provideApolloClient(apolloClient)(() => useMutation(gql`
+    mutation rejectContent ($contentCid: String!, $reason: String!) {
+      rejectContent(contentCid: $contentCid, reason: $reason)
+    }
+  `))
+  onDone(() => {
+    // TODO
+  })
+  onError((error) => {
+    console.log(error)
+  })
+  await mutate({
+    contentCid: content.value.cid,
+    reason: reason.value,
+    endpoint: 'review',
+    chainId: targetChain.value
+  })
+  void router.push({
+    path: '/dashboard',
+    query: {
+      tab: 'review-contents'
+    }
+  })
+}
+
+const onBackClick = () => {
+  void router.push({
+    path: '/dashboard',
+    query: {
+      tab: 'review-contents'
+    }
+  })
 }
 
 </script>

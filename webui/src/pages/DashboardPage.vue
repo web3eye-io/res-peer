@@ -101,6 +101,14 @@ import NftList from 'src/components/NftList.vue'
 import DepositBalance from 'src/components/DepositBalance.vue'
 import AvatarSetting from 'src/components/AvatarSetting.vue'
 import ReviewContents from 'src/components/ReviewContents.vue'
+import { useRoute } from 'vue-router'
+
+interface Query {
+  tab: string
+}
+const route = useRoute()
+const tab = ref((route.query as unknown as Query).tab || 'contents')
+const splitterModel = ref(20)
 
 const user = useUserStore()
 const account = computed(() => user.account)
@@ -111,9 +119,6 @@ const spendableCredits = computed(() => user.spendable)
 const lineraBalance = computed(() => collection.lineraBalance)
 const avatarIds = computed(() => collection.avatars.get(account.value))
 const avatar = computed(() => avatarIds.value ? collection.nftBannerByID(avatarIds.value[0], avatarIds.value[1]) : collection.nftBannerByID(1001, 1000))
-
-const splitterModel = ref(20)
-const tab = ref('contents')
 
 </script>
 

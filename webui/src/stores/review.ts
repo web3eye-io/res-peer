@@ -39,6 +39,12 @@ export const useReviewStore = defineStore('review', {
       return (cid: string) => {
         return this.contentApplications.get(cid)
       }
+    },
+    review (): (cid: string, owner: string) => Review | undefined {
+      return (cid: string, owner: string) => {
+        const content = this.contentApplications.get(cid)
+        return content?.reviewers[owner]
+      }
     }
   },
   actions: {}
