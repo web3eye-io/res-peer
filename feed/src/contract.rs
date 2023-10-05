@@ -84,7 +84,7 @@ impl Contract for Feed {
                 content,
                 author,
             } => {
-                self.publish(cid.clone(), title.clone(), content.clone(), author)
+                self.publish(cid.clone(), None, title.clone(), content.clone(), author)
                     .await?;
                 log::info!("Published cid {:?} sender {:?}", cid, author);
                 let dest =
@@ -113,6 +113,7 @@ impl Contract for Feed {
                 let author = context.authenticated_signer.unwrap();
                 self.publish(
                     reason_cid.clone(),
+                    Some(cid.clone()),
                     String::default(),
                     reason.clone(),
                     author,
@@ -146,6 +147,7 @@ impl Contract for Feed {
             } => {
                 self.publish(
                     comment_cid.clone(),
+                    Some(cid.clone()),
                     String::default(),
                     comment.clone(),
                     commentor,
@@ -243,7 +245,7 @@ impl Contract for Feed {
                 title,
                 content,
                 author,
-            } => self.publish(cid, title, content, author).await?,
+            } => self.publish(cid, None, title, content, author).await?,
         }
         Ok(ApplicationCallResult::default())
     }
@@ -295,6 +297,7 @@ impl Feed {
     async fn publish(
         &mut self,
         cid: String,
+        comment_to_cid: Option<String>,
         title: String,
         content: String,
         author: Owner,
@@ -304,6 +307,7 @@ impl Feed {
             .create_content(
                 Content {
                     cid,
+                    comment_to_cid,
                     title,
                     content,
                     author,

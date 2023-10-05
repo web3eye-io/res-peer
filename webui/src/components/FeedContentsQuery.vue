@@ -11,6 +11,8 @@ import { targetChain } from 'src/stores/chain'
 const content = useContentStore()
 const contentsKeys = computed(() => content.contentsKeys)
 const contents = computed(() => content.contents)
+const recommends = computed(() => content.recommends)
+const comments = computed(() => content.comments)
 const contentIndex = ref(-1)
 const contentKey = computed(() => contentIndex.value >= 0 ? contentsKeys.value[contentIndex.value] : undefined)
 const mutateKeys = computed(() => content.mutateKeys)
@@ -33,6 +35,8 @@ const getContent = (contentKey: string, force: boolean, done?: () => void) => {
         dislikes
         createdAt
       }
+      contentRecommends(string: $contentKey)
+      contentComments(string: $contentKey)
     }
   `, {
     contentKey: `${contentKey}`,
@@ -44,6 +48,8 @@ const getContent = (contentKey: string, force: boolean, done?: () => void) => {
 
   watch(result, () => {
     contents.value.set(contentKey, (result.value as Record<string, Content>).contents)
+    recommends.value.set(contentKey, (result.value as Record<string, Array<string>>).contentRecommends)
+    comments.value.set(contentKey, (result.value as Record<string, Array<string>>).contentComments)
     done?.()
   })
 }

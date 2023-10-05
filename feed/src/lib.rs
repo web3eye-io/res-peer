@@ -33,6 +33,7 @@ pub struct FeedParameters {
 pub struct Content {
     /// Here cid is the content cid::Cid store in ipfs
     pub cid: String,
+    pub comment_to_cid: Option<String>,
     pub author: Owner,
     pub title: String,
     pub content: String,

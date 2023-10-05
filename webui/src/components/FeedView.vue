@@ -59,7 +59,7 @@
 </template>
 
 <script setup lang='ts'>
-import { Content, useContentStore } from 'src/stores/content'
+import { useContentStore } from 'src/stores/content'
 import { computed, onMounted, watch } from 'vue'
 import { provideApolloClient, useMutation, useQuery } from '@vue/apollo-composable'
 import { ApolloClient } from '@apollo/client/core'
@@ -69,7 +69,7 @@ import { useCollectionStore } from 'src/stores/collection'
 import { targetChain } from 'src/stores/chain'
 
 const content = useContentStore()
-const contents = computed(() => Array.from(content.contents.values()).sort((a: Content, b: Content) => a.createdAt < b.createdAt ? 1 : -1))
+const contents = computed(() => content._contents())
 const collection = useCollectionStore()
 const options = /* await */ getClientOptions(/* {app, router ...} */)
 const apolloClient = new ApolloClient(options)
