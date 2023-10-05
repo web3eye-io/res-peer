@@ -45,7 +45,7 @@
         <q-input v-model='reason' type='textarea' :label='$t("MSG_REVIEW_REASON")' />
       </div>
       <div :style='{marginTop: "24px"}' class='row'>
-        <q-btn :label='$t("MSG_APPROVE")' :style='{marginRight:"16px"}' />
+        <q-btn :label='$t("MSG_APPROVE")' :style='{marginRight:"16px"}' @click='onApproveClick' />
         <q-btn :label='$t("MSG_REJECT")' />
       </div>
     </div>
@@ -56,8 +56,16 @@
 <script lang='ts' setup>
 import { useReviewStore } from 'src/stores/review'
 import { computed, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { date } from 'quasar'
+import { provideApolloClient, useMutation } from '@vue/apollo-composable'
+import gql from 'graphql-tag'
+import { getClientOptions } from 'src/apollo'
+import { ApolloClient } from '@apollo/client/core'
+import { CID } from 'multiformats/cid'
+import * as json from 'multiformats/codecs/json'
+import { sha256 } from 'multiformats/hashes/sha2'
+import { targetChain } from 'src/stores/chain'
 
 interface Query {
   cid: string
@@ -68,5 +76,38 @@ const cid = computed(() => (route.query as unknown as Query).cid)
 const review = useReviewStore()
 const content = computed(() => review.content(cid.value))
 const reason = ref('I supper like this article not only it\'s about Linera, but also it\'s write by KK.')
+const options = /* await */ getClientOptions(/* {app, router ...} */)
+const apolloClient = new ApolloClient(options)
+const router = useRouter()
+
+const onApproveClick = async () => {
+  if (!content.value || !reason.value.length) {
+    return
+  }
+
+  const bytes = json.encode({ reason })
+  const hash = await sha256.digest(bytes)
+  const cid = CID.create(1, json.code, hash).toString()
+
+  const { mutate, onDone, onError } = provideApolloClient(apolloClient)(() => useMutation(gql`
+    mutation approveContent ($contentCid: String!, $reasonCid: String!, $reason: String!) {
+      approveContent(contentCid: $contentCid, reasonCid: $reasonCid, reason: $reason)
+    }
+  `))
+  onDone(() => {
+    // TODO
+  })
+  onError((error) => {
+    console.log(error)
+  })
+  await mutate({
+    contentCid: content.value.cid,
+    reasonCid: cid,
+    reason: reason.value,
+    endpoint: 'review',
+    chainId: targetChain.value
+  })
+  void router.push({ path: '/' })
+}
 
 </script>
