@@ -321,11 +321,20 @@ impl Review {
         &mut self,
         reviewer: Owner,
         cid: String,
+        reason: String,
     ) -> Result<Option<Asset>, StateError> {
         self.validate_asset_review(reviewer, cid.clone()).await?;
         match self.asset_applications.get(&cid).await? {
             Some(mut asset) => {
                 asset.approved += 1;
+                asset.reviewers.insert(
+                    reviewer,
+                    _Review {
+                        reviewer,
+                        approved: true,
+                        reason,
+                    },
+                );
                 self.asset_applications.insert(&cid, asset)?;
             }
             _ => return Err(StateError::InvalidReviewer),
@@ -347,11 +356,20 @@ impl Review {
         &mut self,
         reviewer: Owner,
         cid: String,
+        reason: String,
     ) -> Result<Option<Asset>, StateError> {
         self.validate_asset_review(reviewer, cid.clone()).await?;
         match self.asset_applications.get(&cid).await? {
             Some(mut asset) => {
                 asset.rejected += 1;
+                asset.reviewers.insert(
+                    reviewer,
+                    _Review {
+                        reviewer,
+                        approved: false,
+                        reason,
+                    },
+                );
                 self.asset_applications.insert(&cid, asset)?;
             }
             _ => return Err(StateError::InvalidReviewer),

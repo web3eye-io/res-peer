@@ -100,5 +100,6 @@ pub enum ApplicationCall {
         price: Option<Amount>,
         name: String,
         uris: Vec<String>,
+        publisher: Owner,
     },
 }

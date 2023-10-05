@@ -95,18 +95,8 @@ impl MutationRoot {
         .unwrap()
     }
 
-    async fn approve_asset(
-        &self,
-        cid: String,
-        reason_cid: Option<String>,
-        reason: Option<String>,
-    ) -> Vec<u8> {
-        bcs::to_bytes(&Operation::ApproveAsset {
-            cid,
-            reason_cid,
-            reason,
-        })
-        .unwrap()
+    async fn approve_asset(&self, cid: String, reason: Option<String>) -> Vec<u8> {
+        bcs::to_bytes(&Operation::ApproveAsset { cid, reason }).unwrap()
     }
 
     async fn reject_asset(&self, cid: String, reason: Option<String>) -> Vec<u8> {

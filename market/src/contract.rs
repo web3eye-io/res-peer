@@ -155,7 +155,7 @@ impl Contract for Market {
 
     async fn handle_application_call(
         &mut self,
-        context: &CalleeContext,
+        _context: &CalleeContext,
         call: Self::ApplicationCall,
         _forwarded_sessions: Vec<SessionId>,
     ) -> Result<ApplicationCallResult<Self::Message, Self::Response, Self::SessionState>, Self::Error>
@@ -166,15 +166,10 @@ impl Contract for Market {
                 price,
                 name,
                 uris,
+                publisher,
             } => {
-                self.create_collection(
-                    context.authenticated_signer.unwrap(),
-                    base_uri,
-                    price,
-                    name,
-                    uris,
-                )
-                .await?
+                self.create_collection(publisher, base_uri, price, name, uris)
+                    .await?
             }
         }
         Ok(ApplicationCallResult::default())

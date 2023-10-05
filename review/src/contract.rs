@@ -17,6 +17,7 @@ use linera_sdk::{
     ApplicationCallResult, CalleeContext, Contract, ExecutionResult, MessageContext,
     OperationContext, SessionCallResult, ViewStateStorage,
 };
+use market::MarketAbi;
 // use linera_views::views::ViewError;
 use review::{Asset, Content, InitialState, Message, Operation};
 use thiserror::Error;
@@ -130,18 +131,10 @@ impl Contract for Review {
                     },
                 ));
             }
-            Operation::ApproveAsset {
-                cid,
-                reason_cid,
-                reason,
-            } => {
+            Operation::ApproveAsset { cid, reason } => {
                 return Ok(ExecutionResult::default().with_authenticated_message(
                     system_api::current_application_id().creation.chain_id,
-                    Message::ApproveAsset {
-                        cid,
-                        reason_cid,
-                        reason,
-                    },
+                    Message::ApproveAsset { cid, reason },
                 ));
             }
             Operation::RejectAsset { cid, reason } => {
@@ -338,28 +331,17 @@ impl Contract for Review {
                     },
                 ));
             }
-            Message::ApproveAsset {
-                cid,
-                reason_cid,
-                reason,
-            } => {
+            Message::ApproveAsset { cid, reason } => {
                 self._approve_asset(
                     context.authenticated_signer.unwrap(),
                     cid.clone(),
-                    reason_cid.clone(),
                     reason.clone(),
                 )
                 .await?;
                 let dest =
                     Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
-                return Ok(ExecutionResult::default().with_authenticated_message(
-                    dest,
-                    Message::ApproveAsset {
-                        cid,
-                        reason_cid,
-                        reason,
-                    },
-                ));
+                return Ok(ExecutionResult::default()
+                    .with_authenticated_message(dest, Message::ApproveAsset { cid, reason }));
             }
             Message::RejectAsset { cid, reason } => {
                 self._reject_asset(
@@ -494,6 +476,10 @@ impl Review {
         Ok(Self::parameters()?.foundation_app_id)
     }
 
+    fn market_app_id() -> Result<ApplicationId<MarketAbi>, ContractError> {
+        Ok(Self::parameters()?.market_app_id)
+    }
+
     async fn reward_credits(&mut self, owner: Owner, amount: Amount) -> Result<(), ContractError> {
         log::info!("Reward credits owner {:?} amount {:?}", owner, amount);
         let call = credit::ApplicationCall::Reward { owner, amount };
@@ -572,6 +558,28 @@ impl Review {
         self.call_application(true, Self::feed_app_id()?, &call, vec![])
             .await?;
         log::info!("Commented content {:?} comment {:?}", cid, comment_cid);
+        Ok(())
+    }
+
+    async fn create_collection(
+        &mut self,
+        base_uri: String,
+        uris: Vec<String>,
+        price: Option<Amount>,
+        name: String,
+        publisher: Owner,
+    ) -> Result<(), ContractError> {
+        log::info!("Create collection {:?}", base_uri.clone());
+        let call = market::ApplicationCall::CreateCollection {
+            base_uri: base_uri.clone(),
+            price,
+            name,
+            uris,
+            publisher,
+        };
+        self.call_application(true, Self::market_app_id()?, &call, vec![])
+            .await?;
+        log::info!("Created collection {:?}", base_uri);
         Ok(())
     }
 
@@ -767,13 +775,30 @@ impl Review {
         &mut self,
         reviewer: Owner,
         cid: String,
-        _reason_cid: Option<String>,
-        _reason: Option<String>,
+        reason: Option<String>,
     ) -> Result<(), ContractError> {
-        self.approve_asset(reviewer, cid).await?;
-        // TODO: add reason
-        // TODO: if already approved, publish asset
-        // TODO: notify author
+        match self
+            .approve_asset(reviewer, cid, reason.unwrap_or_default())
+            .await?
+        {
+            Some(asset) => {
+                self.create_collection(
+                    asset.base_uri,
+                    asset.uris,
+                    asset.price,
+                    asset.name,
+                    asset.author,
+                )
+                .await?;
+                // TODO: notify author is approved
+            }
+            _ => {
+                // TODO: notify author
+            }
+        }
+        self.reward_credits(reviewer, Amount::from_tokens(50))
+            .await?;
+        self.reward_tokens(reviewer).await?;
         Ok(())
     }
 
@@ -781,11 +806,22 @@ impl Review {
         &mut self,
         reviewer: Owner,
         cid: String,
-        _reason: Option<String>,
+        reason: Option<String>,
     ) -> Result<(), ContractError> {
-        self.reject_asset(reviewer, cid).await?;
-        // TODO: add reason
-        // TODO: notify author
+        match self
+            .approve_asset(reviewer, cid, reason.unwrap_or_default())
+            .await?
+        {
+            Some(_asset) => {
+                // TODO: notify author is approved
+            }
+            _ => {
+                // TODO: notify author
+            }
+        }
+        self.reward_credits(reviewer, Amount::from_tokens(50))
+            .await?;
+        self.reward_tokens(reviewer).await?;
         Ok(())
     }
 

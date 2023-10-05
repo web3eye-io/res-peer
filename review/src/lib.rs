@@ -121,7 +121,6 @@ pub enum Operation {
     },
     ApproveAsset {
         cid: String,
-        reason_cid: Option<String>,
         reason: Option<String>,
     },
     RejectAsset {
@@ -177,7 +176,6 @@ pub enum Message {
     },
     ApproveAsset {
         cid: String,
-        reason_cid: Option<String>,
         reason: Option<String>,
     },
     RejectAsset {
