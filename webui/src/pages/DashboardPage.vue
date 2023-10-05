@@ -69,7 +69,7 @@
             <user-balance />
           </q-tab-panel>
           <q-tab-panel name='assets'>
-            <create-collection />
+            <submit-asset />
             <div :style='{margin: "32px 0"}'>
               <mint-nft />
             </div>
@@ -94,7 +94,7 @@ import { useCollectionStore } from 'src/stores/collection'
 import SubmitContent from 'src/components/SubmitContent.vue'
 import UserBalance from 'src/components/UserBalance.vue'
 import ArticleList from 'src/components/ArticleList.vue'
-import CreateCollection from 'src/components/CreateCollection.vue'
+import SubmitAsset from 'src/components/SubmitAsset.vue'
 import MintNft from 'src/components/MintNFT.vue'
 import CollectionList from 'src/components/CollectionList.vue'
 import NftList from 'src/components/NftList.vue'
