@@ -33,7 +33,7 @@
       </span>
     </div>
     <div
-      :style='{margin: "24px 0 24px 0", fontSize: "16px", wordBreak: "break-word"}'
+      :style='{margin: "24px 0 24px 0", fontSize: "16px", wordBreak: "break-word", overflow: "scroll"}'
       v-html='_content.content?.length ? _content.content : "You should have some content!"'
     />
     <div class='row'>
