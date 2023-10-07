@@ -9,35 +9,53 @@
         </div>
         <q-space />
         <div class='row' :style='{lineHeight:"32px"}'>
-          <span><strong>{{ content?.title }}</strong></span>
+          <span><strong>{{ asset?.name }}</strong></span>
         </div>
       </div>
       <q-separator />
       <div :style='{marginTop:"24px"}'>
         <div :style='{fontWeight: "bold", fontSize: "28px", wordBreak: "break-word", marginBottom: "16px"}'>
-          {{ content?.title || 'You should have a title!' }}
+          {{ asset?.name || 'You should have a title!' }}
         </div>
         <div>
           By
           <span class='text-grey-6 text-bold cursor-pointer'>
-            {{ content?.author || 'Anonymous' }}
+            {{ asset?.author || 'Anonymous' }}
           </span>
         </div>
         <div>
           At
           <span class='text-grey-6 text-bold'>
-            {{ content?.createdAt ? date.formatDate(content?.createdAt / 1000) : '' }}
+            {{ asset?.createdAt ? date.formatDate(asset?.createdAt / 1000) : '' }}
           </span>
         </div>
         <div>
           Cid
           <span class='text-grey-6 text-bold cursor-pointer'>
-            {{ content?.cid }}
+            {{ asset?.cid }}
           </span>
         </div>
+        <div v-if='asset.uris.length' :style='{margin:"24px 0"}'>
+          <q-img
+            v-for='uri in asset.uris' :key='uri'
+            :src='asset.baseUri + "/" + uri'
+            width='320px'
+            :style='{borderRadius:"8px", margin:"8px"}'
+          >
+            <div class='absolute-bottom text-subtitle1 text-center'>
+              {{ asset.baseUri + "/" + uri }}
+            </div>
+            <template #error>
+              <div class='absolute-full flex flex-center bg-negative text-white'>
+                Cannot load image {{ asset.baseUri + "/" + uri }}
+              </div>
+            </template>
+          </q-img>
+        </div>
         <div
+          v-else
           :style='{margin: "24px 0 24px 0", fontSize: "16px", wordBreak: "break-word"}'
-          v-html='content?.content || "You should have some content!"'
+          v-html='"You should have some content!"'
         />
       </div>
       <q-separator />
@@ -62,9 +80,6 @@ import { provideApolloClient, useMutation } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
 import { getClientOptions } from 'src/apollo'
 import { ApolloClient } from '@apollo/client/core'
-import { CID } from 'multiformats/cid'
-import * as json from 'multiformats/codecs/json'
-import { sha256 } from 'multiformats/hashes/sha2'
 import { targetChain } from 'src/stores/chain'
 import { useUserStore } from 'src/stores/user'
 
@@ -75,28 +90,24 @@ interface Query {
 const route = useRoute()
 const cid = computed(() => (route.query as unknown as Query).cid)
 const review = useReviewStore()
-const content = computed(() => review.content(cid.value))
+const asset = computed(() => review.asset(cid.value))
 const options = /* await */ getClientOptions(/* {app, router ...} */)
 const apolloClient = new ApolloClient(options)
 const router = useRouter()
 const user = useUserStore()
 const account = computed(() => user.account)
 const reviewed = computed(() => review.reviewed(cid.value, account.value))
-const _review = computed(() => review.contentReview(cid.value, account.value))
+const _review = computed(() => review.assetReview(cid.value, account.value))
 const reason = ref(_review.value?.reason || 'I supper like this article not only it\'s about Linera, but also it\'s write by KK.')
 
 const onApproveClick = async () => {
-  if (!content.value || !reason.value.length) {
+  if (!asset.value || !reason.value.length) {
     return
   }
 
-  const bytes = json.encode({ reason })
-  const hash = await sha256.digest(bytes)
-  const cid = CID.create(1, json.code, hash).toString()
-
   const { mutate, onDone, onError } = provideApolloClient(apolloClient)(() => useMutation(gql`
-    mutation approveContent ($contentCid: String!, $reasonCid: String!, $reason: String!) {
-      approveContent(contentCid: $contentCid, reasonCid: $reasonCid, reason: $reason)
+    mutation approveAsset ($cid: String!, $reason: String!) {
+      approveAsset(cid: $cid reason: $reason)
     }
   `))
   onDone(() => {
@@ -106,8 +117,7 @@ const onApproveClick = async () => {
     console.log(error)
   })
   await mutate({
-    contentCid: content.value.cid,
-    reasonCid: cid,
+    cid: asset.value.cid,
     reason: reason.value,
     endpoint: 'review',
     chainId: targetChain.value
@@ -116,13 +126,13 @@ const onApproveClick = async () => {
 }
 
 const onRejectClick = async () => {
-  if (!content.value || !reason.value.length) {
+  if (!asset.value || !reason.value.length) {
     return
   }
 
   const { mutate, onDone, onError } = provideApolloClient(apolloClient)(() => useMutation(gql`
-    mutation rejectContent ($contentCid: String!, $reason: String!) {
-      rejectContent(contentCid: $contentCid, reason: $reason)
+    mutation rejectAsset ($cid: String!, $reason: String!) {
+      rejectAsset(cid: $cid, reason: $reason)
     }
   `))
   onDone(() => {
@@ -132,7 +142,7 @@ const onRejectClick = async () => {
     console.log(error)
   })
   await mutate({
-    contentCid: content.value.cid,
+    cid: asset.value.cid,
     reason: reason.value,
     endpoint: 'review',
     chainId: targetChain.value
@@ -140,7 +150,7 @@ const onRejectClick = async () => {
   void router.push({
     path: '/dashboard',
     query: {
-      tab: 'review-contents'
+      tab: 'review-assets'
     }
   })
 }
@@ -149,7 +159,7 @@ const onBackClick = () => {
   void router.push({
     path: '/dashboard',
     query: {
-      tab: 'review-contents'
+      tab: 'review-assets'
     }
   })
 }

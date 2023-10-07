@@ -54,10 +54,21 @@ export const useReviewStore = defineStore('review', {
         return this.contentApplications.get(cid)
       }
     },
-    review (): (cid: string, owner: string) => Review | undefined {
+    contentReview (): (cid: string, owner: string) => Review | undefined {
       return (cid: string, owner: string) => {
         const content = this.contentApplications.get(cid)
         return content?.reviewers[owner]
+      }
+    },
+    asset (): (cid: string) => Content | undefined {
+      return (cid: string) => {
+        return this.assetApplications.get(cid)
+      }
+    },
+    assetReview (): (cid: string, owner: string) => Review | undefined {
+      return (cid: string, owner: string) => {
+        const asset = this.assetApplications.get(cid)
+        return asset?.reviewers[owner]
       }
     }
   },

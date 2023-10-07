@@ -2,7 +2,7 @@
   <q-table
     :rows='assets'
     :columns='(columns as never)'
-    @row-click='(_evt, row, _index) => onContentClick(row as Asset)'
+    @row-click='(_evt, row, _index) => onAssetClick(row as Asset)'
   />
 </template>
 
@@ -42,7 +42,7 @@ const columns = computed(() => [
   }
 ])
 
-const onContentClick = (asset: Asset) => {
+const onAssetClick = (asset: Asset) => {
   void router.push({
     path: '/reviewasset',
     query: {

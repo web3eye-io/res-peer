@@ -10,6 +10,7 @@ const routes: RouteRecordRaw[] = [
       { path: 'market', component: () => import('pages/NftMarketPage.vue') },
       { path: 'collection', component: () => import('pages/CollectionPage.vue') },
       { path: 'reviewcontent', component: () => import('pages/ReviewContent.vue') },
+      { path: 'reviewasset', component: () => import('pages/ReviewAsset.vue') },
       { path: 'content', component: () => import('pages/ContentPage.vue') }
     ]
   },
