@@ -104,7 +104,7 @@ const onAddUriClick = () => {
 
 const onConfirmAddUriClick = () => {
   adding.value = false
-  if (uri.value.length > 0) {
+  if (uri.value.length > 0 && uris.value.findIndex((el) => el === uri.value) < 0) {
     uris.value.push(uri.value)
   }
   uri.value = ''

@@ -49,6 +49,8 @@
       <user-reviewer-query />
       <content-applications-keys-query />
       <content-applications-query />
+      <asset-applications-keys-query />
+      <asset-applications-query />
       <review-state-query />
     </q-page-container>
 
@@ -122,6 +124,8 @@ import UserReviewerQuery from 'src/components/UserReviewerQuery.vue'
 import RequestReviewSubscribe from 'src/components/RequestReviewSubscribe.vue'
 import ContentApplicationsKeysQuery from 'src/components/ContentApplicationsKeysQuery.vue'
 import ContentApplicationsQuery from 'src/components/ContentApplicationsQuery.vue'
+import AssetApplicationsKeysQuery from 'src/components/AssetApplicationsKeysQuery.vue'
+import AssetApplicationsQuery from 'src/components/AssetApplicationsQuery.vue'
 import ReviewStateQuery from 'src/components/ReviewStateQuery.vue'
 
 const router = useRouter()

@@ -6,22 +6,36 @@ export interface Review {
   reason: string
 }
 
-export interface Content {
-  cid: string
-  commentToCid?: string
-  author: string
-  title: string
-  content: string
+export interface ReviewApplication {
   reviewers: Record<string, Review>
   approved: number
   rejected: number
   createdAt: number
 }
 
+export interface Content extends ReviewApplication {
+  cid: string
+  commentToCid?: string
+  author: string
+  title: string
+  content: string
+}
+
+export interface Asset extends ReviewApplication {
+  cid: string
+  baseUri: string
+  uris: Array<string>
+  author: string
+  price?: number
+  name: string
+}
+
 export const useReviewStore = defineStore('review', {
   state: () => ({
     contentApplicationsKeys: [] as Array<string>,
     contentApplications: new Map<string, Content>(),
+    assetApplicationsKeys: [] as Array<string>,
+    assetApplications: new Map<string, Content>(),
     contentApprovedThreshold: 0,
     contentRejectedThreshold: 0,
     assetApprovedThreshold: 0,
