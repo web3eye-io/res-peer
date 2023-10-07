@@ -20,7 +20,10 @@
     v-if='editing' v-model='collectionId' type='number' filled
     :style='{marginTop: "16px"}' label='Collection ID'
   />
-  <q-input v-if='editing' dense label='NFT data storage uri without collection baseUri' v-model='uri' />
+  <q-input
+    v-if='editing' dense label='Index of uris which are approved'
+    type='number' v-model='uriIndex'
+  />
   <q-input v-if='editing' dense label='NFT name you like' v-model='name' />
   <q-toggle v-if='editing' v-model='ownPrice' />
   <q-input
@@ -39,7 +42,7 @@ import { useCollectionStore } from 'src/stores/collection'
 import { targetChain } from 'src/stores/chain'
 
 const editing = ref(false)
-const uri = ref('')
+const uriIndex = ref(-1)
 const price = ref(0)
 const ownPrice = ref(false)
 const name = ref('')
@@ -50,7 +53,7 @@ const options = /* await */ getClientOptions(/* {app, router ...} */)
 const apolloClient = new ApolloClient(options)
 
 const onMintlick = async () => {
-  if (!uri.value.length) {
+  if (uriIndex.value < 0) {
     return
   }
   if (collectionId.value < 0) {
@@ -61,20 +64,22 @@ const onMintlick = async () => {
   }
 
   const { mutate, onDone, onError } = provideApolloClient(apolloClient)(() => useMutation(gql`
-    mutation mintNft ($collectionId: Int!, $uri: String!, $price: String, $name: String!) {
-      mintNft(collectionId: $collectionId, uri: $uri, price: $price, name: $name)
+    mutation mintNft ($collectionId: Int!, $uriIndex: Int!, $price: String, $name: String!) {
+      mintNft(collectionId: $collectionId, uriIndex: $uriIndex, price: $price, name: $name)
     }
   `))
   onDone(() => {
     editing.value = !editing.value
+    uriIndex.value = 0
     collection.mutateKeys.push(parseInt(collectionId.value.toString()))
   })
   onError((error) => {
+    uriIndex.value = 0
     console.log(error)
   })
   await mutate({
     collectionId: parseInt(collectionId.value.toString()),
-    uri: uri.value,
+    uriIndex: parseInt(uriIndex.value.toString()),
     price: ownPrice.value ? price.value : undefined,
     name: name.value,
     endpoint: 'market',

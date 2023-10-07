@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 
 export interface NFT {
   token_id: number
-  uri: string
+  uri_index: number
   price?: string
   on_sale: boolean
   minted_at: number
@@ -14,11 +14,13 @@ export interface NFTExt extends NFT {
   collectionName: string
   collectionPrice?: string
   baseUri: string
+  uri: string
 }
 
 export interface Collection {
   collectionId: number
   baseUri: string
+  uris: Array<string>
   nfts: Map<number, NFT>
   price?: string
   name: string
@@ -50,11 +52,13 @@ export const useCollectionStore = defineStore('collection', {
           if (!el.nfts || !Object.keys(el.nfts).length) {
             return
           }
-          Array.from(Object.values(el.nfts)).forEach((nft) => {
+          Array.from(Object.values(el.nfts)).forEach((nft: NFT) => {
             nfts.push({
               collectionId: el.collectionId,
               collectionName: el.name,
               collectionPrice: el.price,
+              baseUri: el.baseUri,
+              uri: el.uris[nft.uri_index],
               ...nft
             } as NFTExt)
           })
@@ -78,12 +82,13 @@ export const useCollectionStore = defineStore('collection', {
           if (!el || !el.nfts || !Object.keys(el.nfts).length) {
             return
           }
-          Array.from(Object.values(el.nfts)).forEach((nft) => {
+          Array.from(Object.values(el.nfts)).forEach((nft: NFT) => {
             nfts.push({
               collectionId: el.collectionId,
               collectionName: el.name,
               collectionPrice: el.price,
               baseUri: el.baseUri,
+              uri: el.uris[nft.uri_index],
               ...nft
             } as NFTExt)
           })

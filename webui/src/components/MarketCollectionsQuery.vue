@@ -26,6 +26,7 @@ const getCollection = (collectionKey: number, force: boolean, done?: () => void)
       collections(u64: $collectionKey) {
         price
         baseUri
+        uris
         nfts
         collectionId
         name
