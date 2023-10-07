@@ -96,9 +96,9 @@ const apolloClient = new ApolloClient(options)
 const router = useRouter()
 const user = useUserStore()
 const account = computed(() => user.account)
-const reviewed = computed(() => review.reviewed(cid.value, account.value))
+const reviewed = computed(() => review.assetReviewed(cid.value, account.value))
 const _review = computed(() => review.assetReview(cid.value, account.value))
-const reason = ref(_review.value?.reason || 'I supper like this article not only it\'s about Linera, but also it\'s write by KK.')
+const reason = ref(_review.value?.reason || 'I supper like this art not only it\'s about Linera, but also it\'s created by KK.')
 
 const onApproveClick = async () => {
   if (!asset.value || !reason.value.length) {

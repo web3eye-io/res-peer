@@ -38,7 +38,7 @@ const columns = computed(() => [
   }, {
     name: 'Reviewed',
     label: 'Reviewed',
-    field: (row: Asset) => review.reviewed(row.cid, account.value)
+    field: (row: Asset) => review.assetReviewed(row.cid, account.value)
   }
 ])
 

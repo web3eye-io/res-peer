@@ -44,7 +44,7 @@ export const useReviewStore = defineStore('review', {
     reviewerRejectedThreshold: 0
   }),
   getters: {
-    reviewed (): (cid: string, owner: string) => boolean {
+    contentReviewed (): (cid: string, owner: string) => boolean {
       return (cid: string, owner: string) => {
         return Object.keys(this.contentApplications.get(cid)?.reviewers || {})?.find((el) => el === owner) !== undefined
       }
@@ -58,6 +58,11 @@ export const useReviewStore = defineStore('review', {
       return (cid: string, owner: string) => {
         const content = this.contentApplications.get(cid)
         return content?.reviewers[owner]
+      }
+    },
+    assetReviewed (): (cid: string, owner: string) => boolean {
+      return (cid: string, owner: string) => {
+        return Object.keys(this.assetApplications.get(cid)?.reviewers || {})?.find((el) => el === owner) !== undefined
       }
     },
     asset (): (cid: string) => Content | undefined {

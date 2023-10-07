@@ -81,7 +81,7 @@ const apolloClient = new ApolloClient(options)
 const router = useRouter()
 const user = useUserStore()
 const account = computed(() => user.account)
-const reviewed = computed(() => review.reviewed(cid.value, account.value))
+const reviewed = computed(() => review.contentReviewed(cid.value, account.value))
 const _review = computed(() => review.contentReview(cid.value, account.value))
 const reason = ref(_review.value?.reason || 'I supper like this article not only it\'s about Linera, but also it\'s write by KK.')
 

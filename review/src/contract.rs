@@ -809,7 +809,7 @@ impl Review {
         reason: Option<String>,
     ) -> Result<(), ContractError> {
         match self
-            .approve_asset(reviewer, cid, reason.unwrap_or_default())
+            .reject_asset(reviewer, cid, reason.unwrap_or_default())
             .await?
         {
             Some(_asset) => {
