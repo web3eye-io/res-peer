@@ -81,7 +81,7 @@ echo -e "    Application ID: $BLUE$review_appid$NC"
 sed -i "s/feedApp =.*/feedApp = '$feed_appid',/g" webui/src/const/index.ts
 sed -i "s/creditApp =.*/creditApp = '$credit_appid',/g" webui/src/const/index.ts
 sed -i "s/marketApp =.*/marketApp = '$market_appid',/g" webui/src/const/index.ts
-sed -i "s/reviewApp =.*/reviewApp = '$review_appid,'/g" webui/src/const/index.ts
+sed -i "s/reviewApp =.*/reviewApp = '$review_appid',/g" webui/src/const/index.ts
 sed -i "s/foundationApp =.*/foundationApp = '$foundation_appid'/g" webui/src/const/index.ts
 
 function run_new_service() {
