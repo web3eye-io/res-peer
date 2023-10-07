@@ -40,6 +40,7 @@
           <q-tab name='credits' label='Credits' />
           <q-tab name='assets' label='Assets' />
           <q-tab v-if='reviewer' name='review-contents' label='Review Content' />
+          <q-tab v-if='reviewer' name='review-assets' label='Review Asset' />
         </q-tabs>
       </template>
       <template #after>
@@ -64,6 +65,9 @@
           </q-tab-panel>
           <q-tab-panel name='review-contents'>
             <review-contents />
+          </q-tab-panel>
+          <q-tab-panel name='review-assets'>
+            <review-assets />
           </q-tab-panel>
           <q-tab-panel name='credits'>
             <user-balance />
@@ -90,6 +94,7 @@
 import { computed, ref } from 'vue'
 import { useUserStore } from 'src/stores/user'
 import { useCollectionStore } from 'src/stores/collection'
+import { useRoute } from 'vue-router'
 
 import SubmitContent from 'src/components/SubmitContent.vue'
 import UserBalance from 'src/components/UserBalance.vue'
@@ -101,7 +106,7 @@ import NftList from 'src/components/NftList.vue'
 import DepositBalance from 'src/components/DepositBalance.vue'
 import AvatarSetting from 'src/components/AvatarSetting.vue'
 import ReviewContents from 'src/components/ReviewContents.vue'
-import { useRoute } from 'vue-router'
+import ReviewAssets from 'src/components/ReviewAssets.vue'
 
 interface Query {
   tab: string
