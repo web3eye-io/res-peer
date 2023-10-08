@@ -65,7 +65,7 @@ echo -e "    Application ID: $BLUE$feed_appid$NC"
 
 print $'\U01F4AB' $YELLOW " Deploying Market application ..."
 market_bid=`linera publish-bytecode ./target/wasm32-unknown-unknown/release/market_{contract,service}.wasm`
-market_appid=`linera create-application $market_bid --json-argument '{"credits_per_linera":"30","max_credits_percent":30,"trade_fee_percent":3}' --json-parameters "\"$credit_appid\"" --required-application-ids $credit_appid`
+market_appid=`linera create-application $market_bid --json-argument '{"credits_per_linera":"30","max_credits_percent":30,"trade_fee_percent":3}' --json-parameters "{\"credit_app_id\":\"$credit_appid\",\"foundation_app_id\":\"$foundation_appid\"}" --required-application-ids $credit_appid --required-application-ids $foundation_appid`
 print $'\U01f499' $LIGHTGREEN " Market application deployed"
 echo -e "    Bytecode ID:    $BLUE$market_bid$NC"
 echo -e "    Application ID: $BLUE$market_appid$NC"

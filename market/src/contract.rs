@@ -5,6 +5,7 @@ mod state;
 use self::state::Market;
 use async_trait::async_trait;
 use credit::CreditAbi;
+use foundation::FoundationAbi;
 use linera_sdk::{
     base::{Amount, ApplicationId, Owner, SessionId, WithContractAbi},
     contract::system_api,
@@ -70,20 +71,17 @@ impl Contract for Market {
                 credits,
             } => {
                 let owner = self.nft_owner(collection_id, token_id).await?;
-                self.transfer_credits(
-                    context,
-                    context.authenticated_signer.unwrap(),
-                    owner,
-                    credits,
-                )
-                .await?;
-                self.buy_nft(
-                    context.authenticated_signer.unwrap(),
-                    collection_id,
-                    token_id,
-                    credits,
-                )
-                .await?
+                self.transfer_credits(context.authenticated_signer.unwrap(), owner, credits)
+                    .await?;
+                let fee = self
+                    .buy_nft(
+                        context.authenticated_signer.unwrap(),
+                        collection_id,
+                        token_id,
+                        credits,
+                    )
+                    .await?;
+                self.deposit_commission(fee).await?
             }
             Operation::UpdateCreditsPerLinera { credits_per_linera } => {
                 if context.chain_id != system_api::current_application_id().creation.chain_id {
@@ -188,20 +186,31 @@ impl Contract for Market {
 }
 
 impl Market {
-    fn credit_id() -> Result<ApplicationId<CreditAbi>, ContractError> {
-        Self::parameters()
+    fn credit_app_id() -> Result<ApplicationId<CreditAbi>, ContractError> {
+        Ok(Self::parameters()?.credit_app_id)
+    }
+
+    fn foundation_app_id() -> Result<ApplicationId<FoundationAbi>, ContractError> {
+        Ok(Self::parameters()?.foundation_app_id)
     }
 
     async fn transfer_credits(
         &mut self,
-        _context: &OperationContext,
         from: Owner,
         to: Owner,
         amount: Amount,
     ) -> Result<(), ContractError> {
         log::info!("Transfer {:?} credits from {:?} to {:?}", amount, from, to);
         let call = credit::ApplicationCall::Transfer { from, to, amount };
-        self.call_application(true, Self::credit_id()?, &call, vec![])
+        self.call_application(true, Self::credit_app_id()?, &call, vec![])
+            .await?;
+        Ok(())
+    }
+
+    async fn deposit_commission(&mut self, amount: Amount) -> Result<(), ContractError> {
+        log::info!("Deposit {:?}", amount);
+        let call = foundation::ApplicationCall::Deposit { amount };
+        self.call_application(true, Self::foundation_app_id()?, &call, vec![])
             .await?;
         Ok(())
     }

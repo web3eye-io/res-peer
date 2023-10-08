@@ -1,7 +1,7 @@
 use std::{cmp::Ordering, collections::HashMap};
 
 use linera_sdk::{
-    base::{Amount, Owner},
+    base::{Amount, ArithmeticError, Owner},
     contract::system_api,
     views::{MapView, RegisterView, ViewStorageContext},
 };
@@ -177,8 +177,9 @@ impl Market {
         collection_id: u64,
         token_id: u16,
         credits: Amount,
-    ) -> Result<(), StateError> {
+    ) -> Result<Amount, StateError> {
         let credits = Amount::from_tokens(credits.into());
+        let commission;
         match self.collections.get(&collection_id).await {
             Ok(Some(collection)) => match collection.nfts.get(&token_id) {
                 Some(nft) => {
@@ -224,23 +225,34 @@ impl Market {
                         log::info!("TODO: buyer could not be the same as owner");
                         // return Err(StateError::BuyerIsOwner);
                     }
+                    commission = match price.try_mul(*self.trade_fee_percent.get() as u128) {
+                        Ok(amount) => {
+                            Amount::from_atto(amount.saturating_div(Amount::from_atto(100 as u128)))
+                        }
+                        Err(err) => return Err(StateError::ArithmeticError(err)),
+                    };
                     let owner_balance = match self.balances.get(&owner).await {
                         Ok(Some(balance)) => balance,
                         _ => Amount::ZERO,
                     };
-                    self.balances
-                        .insert(&owner, owner_balance.saturating_add(price))?;
+                    self.balances.insert(
+                        &owner,
+                        owner_balance.saturating_add(price.saturating_sub(commission)),
+                    )?;
                     self.balances
                         .insert(&buyer, buyer_balance.saturating_sub(price))?;
                     log::info!(
-                        "{} buy {}-{} from {} with {} Lineras and {} Credits {} discount",
+                        "{} buy {}-{} from {} with {} Lineras and {} Credits {} discount, buyer balance {}, owner balance {}, commission {}",
                         buyer,
                         collection_id,
                         token_id,
                         owner,
                         price,
                         credits,
-                        discount_amount
+                        discount_amount,
+                        buyer_balance,
+                        owner_balance,
+                        commission,
                     );
                     let mut token_owners = token_owners.clone();
                     token_owners.insert(collection_id, buyer);
@@ -274,7 +286,7 @@ impl Market {
             },
             _ => return Err(StateError::CollectionNotExists),
         }
-        Ok(())
+        Ok(commission)
     }
 
     pub(crate) async fn nft_owner(
@@ -428,6 +440,9 @@ impl Market {
 pub enum StateError {
     #[error(transparent)]
     ViewError(#[from] linera_views::views::ViewError),
+
+    #[error(transparent)]
+    ArithmeticError(#[from] ArithmeticError),
 
     #[error("Owner is not collection owner")]
     NotCollectionOwner,

@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 pub struct MarketAbi;
 
 impl ContractAbi for MarketAbi {
-    type Parameters = ApplicationId<credit::CreditAbi>;
+    type Parameters = MarketParameters;
     type InitializationArgument = InitialState;
     type Operation = Operation;
     type Message = ();
@@ -18,9 +18,15 @@ impl ContractAbi for MarketAbi {
 }
 
 impl ServiceAbi for MarketAbi {
-    type Parameters = ApplicationId<credit::CreditAbi>;
+    type Parameters = MarketParameters;
     type Query = Request;
     type QueryResponse = Response;
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct MarketParameters {
+    pub credit_app_id: ApplicationId<credit::CreditAbi>,
+    pub foundation_app_id: ApplicationId<foundation::FoundationAbi>,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, SimpleObject, Eq, PartialEq)]
