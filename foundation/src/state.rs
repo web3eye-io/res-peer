@@ -120,13 +120,15 @@ impl Foundation {
 
     pub(crate) async fn reward_author(&mut self, reward_user: Owner) -> Result<(), StateError> {
         let balance = self.author_reward_balance.get().clone();
-        let amount = balance
-            .try_mul(*self.author_reward_factor.get() as u128)?
-            .saturating_div(Amount::from_atto(100));
-        self.reward_user(reward_user, Amount::from_atto(amount))
-            .await?;
+        let amount = Amount::from_atto(
+            balance
+                .try_mul(*self.author_reward_factor.get() as u128)?
+                .saturating_div(Amount::from_atto(100)),
+        );
+        log::info!("Reward {} tokens to {} for Publish", amount, reward_user);
+        self.reward_user(reward_user, amount).await?;
         self.author_reward_balance
-            .set(balance.saturating_sub(Amount::from_atto(amount)));
+            .set(balance.saturating_sub(amount));
         Ok(())
     }
 
