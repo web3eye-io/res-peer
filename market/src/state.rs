@@ -223,7 +223,7 @@ impl Market {
                     };
                     if owner == buyer {
                         log::info!("TODO: buyer could not be the same as owner");
-                        // return Err(StateError::BuyerIsOwner);
+                        return Err(StateError::BuyerIsOwner);
                     }
                     commission = match price.try_mul(*self.trade_fee_percent.get() as u128) {
                         Ok(amount) => {
@@ -468,8 +468,9 @@ pub enum StateError {
     #[error("Invalid price")]
     InvalidPrice,
 
-    // #[error("Buyer is same as owner")]
-    // BuyerIsOwner,
+    #[error("Buyer is same as owner")]
+    BuyerIsOwner,
+
     #[error("Invalid uri index")]
     InvalidUriIndex,
 }
