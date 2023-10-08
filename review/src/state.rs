@@ -150,6 +150,9 @@ impl Review {
         owner: Owner,
         candidate: Owner,
     ) -> Result<Option<Reviewer>, StateError> {
+        if owner == candidate {
+            return Err(StateError::InvalidReviewer);
+        }
         self.validate_reviewer_review(owner, candidate.clone())
             .await?;
         match self.reviewer_applications.get(&candidate).await? {
@@ -180,6 +183,9 @@ impl Review {
         owner: Owner,
         candidate: Owner,
     ) -> Result<Option<Reviewer>, StateError> {
+        if owner == candidate {
+            return Err(StateError::InvalidReviewer);
+        }
         self.validate_reviewer_review(owner, candidate.clone())
             .await?;
         match self.reviewer_applications.get(&candidate).await? {
@@ -238,6 +244,9 @@ impl Review {
             .await?;
         match self.content_applications.get(&content_cid).await? {
             Some(mut content) => {
+                if reviewer == content.author {
+                    return Err(StateError::InvalidReviewer);
+                }
                 content.approved += 1;
                 content.reviewers.insert(
                     reviewer,
@@ -274,6 +283,9 @@ impl Review {
             .await?;
         match self.content_applications.get(&content_cid).await? {
             Some(mut content) => {
+                if reviewer == content.author {
+                    return Err(StateError::InvalidReviewer);
+                }
                 content.rejected += 1;
                 content.reviewers.insert(
                     reviewer,
@@ -326,6 +338,9 @@ impl Review {
         self.validate_asset_review(reviewer, cid.clone()).await?;
         match self.asset_applications.get(&cid).await? {
             Some(mut asset) => {
+                if reviewer == asset.author {
+                    return Err(StateError::InvalidReviewer);
+                }
                 asset.approved += 1;
                 asset.reviewers.insert(
                     reviewer,
@@ -361,6 +376,9 @@ impl Review {
         self.validate_asset_review(reviewer, cid.clone()).await?;
         match self.asset_applications.get(&cid).await? {
             Some(mut asset) => {
+                if reviewer == asset.author {
+                    return Err(StateError::InvalidReviewer);
+                }
                 asset.rejected += 1;
                 asset.reviewers.insert(
                     reviewer,

@@ -18,7 +18,6 @@ use linera_sdk::{
     OperationContext, SessionCallResult, ViewStateStorage,
 };
 use market::MarketAbi;
-// use linera_views::views::ViewError;
 use review::{Asset, Content, InitialState, Message, Operation};
 use thiserror::Error;
 
@@ -162,7 +161,7 @@ impl Contract for Review {
                 ));
             }
             Operation::RequestSubscribe => {
-                return Ok(ExecutionResult::default().with_message(
+                return Ok(ExecutionResult::default().with_authenticated_message(
                     system_api::current_application_id().creation.chain_id,
                     Message::RequestSubscribe,
                 ));
@@ -402,39 +401,32 @@ impl Contract for Review {
                     context.message_id.chain_id,
                 ));
                 log::info!(
-                    "Sync reviewers to {} at {} creation {}",
+                    "Sync reviewers to {} at {} creation {} reviewers {:?}",
                     context.message_id.chain_id,
                     context.chain_id,
-                    system_api::current_application_id().creation.chain_id
+                    system_api::current_application_id().creation.chain_id,
+                    self.reviewers.indices().await?,
                 );
-                /* Will be stuck in the for each */
-                /*
-                let mut reviewers = Vec::new();
-                self.reviewers
-                    .for_each_index_value(|_index, reviewer| -> Result<(), ViewError> {
-                        reviewers.push(reviewer);
-                        Ok(())
-                    })
-                    .await?;
-                log::info!(
-                    "Synced reviewers to {} at {} creation {}",
-                    context.message_id.chain_id,
-                    context.chain_id,
-                    system_api::current_application_id().creation.chain_id
-                );
-                for reviewer in reviewers {
+                /* Will be stuck in the for each so we use indices */
+                for reviewer in self.reviewers.indices().await? {
+                    let reviewer = self.reviewers.get(&reviewer).await?.unwrap();
                     result = result.with_authenticated_message(
                         context.message_id.chain_id,
                         Message::ExistReviewer { reviewer },
                     );
                 }
                 log::info!(
+                    "Synced reviewers to {} at {} creation {}",
+                    context.message_id.chain_id,
+                    context.chain_id,
+                    system_api::current_application_id().creation.chain_id
+                );
+                log::info!(
                     "Subscribed to {} at {} creation {}",
                     context.message_id.chain_id,
                     context.chain_id,
                     system_api::current_application_id().creation.chain_id
                 );
-                */
                 return Ok(result);
             }
         }
