@@ -30,6 +30,12 @@ export interface Asset extends ReviewApplication {
   name: string
 }
 
+export interface Reviewer extends ReviewApplication {
+  chainId: string
+  reviewer: string
+  resume: string
+}
+
 export const useReviewStore = defineStore('review', {
   state: () => ({
     contentApplicationsKeys: [] as Array<string>,

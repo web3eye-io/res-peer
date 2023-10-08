@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { Reviewer } from './review'
 
 export interface AgeAmount {
   amount: string
@@ -10,7 +11,8 @@ export const useUserStore = defineStore('user', {
     account: undefined as unknown as string,
     spendable: '0.',
     amounts: [] as Array<AgeAmount>,
-    reviewer: false
+    reviewer: false,
+    reviewerApplication: undefined as unknown as Reviewer
   }),
   getters: {},
   actions: {}

@@ -61,7 +61,7 @@ impl Contract for Review {
             Operation::UpdateReviewerResume { resume } => {
                 return Ok(ExecutionResult::default().with_authenticated_message(
                     system_api::current_application_id().creation.chain_id,
-                    Message::ApplyReviewer { resume },
+                    Message::UpdateReviewerResume { resume },
                 ));
             }
             Operation::ApproveReviewer { candidate } => {

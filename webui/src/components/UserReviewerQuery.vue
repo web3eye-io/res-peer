@@ -8,6 +8,7 @@ import { useUserStore } from 'src/stores/user'
 import { computed, onMounted, watch } from 'vue'
 import { targetChain } from 'src/stores/chain'
 import { useBlockStore } from 'src/stores/block'
+import { Reviewer } from 'src/stores/review'
 
 const application = useApplicationStore()
 const user = useUserStore()
@@ -28,6 +29,14 @@ const userReviewerQuery = () => {
       reviewers(owner: $owner) {
         reviewer
       }
+      reviewApplications(owner: $owner) {
+        chainId
+        reviewer
+        approved
+        rejected
+        reviewers
+        resume
+      }
     }
   `, {
     owner: account.value,
@@ -36,8 +45,10 @@ const userReviewerQuery = () => {
   }))
 
   watch(result, () => {
-    const ret = result.value as Record<string, string>
+    let ret = result.value as Record<string, string>
     if (ret.reviewers) user.reviewer = true
+    ret = result.value as Record<string, Reviewer>
+    if (ret.reviewApplications) user.reviewerApplication = ret.reviewApplications
   })
 }
 

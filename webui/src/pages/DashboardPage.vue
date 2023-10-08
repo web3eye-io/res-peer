@@ -41,6 +41,7 @@
           <q-tab name='assets' label='Assets' />
           <q-tab v-if='reviewer' name='review-contents' label='Review Content' />
           <q-tab v-if='reviewer' name='review-assets' label='Review Asset' />
+          <q-tab v-if='!reviewer' name='apply-reviewer' label='Apply Reviewer' />
         </q-tabs>
       </template>
       <template #after>
@@ -84,6 +85,9 @@
             <nft-list nft-type='MY_PUBLISHES' :style='{margin: "32px 0"}' />
             <nft-list nft-type='MY_ASSETS' :style='{margin: "32px 0"}' />
           </q-tab-panel>
+          <q-tab-panel name='apply-reviewer'>
+            <apply-reviewer />
+          </q-tab-panel>
         </q-tab-panels>
       </template>
     </q-splitter>
@@ -107,6 +111,7 @@ import DepositBalance from 'src/components/DepositBalance.vue'
 import AvatarSetting from 'src/components/AvatarSetting.vue'
 import ReviewContents from 'src/components/ReviewContents.vue'
 import ReviewAssets from 'src/components/ReviewAssets.vue'
+import ApplyReviewer from 'src/components/ApplyReviewer.vue'
 
 interface Query {
   tab: string
