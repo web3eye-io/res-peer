@@ -190,4 +190,7 @@ pub enum Message {
         name: String,
     },
     RequestSubscribe,
+    InitialState {
+        state: InitialState,
+    }
 }

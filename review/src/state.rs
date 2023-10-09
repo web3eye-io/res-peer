@@ -42,6 +42,17 @@ impl Review {
         Ok(())
     }
 
+    pub(crate) async fn initial_state(&self) -> Result<InitialState, StateError> {
+        Ok(InitialState {
+            content_approved_threshold: *self.content_approved_threshold.get(),
+            content_rejected_threshold: *self.content_rejected_threshold.get(),
+            asset_approved_threshold: *self.asset_approved_threshold.get(),
+            asset_rejected_threshold: *self.asset_rejected_threshold.get(),
+            reviewer_approved_threshold: *self.reviewer_approved_threshold.get(),
+            reviewer_rejected_threshold: *self.reviewer_rejected_threshold.get(),
+        })
+    } 
+
     pub(crate) async fn genesis_reviewer(
         &mut self,
         chain_id: ChainId,

@@ -12,6 +12,10 @@ const feedApp = computed(() => application.feedApp)
 const options = /* await */ getClientOptions(/* {app, router ...} */)
 const apolloClient = new ApolloClient(options)
 
+const ready = () => {
+  return targetChain.value?.length > 0 && feedApp.value?.length > 0
+}
+
 const requestSubscribe = async () => {
   const { mutate, onDone, onError } = provideApolloClient(apolloClient)(() => useMutation(gql`
     mutation requestSubscribe {
@@ -30,13 +34,18 @@ const requestSubscribe = async () => {
   })
 }
 
+watch(targetChain, () => {
+  if (!ready()) return
+  void requestSubscribe()
+})
+
 watch(feedApp, () => {
-  if (!feedApp.value) return
+  if (!ready()) return
   void requestSubscribe()
 })
 
 onMounted(() => {
-  if (!feedApp.value) return
+  if (!ready()) return
   void requestSubscribe()
 })
 

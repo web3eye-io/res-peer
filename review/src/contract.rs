@@ -191,6 +191,11 @@ impl Contract for Review {
                 let candidate = context.authenticated_signer.unwrap();
                 self._apply_reviewer(context.chain_id, candidate, resume.clone())
                     .await?;
+                log::info!(
+                    "Message apply reviewerby {:?} at {:?}",
+                    candidate,
+                    context.chain_id,
+                );
                 // TODO: broadcast to other chains
                 let dest =
                     Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
@@ -386,7 +391,7 @@ impl Contract for Review {
             Message::RequestSubscribe => {
                 let mut result = ExecutionResult::default();
                 log::info!(
-                    "Subscribe to {} at {} creation {}",
+                    "Subscribe review from {} at {} creation {}",
                     context.message_id.chain_id,
                     context.chain_id,
                     system_api::current_application_id().creation.chain_id
@@ -396,6 +401,12 @@ impl Contract for Review {
                 {
                     return Ok(result);
                 }
+                log::info!(
+                    "Subscribing review from {} at {} creation {}",
+                    context.message_id.chain_id,
+                    context.chain_id,
+                    system_api::current_application_id().creation.chain_id
+                );
                 result.subscribe.push((
                     ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()),
                     context.message_id.chain_id,
@@ -415,6 +426,10 @@ impl Contract for Review {
                         Message::ExistReviewer { reviewer },
                     );
                 }
+                result = result.with_authenticated_message(
+                    context.message_id.chain_id,
+                    Message::InitialState { state: self.initial_state().await? },
+                );
                 log::info!(
                     "Synced reviewers to {} at {} creation {}",
                     context.message_id.chain_id,
@@ -428,6 +443,10 @@ impl Contract for Review {
                     system_api::current_application_id().creation.chain_id
                 );
                 return Ok(result);
+            }
+            Message::InitialState { state } => {
+                log::info!("Initial state {:?}", state);
+                self.initialize(state).await?
             }
         }
         Ok(ExecutionResult::default())

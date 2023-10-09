@@ -7,15 +7,19 @@ import { useBlockStore } from 'src/stores/block'
 import { useReviewStore } from 'src/stores/review'
 import { computed, onMounted, watch } from 'vue'
 import { targetChain } from 'src/stores/chain'
-import { useUserStore } from 'src/stores/user'
+import { useApplicationStore } from 'src/stores/application'
 
 const block = useBlockStore()
 const blockHeight = computed(() => block.blockHeight)
 const review = useReviewStore()
-const user = useUserStore()
-const reviewer = computed(() => user.reviewer)
+const application = useApplicationStore()
+const reviewApp = computed(() => application.reviewApp)
 const options = /* await */ getClientOptions(/* {app, router ...} */)
 const apolloClient = new ApolloClient(options)
+
+const ready = (): boolean => {
+  return reviewApp.value?.length > 0 && targetChain.value?.length > 0
+}
 
 const getReviewState = () => {
   const { /* result, */ refetch /*, fetchMore */, onResult /*, onError */ } = provideApolloClient(apolloClient)(() => useQuery(gql`
@@ -48,13 +52,18 @@ const getReviewState = () => {
   })
 }
 
-watch(reviewer, () => {
-  if (!reviewer.value) return
+watch(targetChain, () => {
+  if (!ready()) return
+  getReviewState()
+})
+
+watch(reviewApp, () => {
+  if (!ready()) return
   getReviewState()
 })
 
 onMounted(() => {
-  if (!reviewer.value) return
+  if (!ready()) return
   getReviewState()
 })
 

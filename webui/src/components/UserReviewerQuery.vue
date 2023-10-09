@@ -29,7 +29,7 @@ const userReviewerQuery = () => {
       reviewers(owner: $owner) {
         reviewer
       }
-      reviewApplications(owner: $owner) {
+      reviewerApplications(owner: $owner) {
         chainId
         reviewer
         approved
@@ -45,10 +45,10 @@ const userReviewerQuery = () => {
   }))
 
   watch(result, () => {
-    let ret = result.value as Record<string, string>
+    const ret = result.value as Record<string, string>
     if (ret.reviewers) user.reviewer = true
-    ret = result.value as Record<string, Reviewer>
-    if (ret.reviewApplications) user.reviewerApplication = ret.reviewApplications
+    const ret1 = result.value as Record<string, Reviewer>
+    if (ret1.reviewerApplications) user.reviewerApplication = ret1.reviewerApplications
   })
 }
 
