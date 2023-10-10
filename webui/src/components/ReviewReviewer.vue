@@ -122,7 +122,7 @@ const onRejectClick = async () => {
     }
   `))
   onDone(() => {
-    // TODO
+    review.reviewerMutateKeys.push(candidate.value)
   })
   onError((error) => {
     console.log(error)

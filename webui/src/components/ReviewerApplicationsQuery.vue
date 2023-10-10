@@ -4,7 +4,7 @@ import { ApolloClient } from '@apollo/client/core'
 import gql from 'graphql-tag'
 import { getClientOptions } from 'src/apollo'
 import { useReviewStore, Reviewer } from 'src/stores/review'
-import { computed, watch, ref } from 'vue'
+import { computed, watch, ref, onMounted } from 'vue'
 import { useBlockStore } from 'src/stores/block'
 import { targetChain } from 'src/stores/chain'
 
@@ -20,7 +20,7 @@ const blockHeight = computed(() => block.blockHeight)
 const options = /* await */ getClientOptions(/* {app, router ...} */)
 const apolloClient = new ApolloClient(options)
 
-const getReviewerApplication = (reviewerApplicationKey: string, done?: () => void) => {
+const getReviewerApplication = (reviewerApplicationKey: string, force: boolean, done?: () => void) => {
   const { result /*, fetchMore, onResult, onError */ } = provideApolloClient(apolloClient)(() => useQuery(gql`
     query getReviewerApplication($reviewerApplicationKey: String!) {
       reviewerApplications(owner: $reviewerApplicationKey) {
@@ -37,6 +37,8 @@ const getReviewerApplication = (reviewerApplicationKey: string, done?: () => voi
     reviewerApplicationKey: `${reviewerApplicationKey}`,
     endpoint: 'review',
     chainId: targetChain.value
+  }, {
+    fetchPolicy: force ? 'network-only' : 'cache-and-network'
   }))
 
   watch(result, () => {
@@ -56,18 +58,10 @@ watch(reviewerApplicationKey, () => {
     return
   }
 
-  getReviewerApplication(reviewerApplicationKey.value, () => {
+  getReviewerApplication(reviewerApplicationKey.value, index >= 0, () => {
     reviewerIndex.value++
     reviewerMutateKeys.value.splice(index, 1)
   })
-})
-
-watch(reviewerMutateKeys, () => {
-  console.log(reviewerMutateKeys.value)
-  if (!reviewerMutateKeys.value?.length) {
-    return
-  }
-  reviewerIndex.value = 0
 })
 
 watch(reviewerApplicationsKeys, () => {
@@ -82,6 +76,13 @@ watch(blockHeight, () => {
     return
   }
   reviewerIndex.value = 0
+})
+
+onMounted(() => {
+  reviewerMutateKeys.value.forEach((reviewerKey) => {
+    getReviewerApplication(reviewerKey, true)
+  })
+  review.reviewerMutateKeys = []
 })
 
 </script>
