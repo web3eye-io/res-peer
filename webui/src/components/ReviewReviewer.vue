@@ -48,7 +48,7 @@
       <div :style='{marginTop: "24px"}'>
         <q-input v-model='reason' type='textarea' :label='$t("MSG_REVIEW_REASON")' :disable='reviewed' />
       </div>
-      <div :style='{marginTop: "24px"}' class='row'>
+      <div :style='{marginTop: "24px", marginBottom: "48px"}' class='row'>
         <q-btn :label='$t("MSG_APPROVE")' :style='{marginRight:"16px",color: _review?.approved ? "blue" : ""}' @click='onApproveClick' :disable='reviewed' />
         <q-btn :label='$t("MSG_REJECT")' :style='{color: _review && !_review?.approved ? "red" : ""}' @click='onRejectClick' :disable='reviewed' />
       </div>
@@ -136,7 +136,7 @@ const onRejectClick = async () => {
   void router.push({
     path: '/dashboard',
     query: {
-      tab: 'review-contents'
+      tab: 'review-reviewers'
     }
   })
 }
