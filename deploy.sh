@@ -90,9 +90,9 @@ function run_new_service() {
   storage=rocksdb:$wallet_dir/linera$1.db
   print $'\U01f499' $LIGHTGREEN " Initialize wallet$1 ..."
   RUST_LOG=WARN linera --wallet $wallet --storage $storage wallet init --genesis $wallet_dir/genesis.json
-  print $'\U01f499' $LIGHTGREEN " Gen wallet2 pub key ..."
+  print $'\U01f499' $LIGHTGREEN " Gen wallet$1 pub key ..."
   pub_key=`RUST_LOG=WARN linera --wallet $wallet --storage $storage keygen`
-  print $'\U01f499' $LIGHTGREEN " Open wallet2 chain ..."
+  print $'\U01f499' $LIGHTGREEN " Open wallet$1 chain ..."
   effect_and_chain=`RUST_LOG=WARN linera open-chain --to-public-key $pub_key`
   effect=$(echo "$effect_and_chain" | sed -n '1 p')
   chain_id=$(echo "$effect_and_chain" | sed -n '2 p')
