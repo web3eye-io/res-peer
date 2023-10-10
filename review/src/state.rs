@@ -234,8 +234,6 @@ impl Review {
                 let rejected_threshold = *self.reviewer_rejected_threshold.get();
                 let reviewer_number = *self.reviewer_number.get();
                 if reviewer.rejected >= rejected_threshold || reviewer.rejected >= reviewer_number {
-                    self.reviewers.insert(&candidate, reviewer.clone())?;
-                    self.reviewer_applications.remove(&candidate)?;
                     self.reviewer_number.set(reviewer_number + 1);
                     return Ok(Some(reviewer));
                 }
