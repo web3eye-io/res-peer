@@ -17,6 +17,7 @@ use linera_sdk::{
     ApplicationCallResult, CalleeContext, Contract, ExecutionResult, MessageContext,
     OperationContext, SessionCallResult, ViewStateStorage,
 };
+// use linera_views::views::ViewError;
 use market::MarketAbi;
 use review::{Asset, Content, InitialState, Message, Operation};
 use thiserror::Error;
@@ -48,7 +49,7 @@ impl Contract for Review {
 
     async fn execute_operation(
         &mut self,
-        _context: &OperationContext,
+        context: &OperationContext,
         operation: Self::Operation,
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
         match operation {
@@ -161,6 +162,7 @@ impl Contract for Review {
                 ));
             }
             Operation::RequestSubscribe => {
+                log::info!("Subscribe review from {:?}", context.chain_id);
                 return Ok(ExecutionResult::default().with_authenticated_message(
                     system_api::current_application_id().creation.chain_id,
                     Message::RequestSubscribe,
@@ -391,7 +393,7 @@ impl Contract for Review {
             Message::RequestSubscribe => {
                 let mut result = ExecutionResult::default();
                 log::info!(
-                    "Subscribe review from {} at {} creation {}",
+                    "Message subscribe review from {} at {} creation {}",
                     context.message_id.chain_id,
                     context.chain_id,
                     system_api::current_application_id().creation.chain_id
@@ -426,6 +428,27 @@ impl Contract for Review {
                         Message::ExistReviewer { reviewer },
                     );
                 }
+                /*
+                let mut reviewers = Vec::new();
+                self.reviewers
+                    .for_each_index_value(|_index, reviewer| -> Result<(), ViewError> {
+                        reviewers.push(reviewer);
+                        Ok(())
+                    })
+                    .await?;
+                log::info!(
+                    "Synced reviewers to {} at {} creation {}",
+                    context.message_id.chain_id,
+                    context.chain_id,
+                    system_api::current_application_id().creation.chain_id
+                );
+                for reviewer in reviewers {
+                    result = result.with_authenticated_message(
+                        context.message_id.chain_id,
+                        Message::ExistReviewer { reviewer },
+                    );
+                }
+                */
                 result = result.with_authenticated_message(
                     context.message_id.chain_id,
                     Message::InitialState { state: self.initial_state().await? },
