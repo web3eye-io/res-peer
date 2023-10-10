@@ -108,7 +108,12 @@ const onApproveClick = async () => {
     endpoint: 'review',
     chainId: targetChain.value
   })
-  void router.push({ path: '/' })
+  void router.push({
+    path: '/dashboard',
+    query: {
+      tab: 'review-reviewers'
+    }
+  })
 }
 
 const onRejectClick = async () => {
