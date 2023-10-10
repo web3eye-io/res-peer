@@ -42,6 +42,8 @@ const userReviewerQuery = () => {
     owner: account.value,
     endpoint: 'review',
     chainId: targetChain.value
+  }, {
+    fetchPolicy: 'network-only'
   }))
 
   watch(result, () => {
