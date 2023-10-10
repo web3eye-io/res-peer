@@ -29,19 +29,21 @@ const requestApplication = async (index: number, retry: boolean) => {
     }
   `))
   onDone(() => {
-    switch (index) {
-      case 0:
-        application.feedApp = constants.Apps.feedApp
-        break
-      case 1:
-        application.creditApp = constants.Apps.creditApp
-        break
-      case 2:
-        application.marketApp = constants.Apps.marketApp
-        break
-      case 3:
-        application.reviewApp = constants.Apps.reviewApp
-    }
+    setTimeout(() => {
+      switch (index) {
+        case 0:
+          application.feedApp = constants.Apps.feedApp
+          break
+        case 1:
+          application.creditApp = constants.Apps.creditApp
+          break
+        case 2:
+          application.marketApp = constants.Apps.marketApp
+          break
+        case 3:
+          application.reviewApp = constants.Apps.reviewApp
+      }
+    }, 1000)
     void requestApplication(index + 1, false)
   })
   onError((error) => {
