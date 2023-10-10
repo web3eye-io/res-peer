@@ -11,6 +11,7 @@ import { targetChain } from 'src/stores/chain'
 const review = useReviewStore()
 const reviewerApplicationsKeys = computed(() => review.reviewerApplicationsKeys)
 const reviewerApplications = computed(() => review.reviewerApplications)
+const reviewerMutateKeys = computed(() => review.reviewerMutateKeys)
 const reviewerIndex = ref(-1)
 const reviewerApplicationKey = computed(() => reviewerIndex.value >= 0 ? reviewerApplicationsKeys.value[reviewerIndex.value] : undefined)
 const block = useBlockStore()
@@ -48,9 +49,25 @@ watch(reviewerApplicationKey, () => {
   if (!reviewerApplicationKey.value) {
     return
   }
+
+  const index = reviewerMutateKeys.value.findIndex((el) => el === reviewerApplicationKey.value)
+  if (reviewerApplications.value.get(reviewerApplicationKey.value) && index < 0) {
+    reviewerIndex.value++
+    return
+  }
+
   getReviewerApplication(reviewerApplicationKey.value, () => {
     reviewerIndex.value++
+    reviewerMutateKeys.value.splice(index, 1)
   })
+})
+
+watch(reviewerMutateKeys, () => {
+  console.log(reviewerMutateKeys.value)
+  if (!reviewerMutateKeys.value?.length) {
+    return
+  }
+  reviewerIndex.value = 0
 })
 
 watch(reviewerApplicationsKeys, () => {

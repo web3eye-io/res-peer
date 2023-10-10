@@ -49,7 +49,7 @@ const applyReviewer = async () => {
     }
   `))
   onDone(() => {
-    // TODO
+    review.reviewerMutateKeys.push(account.value)
   })
   onError((error) => {
     console.log(error)

@@ -24,7 +24,7 @@ const ready = (): boolean => {
 }
 
 const userReviewerQuery = () => {
-  const { result /*, refetch, fetchMore, onResult, onError */ } = provideApolloClient(apolloClient)(() => useQuery(gql`
+  const { result, refetch /*, fetchMore, onResult, onError */ } = provideApolloClient(apolloClient)(() => useQuery(gql`
     query reviewers($owner: String!) {
       reviewers(owner: $owner) {
         reviewer
@@ -50,12 +50,11 @@ const userReviewerQuery = () => {
     const ret1 = result.value as Record<string, Reviewer>
     if (ret1.reviewerApplications) user.reviewerApplication = ret1.reviewerApplications
   })
-}
 
-watch(blockHeight, () => {
-  if (!ready()) return
-  userReviewerQuery()
-})
+  watch(blockHeight, () => {
+    void refetch()
+  })
+}
 
 watch(account, () => {
   if (!ready()) return
