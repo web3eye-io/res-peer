@@ -41,7 +41,7 @@ export const useReviewStore = defineStore('review', {
     contentApplicationsKeys: [] as Array<string>,
     contentApplications: new Map<string, Content>(),
     assetApplicationsKeys: [] as Array<string>,
-    assetApplications: new Map<string, Content>(),
+    assetApplications: new Map<string, Asset>(),
     reviewerApplicationsKeys: [] as Array<string>,
     reviewerApplications: new Map<string, Reviewer>(),
     contentApprovedThreshold: 0,
@@ -73,7 +73,7 @@ export const useReviewStore = defineStore('review', {
         return Object.keys(this.assetApplications.get(cid)?.reviewers || {})?.find((el) => el === owner) !== undefined
       }
     },
-    asset (): (cid: string) => Content | undefined {
+    asset (): (cid: string) => Asset | undefined {
       return (cid: string) => {
         return this.assetApplications.get(cid)
       }

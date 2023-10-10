@@ -5,7 +5,7 @@
       <div class='row' :style='{margin:"16px 0"}'>
         <div class='row cursor-pointer' :style='{lineHeight:"32px"}' @click='onBackClick'>
           <q-icon name='arrow_back' size='32px' />
-          <span :style='{marginLeft:"8px"}'>{{ $t('MSG_REVIEW_CONTENT') }}</span>
+          <span :style='{marginLeft:"8px"}'>{{ $t('MSG_REVIEW_ASSET') }}</span>
         </div>
         <q-space />
         <div class='row' :style='{lineHeight:"32px"}'>
@@ -35,7 +35,7 @@
             {{ asset?.cid }}
           </span>
         </div>
-        <div v-if='asset.uris.length' :style='{margin:"24px 0"}'>
+        <div v-if='asset?.uris.length' :style='{margin:"24px 0"}'>
           <q-img
             v-for='uri in asset.uris' :key='uri'
             :src='asset.baseUri + "/" + uri'

@@ -1,45 +1,49 @@
 <template>
   <div class='row'>
     <q-space />
-    <div :style='{maxWidth:"800px"}'>
+    <div :style='{width:"1280px"}'>
       <div class='row' :style='{margin:"16px 0"}'>
         <div class='row cursor-pointer' :style='{lineHeight:"32px"}' @click='onBackClick'>
           <q-icon name='arrow_back' size='32px' />
-          <span :style='{marginLeft:"8px"}'>{{ $t('MSG_REVIEW_CONTENT') }}</span>
+          <span :style='{marginLeft:"8px"}'>{{ $t('MSG_REVIEW_REVIEWER') }}</span>
         </div>
         <q-space />
         <div class='row' :style='{lineHeight:"32px"}'>
-          <span><strong>{{ content?.title }}</strong></span>
+          <span><strong>{{ reviewer?.reviewer }}</strong></span>
         </div>
       </div>
       <q-separator />
-      <div :style='{marginTop:"24px"}'>
-        <div :style='{fontWeight: "bold", fontSize: "28px", wordBreak: "break-word", marginBottom: "16px"}'>
-          {{ content?.title || 'You should have a title!' }}
+      <div :style='{margin:"24px 0"}'>
+        <div :style='{fontWeight: "bold", fontSize: "18px", wordBreak: "break-word", marginBottom:"16px"}'>
+          {{ reviewer?.reviewer || 'You should have an address!' }}
         </div>
         <div>
-          By
-          <span class='text-grey-6 text-bold cursor-pointer'>
-            {{ content?.author || 'Anonymous' }}
+          Chain
+          <span class='text-grey-6 text-bold'>
+            {{ reviewer?.chainId || 'You should have a chain id!' }}
           </span>
         </div>
         <div>
           At
           <span class='text-grey-6 text-bold'>
-            {{ content?.createdAt ? date.formatDate(content?.createdAt / 1000) : '' }}
+            {{ reviewer?.createdAt ? date.formatDate(reviewer?.createdAt / 1000) : '' }}
           </span>
         </div>
         <div>
-          Cid
-          <span class='text-grey-6 text-bold cursor-pointer'>
-            {{ content?.cid }}
+          Resume
+          <a v-if='reviewer?.resume?.length' :href='reviewer.resume'>{{ reviewer.resume }}</a>
+          <span v-else class='text-grey-6 text-bold'>
+            You should have a resume!
           </span>
         </div>
-        <div
-          :style='{margin: "24px 0 24px 0", fontSize: "16px", wordBreak: "break-word"}'
-          v-html='content?.content || "You should have some content!"'
-        />
       </div>
+      <iframe
+        :style='{margin:"24px 0"}'
+        :src='reviewer?.resume'
+        scrolling='yes'
+        width='100%'
+        height='640px'
+      />
       <q-separator />
       <div :style='{marginTop: "24px"}'>
         <q-input v-model='reason' type='textarea' :label='$t("MSG_REVIEW_REASON")' :disable='reviewed' />
@@ -62,9 +66,6 @@ import { provideApolloClient, useMutation } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
 import { getClientOptions } from 'src/apollo'
 import { ApolloClient } from '@apollo/client/core'
-import { CID } from 'multiformats/cid'
-import * as json from 'multiformats/codecs/json'
-import { sha256 } from 'multiformats/hashes/sha2'
 import { targetChain } from 'src/stores/chain'
 import { useUserStore } from 'src/stores/user'
 
@@ -90,13 +91,9 @@ const onApproveClick = async () => {
     return
   }
 
-  const bytes = json.encode({ reason })
-  const hash = await sha256.digest(bytes)
-  const cid = CID.create(1, json.code, hash).toString()
-
   const { mutate, onDone, onError } = provideApolloClient(apolloClient)(() => useMutation(gql`
-    mutation approveContent ($contentCid: String!, $reasonCid: String!, $reason: String!) {
-      approveContent(contentCid: $contentCid, reasonCid: $reasonCid, reason: $reason)
+    mutation approveReviewer ($candidate: String!, $reason: String!) {
+      approveReviewer(candidate: $candidate, reason: $reason)
     }
   `))
   onDone(() => {
@@ -106,8 +103,7 @@ const onApproveClick = async () => {
     console.log(error)
   })
   await mutate({
-    contentCid: content.value.cid,
-    reasonCid: cid,
+    candidate: reviewer.value.reviewer,
     reason: reason.value,
     endpoint: 'review',
     chainId: targetChain.value
@@ -121,8 +117,8 @@ const onRejectClick = async () => {
   }
 
   const { mutate, onDone, onError } = provideApolloClient(apolloClient)(() => useMutation(gql`
-    mutation rejectContent ($contentCid: String!, $reason: String!) {
-      rejectContent(contentCid: $contentCid, reason: $reason)
+    mutation rejectReviewer ($candidate: String!, $reason: String!) {
+      rejectReviewer(candidate: $candidate, reason: $reason)
     }
   `))
   onDone(() => {
@@ -132,7 +128,7 @@ const onRejectClick = async () => {
     console.log(error)
   })
   await mutate({
-    contentCid: content.value.cid,
+    candidate: reviewer.value.reviewer,
     reason: reason.value,
     endpoint: 'review',
     chainId: targetChain.value
