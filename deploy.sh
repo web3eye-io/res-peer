@@ -89,22 +89,23 @@ function run_new_service() {
   wallet=$wallet_dir/wallet_$1.json
   storage=rocksdb:$wallet_dir/linera$1.db
   print $'\U01f499' $LIGHTGREEN " Initialize wallet$1 ..."
-  linera --wallet $wallet --storage $storage wallet init --genesis $wallet_dir/genesis.json
+  RUST_LOG=WARN linera --wallet $wallet --storage $storage wallet init --genesis $wallet_dir/genesis.json
   print $'\U01f499' $LIGHTGREEN " Gen wallet2 pub key ..."
-  pub_key=`linera --wallet $wallet --storage $storage keygen`
+  pub_key=`RUST_LOG=WARN linera --wallet $wallet --storage $storage keygen`
   print $'\U01f499' $LIGHTGREEN " Open wallet2 chain ..."
-  effect_and_chain=`linera open-chain --to-public-key $pub_key`
+  effect_and_chain=`RUST_LOG=WARN linera open-chain --to-public-key $pub_key`
   effect=$(echo "$effect_and_chain" | sed -n '1 p')
   chain_id=$(echo "$effect_and_chain" | sed -n '2 p')
-  linera --wallet $wallet --storage $storage assign --key $pub_key --message-id $effect
-  linera --wallet $wallet --storage $storage wallet show
-  linera wallet show
+  RUST_LOG=WARN linera --wallet $wallet --storage $storage assign --key $pub_key --message-id $effect
+  RUST_LOG=WARN linera --wallet $wallet --storage $storage wallet show
   print $'\U01f499' $LIGHTGREEN " Run $2 service ..."
   LOG_FILE=`echo $SERVICE_LOG_FILE | sed "s/8080/$2/g"`
   linera --wallet $wallet --storage $storage service --port $2 > $LOG_FILE 2>&1 &
 }
 
+linera wallet show
 run_new_service 2 8081
+run_new_service 3 8082
 
 print $'\U01f499' $LIGHTGREEN " Run 8080 service ..."
 linera service > $SERVICE_LOG_FILE 2>&1 &
