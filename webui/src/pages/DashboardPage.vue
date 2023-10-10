@@ -41,6 +41,7 @@
           <q-tab name='assets' label='Assets' />
           <q-tab v-if='reviewer' name='review-contents' label='Review Content' />
           <q-tab v-if='reviewer' name='review-assets' label='Review Asset' />
+          <q-tab v-if='reviewer' name='review-reviewers' label='Review Reviewer' />
           <q-tab v-if='!reviewer' name='apply-reviewer' label='Apply Reviewer' />
         </q-tabs>
       </template>
@@ -69,6 +70,9 @@
           </q-tab-panel>
           <q-tab-panel name='review-assets'>
             <review-assets />
+          </q-tab-panel>
+          <q-tab-panel name='review-reviewers'>
+            <review-reviewers />
           </q-tab-panel>
           <q-tab-panel name='credits'>
             <user-balance />
@@ -111,6 +115,7 @@ import DepositBalance from 'src/components/DepositBalance.vue'
 import AvatarSetting from 'src/components/AvatarSetting.vue'
 import ReviewContents from 'src/components/ReviewContents.vue'
 import ReviewAssets from 'src/components/ReviewAssets.vue'
+import ReviewReviewers from 'src/components/ReviewReviewers.vue'
 import ApplyReviewer from 'src/components/ApplyReviewer.vue'
 
 interface Query {

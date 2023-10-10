@@ -46,6 +46,7 @@ pub struct Review {
     pub reviewer: Owner,
     pub approved: bool,
     pub reason: String,
+    pub created_at: Timestamp,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, SimpleObject, Eq, PartialEq)]
@@ -56,6 +57,7 @@ pub struct Reviewer {
     pub reviewers: HashMap<Owner, Review>,
     pub approved: u16,
     pub rejected: u16,
+    pub created_at: Timestamp,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, SimpleObject, Eq, PartialEq)]
@@ -96,9 +98,11 @@ pub enum Operation {
     },
     ApproveReviewer {
         candidate: Owner,
+        reason: Option<String>,
     },
     RejectReviewer {
         candidate: Owner,
+        reason: Option<String>,
     },
     SubmitContent {
         cid: String,
@@ -151,9 +155,11 @@ pub enum Message {
     },
     ApproveReviewer {
         candidate: Owner,
+        reason: Option<String>,
     },
     RejectReviewer {
         candidate: Owner,
+        reason: Option<String>,
     },
     SubmitContent {
         cid: String,
@@ -192,5 +198,5 @@ pub enum Message {
     RequestSubscribe,
     InitialState {
         state: InitialState,
-    }
+    },
 }

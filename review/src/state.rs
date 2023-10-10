@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use linera_sdk::{
     base::{ArithmeticError, ChainId, Owner},
+    contract::system_api,
     views::{MapView, RegisterView, ViewStorageContext},
 };
 use linera_views::views::{GraphQLView, RootView};
@@ -51,7 +52,7 @@ impl Review {
             reviewer_approved_threshold: *self.reviewer_approved_threshold.get(),
             reviewer_rejected_threshold: *self.reviewer_rejected_threshold.get(),
         })
-    } 
+    }
 
     pub(crate) async fn genesis_reviewer(
         &mut self,
@@ -67,6 +68,7 @@ impl Review {
                 reviewers: HashMap::default(),
                 approved: 1,
                 rejected: 0,
+                created_at: system_api::current_system_time(),
             },
         )?;
         self.reviewer_number.set(1);
@@ -111,6 +113,7 @@ impl Review {
                 reviewers: HashMap::default(),
                 approved: 0,
                 rejected: 0,
+                created_at: system_api::current_system_time(),
             },
         )?;
         Ok(())
@@ -160,6 +163,7 @@ impl Review {
         &mut self,
         owner: Owner,
         candidate: Owner,
+        reason: String,
     ) -> Result<Option<Reviewer>, StateError> {
         if owner == candidate {
             return Err(StateError::InvalidReviewer);
@@ -169,6 +173,15 @@ impl Review {
         match self.reviewer_applications.get(&candidate).await? {
             Some(mut reviewer) => {
                 reviewer.approved += 1;
+                reviewer.reviewers.insert(
+                    owner,
+                    _Review {
+                        reviewer: owner,
+                        approved: true,
+                        reason,
+                        created_at: system_api::current_system_time(),
+                    },
+                );
                 self.reviewer_applications.insert(&candidate, reviewer)?;
             }
             _ => return Err(StateError::InvalidReviewer),
@@ -193,6 +206,7 @@ impl Review {
         &mut self,
         owner: Owner,
         candidate: Owner,
+        reason: String,
     ) -> Result<Option<Reviewer>, StateError> {
         if owner == candidate {
             return Err(StateError::InvalidReviewer);
@@ -202,6 +216,15 @@ impl Review {
         match self.reviewer_applications.get(&candidate).await? {
             Some(mut reviewer) => {
                 reviewer.rejected += 1;
+                reviewer.reviewers.insert(
+                    owner,
+                    _Review {
+                        reviewer: owner,
+                        approved: true,
+                        reason,
+                        created_at: system_api::current_system_time(),
+                    },
+                );
                 self.reviewer_applications.insert(&candidate, reviewer)?;
             }
             _ => return Err(StateError::InvalidReviewer),
@@ -265,6 +288,7 @@ impl Review {
                         reviewer,
                         approved: true,
                         reason,
+                        created_at: system_api::current_system_time(),
                     },
                 );
                 self.content_applications.insert(&content_cid, content)?;
@@ -304,6 +328,7 @@ impl Review {
                         reviewer,
                         approved: false,
                         reason,
+                        created_at: system_api::current_system_time(),
                     },
                 );
                 self.content_applications.insert(&content_cid, content)?;
@@ -359,6 +384,7 @@ impl Review {
                         reviewer,
                         approved: true,
                         reason,
+                        created_at: system_api::current_system_time(),
                     },
                 );
                 self.asset_applications.insert(&cid, asset)?;
@@ -397,6 +423,7 @@ impl Review {
                         reviewer,
                         approved: false,
                         reason,
+                        created_at: system_api::current_system_time(),
                     },
                 );
                 self.asset_applications.insert(&cid, asset)?;

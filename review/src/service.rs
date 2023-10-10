@@ -47,12 +47,12 @@ impl MutationRoot {
         bcs::to_bytes(&Operation::UpdateReviewerResume { resume }).unwrap()
     }
 
-    async fn approve_reviewer(&self, candidate: Owner) -> Vec<u8> {
-        bcs::to_bytes(&Operation::ApproveReviewer { candidate }).unwrap()
+    async fn approve_reviewer(&self, candidate: Owner, reason: Option<String>) -> Vec<u8> {
+        bcs::to_bytes(&Operation::ApproveReviewer { candidate, reason }).unwrap()
     }
 
-    async fn reject_reviewer(&self, candidate: Owner) -> Vec<u8> {
-        bcs::to_bytes(&Operation::RejectReviewer { candidate }).unwrap()
+    async fn reject_reviewer(&self, candidate: Owner, reason: Option<String>) -> Vec<u8> {
+        bcs::to_bytes(&Operation::RejectReviewer { candidate, reason }).unwrap()
     }
 
     async fn submit_content(&self, cid: String, title: String, content: String) -> Vec<u8> {

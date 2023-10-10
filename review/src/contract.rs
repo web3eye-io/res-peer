@@ -65,16 +65,16 @@ impl Contract for Review {
                     Message::UpdateReviewerResume { resume },
                 ));
             }
-            Operation::ApproveReviewer { candidate } => {
+            Operation::ApproveReviewer { candidate, reason } => {
                 return Ok(ExecutionResult::default().with_authenticated_message(
                     system_api::current_application_id().creation.chain_id,
-                    Message::ApproveReviewer { candidate },
+                    Message::ApproveReviewer { candidate, reason },
                 ));
             }
-            Operation::RejectReviewer { candidate } => {
+            Operation::RejectReviewer { candidate, reason } => {
                 return Ok(ExecutionResult::default().with_authenticated_message(
                     system_api::current_application_id().creation.chain_id,
-                    Message::RejectReviewer { candidate },
+                    Message::RejectReviewer { candidate, reason },
                 ));
             }
             Operation::SubmitContent {
@@ -162,7 +162,11 @@ impl Contract for Review {
                 ));
             }
             Operation::RequestSubscribe => {
-                log::info!("Subscribe review from {:?}", context.chain_id);
+                log::info!(
+                    "Subscribe review from {} at {:?}",
+                    context.authenticated_signer.unwrap(),
+                    context.chain_id
+                );
                 return Ok(ExecutionResult::default().with_authenticated_message(
                     system_api::current_application_id().creation.chain_id,
                     Message::RequestSubscribe,
@@ -194,7 +198,7 @@ impl Contract for Review {
                 self._apply_reviewer(context.chain_id, candidate, resume.clone())
                     .await?;
                 log::info!(
-                    "Message apply reviewerby {:?} at {:?}",
+                    "Message apply reviewer by {:?} at {:?}",
                     candidate,
                     context.chain_id,
                 );
@@ -214,23 +218,35 @@ impl Contract for Review {
                 return Ok(ExecutionResult::default()
                     .with_authenticated_message(dest, Message::UpdateReviewerResume { resume }));
             }
-            Message::ApproveReviewer { candidate } => {
-                self._approve_reviewer(context.authenticated_signer.unwrap(), candidate)
-                    .await?;
+            Message::ApproveReviewer { candidate, reason } => {
+                self._approve_reviewer(
+                    context.authenticated_signer.unwrap(),
+                    candidate,
+                    reason.clone(),
+                )
+                .await?;
                 // TODO: broadcast to other chains
                 let dest =
                     Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
-                return Ok(ExecutionResult::default()
-                    .with_authenticated_message(dest, Message::ApproveReviewer { candidate }));
+                return Ok(ExecutionResult::default().with_authenticated_message(
+                    dest,
+                    Message::ApproveReviewer { candidate, reason },
+                ));
             }
-            Message::RejectReviewer { candidate } => {
-                self._reject_reviewer(context.authenticated_signer.unwrap(), candidate)
-                    .await?;
+            Message::RejectReviewer { candidate, reason } => {
+                self._reject_reviewer(
+                    context.authenticated_signer.unwrap(),
+                    candidate,
+                    reason.clone(),
+                )
+                .await?;
                 // TODO: broadcast to other chains
                 let dest =
                     Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
-                return Ok(ExecutionResult::default()
-                    .with_authenticated_message(dest, Message::RejectReviewer { candidate }));
+                return Ok(ExecutionResult::default().with_authenticated_message(
+                    dest,
+                    Message::RejectReviewer { candidate, reason },
+                ));
             }
             Message::SubmitContent {
                 cid,
@@ -444,14 +460,16 @@ impl Contract for Review {
                 );
                 for reviewer in reviewers {
                     result = result.with_authenticated_message(
-                        context.message_id.chain_id,
+                        context.message_iwebui/src/components/ContentApplicationsQuery.vued.chain_id,
                         Message::ExistReviewer { reviewer },
                     );
                 }
                 */
                 result = result.with_authenticated_message(
                     context.message_id.chain_id,
-                    Message::InitialState { state: self.initial_state().await? },
+                    Message::InitialState {
+                        state: self.initial_state().await?,
+                    },
                 );
                 log::info!(
                     "Synced reviewers to {} at {} creation {}",
@@ -645,8 +663,12 @@ impl Review {
         &mut self,
         reviewer: Owner,
         candidate: Owner,
+        reason: Option<String>,
     ) -> Result<(), ContractError> {
-        match self.approve_reviewer(reviewer, candidate).await? {
+        match self
+            .approve_reviewer(reviewer, candidate, reason.unwrap_or_default())
+            .await?
+        {
             Some(_reviewer) => {
                 // TODO: notify candidate is reviewer
             }
@@ -664,8 +686,12 @@ impl Review {
         &mut self,
         reviewer: Owner,
         candidate: Owner,
+        reason: Option<String>,
     ) -> Result<(), ContractError> {
-        match self.reject_reviewer(reviewer, candidate).await? {
+        match self
+            .reject_reviewer(reviewer, candidate, reason.unwrap_or_default())
+            .await?
+        {
             Some(_reviewer) => {
                 // TODO: notify candidate is reviewer
             }

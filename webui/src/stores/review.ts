@@ -42,6 +42,8 @@ export const useReviewStore = defineStore('review', {
     contentApplications: new Map<string, Content>(),
     assetApplicationsKeys: [] as Array<string>,
     assetApplications: new Map<string, Content>(),
+    reviewerApplicationsKeys: [] as Array<string>,
+    reviewerApplications: new Map<string, Reviewer>(),
     contentApprovedThreshold: 0,
     contentRejectedThreshold: 0,
     assetApprovedThreshold: 0,
@@ -79,6 +81,22 @@ export const useReviewStore = defineStore('review', {
     assetReview (): (cid: string, owner: string) => Review | undefined {
       return (cid: string, owner: string) => {
         const asset = this.assetApplications.get(cid)
+        return asset?.reviewers[owner]
+      }
+    },
+    reviewerReviewed (): (candidate: string, owner: string) => boolean {
+      return (cid: string, owner: string) => {
+        return Object.keys(this.reviewerApplications.get(cid)?.reviewers || {})?.find((el) => el === owner) !== undefined
+      }
+    },
+    reviewer (): (candidate: string) => Reviewer | undefined {
+      return (cid: string) => {
+        return this.reviewerApplications.get(cid)
+      }
+    },
+    reviewerReview (): (candidate: string, owner: string) => Review | undefined {
+      return (cid: string, owner: string) => {
+        const asset = this.reviewerApplications.get(cid)
         return asset?.reviewers[owner]
       }
     }
