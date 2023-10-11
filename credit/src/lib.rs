@@ -8,7 +8,7 @@ impl ContractAbi for CreditAbi {
     type Parameters = ();
     type InitializationArgument = InitialState;
     type Operation = Operation;
-    type Message = ();
+    type Message = Message;
     type ApplicationCall = ApplicationCall;
     type SessionCall = ();
     type SessionState = ();
@@ -70,6 +70,7 @@ pub enum Operation {
     SetTransferCallers {
         application_ids: Vec<ApplicationId>,
     },
+    RequestSubscribe,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -83,4 +84,32 @@ pub enum ApplicationCall {
         to: Owner,
         amount: Amount,
     },
+}
+
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
+pub enum Message {
+    InitialState {
+        state: InitialState,
+    },
+    Liquidate,
+    Reward {
+        owner: Owner,
+        amount: Amount,
+    },
+    Transfer {
+        from: Owner,
+        to: Owner,
+        amount: Amount,
+    },
+    TransferExt {
+        to: Owner,
+        amount: Amount,
+    },
+    SetRewardCallers {
+        application_ids: Vec<ApplicationId>,
+    },
+    SetTransferCallers {
+        application_ids: Vec<ApplicationId>,
+    },
+    RequestSubscribe,
 }

@@ -33,6 +33,13 @@ impl Credit {
         self.amount_alive_ms.set(state.amount_alive_ms);
     }
 
+    pub(crate) async fn initial_state(&self) -> Result<InitialState, StateError> {
+        Ok(InitialState {
+            initial_supply: *self.initial_supply.get(),
+            amount_alive_ms: *self.amount_alive_ms.get(),
+        })
+    }
+
     pub(crate) async fn initial_supply(&self) -> Amount {
         *self.initial_supply.get()
     }
