@@ -84,7 +84,10 @@ impl Contract for Foundation {
                     _ => None,
                 };
                 self.reward(reward_user, reward_type, amount, activity_id, activity_host)
-                    .await?;
+                    .await?
+            }
+            ApplicationCall::Transfer { from, to, amount } => {
+                self.transfer(from, to, amount).await?
             }
         }
         Ok(ApplicationCallResult::default())

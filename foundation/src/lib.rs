@@ -42,6 +42,11 @@ pub enum ApplicationCall {
     Deposit {
         amount: Amount,
     },
+    Transfer {
+        from: Owner,
+        to: Owner,
+        amount: Amount,
+    },
     Reward {
         // Review: sender is the reward user
         // Author: sender is not the reward user

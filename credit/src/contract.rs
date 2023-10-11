@@ -6,7 +6,7 @@ use self::state::Credit;
 use async_trait::async_trait;
 use credit::{ApplicationCall, Message, Operation};
 use linera_sdk::{
-    base::{ChannelName, SessionId, WithContractAbi, Destination},
+    base::{ChannelName, Destination, SessionId, WithContractAbi},
     contract::system_api,
     ApplicationCallResult, CalleeContext, Contract, ExecutionResult, MessageContext,
     OperationContext, SessionCallResult, ViewStateStorage,
@@ -70,10 +70,11 @@ impl Contract for Credit {
                     system_api::current_application_id().creation.chain_id,
                     Message::TransferExt { to, amount },
                 )),
-            Operation::RequestSubscribe => Ok(ExecutionResult::default().with_authenticated_message(
-                system_api::current_application_id().creation.chain_id,
-                Message::RequestSubscribe,
-            ))
+            Operation::RequestSubscribe => Ok(ExecutionResult::default()
+                .with_authenticated_message(
+                    system_api::current_application_id().creation.chain_id,
+                    Message::RequestSubscribe,
+                )),
         }
     }
 
@@ -86,7 +87,7 @@ impl Contract for Credit {
             Message::InitialState { state } => {
                 log::info!("Credit initial state {:?}", state);
                 self.initialize(state).await
-            },
+            }
             Message::Liquidate => self.liquidate().await,
             Message::Reward { owner, amount } => self.reward(owner, amount).await?,
             Message::SetRewardCallers { application_ids } => {
@@ -181,10 +182,8 @@ impl Contract for Credit {
                 let mut result = ApplicationCallResult::default();
                 let dest =
                     Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
-                result.execution_result = ExecutionResult::default().with_authenticated_message(
-                    dest,
-                    Message::Reward { owner, amount },
-                );
+                result.execution_result = ExecutionResult::default()
+                    .with_authenticated_message(dest, Message::Reward { owner, amount });
                 Ok(result)
             }
             ApplicationCall::Transfer { from, to, amount } => {
@@ -207,10 +206,8 @@ impl Contract for Credit {
                 let mut result = ApplicationCallResult::default();
                 let dest =
                     Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
-                result.execution_result = ExecutionResult::default().with_authenticated_message(
-                    dest,
-                    Message::Transfer { from, to, amount },
-                );
+                result.execution_result = ExecutionResult::default()
+                    .with_authenticated_message(dest, Message::Transfer { from, to, amount });
                 Ok(result)
             }
         }

@@ -1,3 +1,5 @@
+use std::cmp::Ordering;
+
 use foundation::{InitialState, RewardType};
 use linera_sdk::{
     base::{Amount, ArithmeticError, Owner},
@@ -74,6 +76,33 @@ impl Foundation {
         let _amount = self.foundation_balance.get().try_add(_amount)?;
 
         self.foundation_balance.set(_amount);
+        Ok(())
+    }
+
+    pub(crate) async fn transfer(
+        &mut self,
+        from: Owner,
+        to: Owner,
+        amount: Amount,
+    ) -> Result<(), StateError> {
+        if from == to {
+            return Err(StateError::InvalidAccount);
+        }
+        let from_amount = match self.user_balances.get(&from).await? {
+            Some(balance) => balance,
+            None => return Err(StateError::InsufficientBalance),
+        };
+        if from_amount.lt(&amount) {
+            return Err(StateError::InsufficientBalance);
+        }
+        let to_amount = match self.user_balances.get(&to).await? {
+            Some(balance) => balance,
+            None => Amount::from_atto(0),
+        };
+        self.user_balances
+            .insert(&from, from_amount.saturating_sub(amount))?;
+        self.user_balances
+            .insert(&to, to_amount.saturating_add(amount))?;
         Ok(())
     }
 
@@ -210,4 +239,7 @@ pub enum StateError {
 
     #[error("Invalid activity owner")]
     InvalidActivityOwner,
+
+    #[error("Invalid account")]
+    InvalidAccount,
 }
