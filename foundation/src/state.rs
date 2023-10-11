@@ -1,5 +1,3 @@
-use std::cmp::Ordering;
-
 use foundation::{InitialState, RewardType};
 use linera_sdk::{
     base::{Amount, ArithmeticError, Owner},
@@ -40,6 +38,16 @@ impl Foundation {
         self.review_reward_factor.set(state.review_reward_factor);
         self.author_reward_factor.set(state.author_reward_factor);
         Ok(())
+    }
+
+    pub(crate) async fn initial_state(&self) -> Result<InitialState, StateError> {
+        Ok(InitialState {
+            review_reward_percent: *self.review_reward_percent.get(),
+            review_reward_factor: *self.review_reward_factor.get(),
+            author_reward_percent: *self.author_reward_percent.get(),
+            author_reward_factor: *self.author_reward_factor.get(),
+            activity_reward_percent: *self.activity_reward_percent.get(),
+        })
     }
 
     // When transaction happen, transaction fee will be deposited here
@@ -103,6 +111,21 @@ impl Foundation {
             .insert(&from, from_amount.saturating_sub(amount))?;
         self.user_balances
             .insert(&to, to_amount.saturating_add(amount))?;
+        Ok(())
+    }
+
+    pub(crate) async fn user_deposit(
+        &mut self,
+        owner: Owner,
+        amount: Amount,
+    ) -> Result<(), StateError> {
+        let balance = self
+            .user_balances
+            .get(&owner)
+            .await?
+            .unwrap_or(Amount::ZERO);
+        self.user_balances
+            .insert(&owner, balance.saturating_add(amount))?;
         Ok(())
     }
 
