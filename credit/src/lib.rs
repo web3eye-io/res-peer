@@ -51,10 +51,6 @@ pub struct InitialState {
 #[derive(Debug, Deserialize, Serialize)]
 pub enum Operation {
     Liquidate,
-    Reward {
-        owner: Owner,
-        amount: Amount,
-    },
     Transfer {
         from: Owner,
         to: Owner,

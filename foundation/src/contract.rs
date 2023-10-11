@@ -173,7 +173,7 @@ impl Contract for Foundation {
         _forwarded_sessions: Vec<SessionId>,
     ) -> Result<ApplicationCallResult<Self::Message, Self::Response, Self::SessionState>, Self::Error>
     {
-        let execute_result = match call {
+        let execution_result = match call {
             ApplicationCall::Deposit { amount } => ExecutionResult::default()
                 .with_authenticated_message(
                     system_api::current_application_id().creation.chain_id,
@@ -212,7 +212,7 @@ impl Contract for Foundation {
                 ),
         };
         let mut result = ApplicationCallResult::default();
-        result.execution_result = execute_result;
+        result.execution_result = execution_result;
         Ok(result)
     }
 
