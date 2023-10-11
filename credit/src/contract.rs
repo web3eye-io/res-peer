@@ -6,7 +6,7 @@ use self::state::Credit;
 use async_trait::async_trait;
 use credit::{ApplicationCall, Message, Operation};
 use linera_sdk::{
-    base::{ChannelName, SessionId, WithContractAbi},
+    base::{ChannelName, SessionId, WithContractAbi, Destination},
     contract::system_api,
     ApplicationCallResult, CalleeContext, Contract, ExecutionResult, MessageContext,
     OperationContext, SessionCallResult, ViewStateStorage,
@@ -157,10 +157,11 @@ impl Contract for Credit {
         match call {
             ApplicationCall::Reward { owner, amount } => {
                 log::info!(
-                    "Reward owner {} amount {} caller {}",
+                    "Reward owner {} amount {} caller {} callers {:?}",
                     owner,
                     amount,
-                    context.authenticated_caller_id.unwrap()
+                    context.authenticated_caller_id.unwrap(),
+                    self.reward_callers.indices().await,
                 );
                 match self
                     .reward_callers
@@ -170,9 +171,18 @@ impl Contract for Credit {
                     Ok(_) => {}
                     _ => return Err(ContractError::CallerNotAllowed),
                 }
+                log::info!(
+                    "Broadcast reward owner {} amount {} caller {}",
+                    owner,
+                    amount,
+                    context.authenticated_caller_id.unwrap()
+                );
+                self.reward(owner, amount).await?;
                 let mut result = ApplicationCallResult::default();
+                let dest =
+                    Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
                 result.execution_result = ExecutionResult::default().with_authenticated_message(
-                    system_api::current_application_id().creation.chain_id,
+                    dest,
                     Message::Reward { owner, amount },
                 );
                 Ok(result)
