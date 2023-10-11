@@ -21,7 +21,11 @@ NODE_LOG_FILE=$HOME/linera-project/linera.log
 SERVICE_LOG_FILE=$HOME/linera-project/service_8080.log
 
 print $'\U01F4AB' $YELLOW " Running lienra net, log in $NODE_LOG_FILE ..."
+lineradir=`whereis linera | awk '{print $2}'`
+lineradir=`dirname $lineradir`
+cd $lineradir
 linera net up 2>&1 | sh -c 'exec cat' > $NODE_LOG_FILE &
+cd -
 
 while true; do
   [ ! -f $NODE_LOG_FILE ] && sleep 3 && continue

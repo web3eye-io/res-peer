@@ -460,7 +460,7 @@ impl Contract for Review {
                 );
                 for reviewer in reviewers {
                     result = result.with_authenticated_message(
-                        context.message_iwebui/src/components/ContentApplicationsQuery.vued.chain_id,
+                        context.message_id.chain_id,
                         Message::ExistReviewer { reviewer },
                     );
                 }
