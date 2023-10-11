@@ -203,9 +203,12 @@ impl Contract for Credit {
                     Ok(_) => {}
                     _ => return Err(ContractError::CallerNotAllowed),
                 }
+                self.transfer(from, to, amount).await?;
                 let mut result = ApplicationCallResult::default();
+                let dest =
+                    Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
                 result.execution_result = ExecutionResult::default().with_authenticated_message(
-                    system_api::current_application_id().creation.chain_id,
+                    dest,
                     Message::Transfer { from, to, amount },
                 );
                 Ok(result)
