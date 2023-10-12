@@ -59,7 +59,7 @@ impl Contract for Feed {
                     system_api::current_application_id().creation.chain_id,
                     Message::Tip { cid, amount },
                 )),
-            Operation::RequestSubscribe => Ok(ExecutionResult::default().with_message(
+            Operation::RequestSubscribe => Ok(ExecutionResult::default().with_authenticated_message(
                 system_api::current_application_id().creation.chain_id,
                 Message::RequestSubscribe,
             )),
@@ -77,19 +77,19 @@ impl Contract for Feed {
                     .await?;
                 let dest =
                     Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
-                Ok(ExecutionResult::default().with_message(dest, Message::Like { cid }))
+                Ok(ExecutionResult::default().with_authenticated_message(dest, Message::Like { cid }))
             }
             Message::Dislike { cid } => {
                 self.dislike(cid.clone(), context.authenticated_signer.unwrap())
                     .await?;
                 let dest =
                     Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
-                Ok(ExecutionResult::default().with_message(dest, Message::Dislike { cid }))
+                Ok(ExecutionResult::default().with_authenticated_message(dest, Message::Dislike { cid }))
             }
             Message::Tip { cid, amount } => {
                 let dest =
                     Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
-                Ok(ExecutionResult::default().with_message(dest, Message::Tip { cid, amount }))
+                Ok(ExecutionResult::default().with_authenticated_message(dest, Message::Tip { cid, amount }))
             }
             Message::Publish {
                 cid,
@@ -101,7 +101,7 @@ impl Contract for Feed {
                     .await?;
                 let dest =
                     Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
-                Ok(ExecutionResult::default().with_message(
+                Ok(ExecutionResult::default().with_authenticated_message(
                     dest,
                     Message::Publish {
                         cid,
@@ -116,6 +116,7 @@ impl Contract for Feed {
                 reason_cid,
                 reason,
             } => {
+                log::info!("Message recommend from owner {:?} at {}", context.authenticated_signer, context.chain_id);
                 let author = context.authenticated_signer.unwrap();
                 self.publish(
                     reason_cid.clone(),
@@ -129,7 +130,7 @@ impl Contract for Feed {
                     .await?;
                 let dest =
                     Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
-                Ok(ExecutionResult::default().with_message(
+                Ok(ExecutionResult::default().with_authenticated_message(
                     dest,
                     Message::Recommend {
                         cid,
@@ -156,7 +157,7 @@ impl Contract for Feed {
                     .await?;
                 let dest =
                     Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
-                Ok(ExecutionResult::default().with_message(
+                Ok(ExecutionResult::default().with_authenticated_message(
                     dest,
                     Message::Comment {
                         cid,
@@ -195,7 +196,6 @@ impl Contract for Feed {
                 reason_cid,
                 reason,
             } => {
-                log::info!("Recommend from owner {:?}", _context.authenticated_signer);
                 let mut result = ApplicationCallResult::default();
                 result.execution_result = ExecutionResult::default().with_authenticated_message(
                     system_api::current_application_id().creation.chain_id,
