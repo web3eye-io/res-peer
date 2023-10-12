@@ -3,7 +3,7 @@ import { provideApolloClient, useQuery } from '@vue/apollo-composable'
 import { ApolloClient } from '@apollo/client/core'
 import gql from 'graphql-tag'
 import { getClientOptions } from 'src/apollo'
-import { useReviewStore, Content } from 'src/stores/review'
+import { useReviewStore, Asset } from 'src/stores/review'
 import { computed, watch, ref } from 'vue'
 import { useBlockStore } from 'src/stores/block'
 import { targetChain } from 'src/stores/chain'
@@ -42,7 +42,7 @@ const getAssetApplication = (assetApplicationKey: string, done?: () => void) => 
   }))
 
   watch(result, () => {
-    assetApplications.value.set(assetApplicationKey, (result.value as Record<string, Content>).assetApplications)
+    assetApplications.value.set(assetApplicationKey, (result.value as Record<string, Asset>).assetApplications)
     done?.()
   })
 }
