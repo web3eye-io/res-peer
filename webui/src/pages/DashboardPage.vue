@@ -102,6 +102,7 @@
 import { computed, ref } from 'vue'
 import { useUserStore } from 'src/stores/user'
 import { useCollectionStore } from 'src/stores/collection'
+import { useFoundationStore } from 'src/stores/foundation'
 import { useRoute } from 'vue-router'
 
 import SubmitContent from 'src/components/SubmitContent.vue'
@@ -129,9 +130,10 @@ const user = useUserStore()
 const account = computed(() => user.account)
 const reviewer = computed(() => user.reviewer)
 const collection = useCollectionStore()
+const foundation = useFoundationStore()
 const creditsPerLinera = computed(() => collection.creditsPerLinera)
 const spendableCredits = computed(() => user.spendable)
-const lineraBalance = computed(() => collection.lineraBalance)
+const lineraBalance = computed(() => foundation.userLineraBalance)
 const avatarIds = computed(() => collection.avatars.get(account.value))
 const avatar = computed(() => avatarIds.value ? collection.nftBannerByID(avatarIds.value[0], avatarIds.value[1]) : collection.nftBannerByID(1001, 1000))
 

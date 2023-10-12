@@ -105,6 +105,10 @@ impl MutationRoot {
         })
         .unwrap()
     }
+
+    async fn request_subscribe(&self) -> Vec<u8> {
+        bcs::to_bytes(&Operation::RequestSubscribe).unwrap()
+    }
 }
 
 /// An error that can occur while querying the service.

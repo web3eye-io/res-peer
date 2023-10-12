@@ -40,12 +40,12 @@ impl Market {
     }
 
     pub(crate) async fn initial_state(&self) -> Result<InitialState, StateError> {
-        Ok(InitialState { 
+        Ok(InitialState {
             credits_per_linera: *self.credits_per_linera.get(),
             max_credits_percent: *self.max_credits_percent.get(),
             trade_fee_percent: *self.trade_fee_percent.get(),
             collection_id: Some(*self.collection_id.get()),
-         })
+        })
     }
 
     pub(crate) async fn collections(&self, owner: Owner) -> Vec<u64> {

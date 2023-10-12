@@ -121,10 +121,11 @@ impl Contract for Market {
                     token_id,
                 },
             )),
-            Operation::RequestSubscribe => Ok(ExecutionResult::default().with_authenticated_message(
-                system_api::current_application_id().creation.chain_id,
-                Message::RequestSubscribe,
-            ))
+            Operation::RequestSubscribe => Ok(ExecutionResult::default()
+                .with_authenticated_message(
+                    system_api::current_application_id().creation.chain_id,
+                    Message::RequestSubscribe,
+                )),
         }
     }
 
