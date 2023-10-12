@@ -196,6 +196,7 @@ impl Contract for Review {
                     context.authenticated_signer.unwrap(),
                     candidate,
                     reason.clone(),
+                    context.chain_id == system_api::current_application_id().creation.chain_id,
                 )
                 .await?;
                 let dest =
@@ -210,6 +211,7 @@ impl Contract for Review {
                     context.authenticated_signer.unwrap(),
                     candidate,
                     reason.clone(),
+                    context.chain_id == system_api::current_application_id().creation.chain_id,
                 )
                 .await?;
                 let dest =
@@ -225,8 +227,14 @@ impl Contract for Review {
                 content,
             } => {
                 let author = context.authenticated_signer.unwrap();
-                self._submit_content(cid.clone(), title.clone(), content.clone(), author)
-                    .await?;
+                self._submit_content(
+                    cid.clone(),
+                    title.clone(),
+                    content.clone(),
+                    author,
+                    context.chain_id == system_api::current_application_id().creation.chain_id,
+                )
+                .await?;
                 let dest =
                     Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
                 Ok(ExecutionResult::default().with_authenticated_message(
@@ -249,6 +257,7 @@ impl Contract for Review {
                     content_cid.clone(),
                     reason_cid.clone(),
                     reason.clone(),
+                    context.chain_id == system_api::current_application_id().creation.chain_id,
                 )
                 .await?;
                 let dest =
@@ -267,8 +276,13 @@ impl Contract for Review {
                 reason,
             } => {
                 let reviewer = context.authenticated_signer.unwrap();
-                self._reject_content(reviewer, content_cid.clone(), reason.clone())
-                    .await?;
+                self._reject_content(
+                    reviewer,
+                    content_cid.clone(),
+                    reason.clone(),
+                    context.chain_id == system_api::current_application_id().creation.chain_id,
+                )
+                .await?;
                 let dest =
                     Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
                 Ok(ExecutionResult::default().with_authenticated_message(
@@ -285,8 +299,14 @@ impl Contract for Review {
                 comment,
             } => {
                 let author = context.authenticated_signer.unwrap();
-                self._submit_comment(comment_cid.clone(), cid.clone(), comment.clone(), author)
-                    .await?;
+                self._submit_comment(
+                    comment_cid.clone(),
+                    cid.clone(),
+                    comment.clone(),
+                    author,
+                    context.chain_id == system_api::current_application_id().creation.chain_id,
+                )
+                .await?;
                 let dest =
                     Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
                 Ok(ExecutionResult::default().with_authenticated_message(
@@ -303,6 +323,7 @@ impl Contract for Review {
                     context.authenticated_signer.unwrap(),
                     cid.clone(),
                     reason.clone(),
+                    context.chain_id == system_api::current_application_id().creation.chain_id,
                 )
                 .await?;
                 let dest =
@@ -315,6 +336,7 @@ impl Contract for Review {
                     context.authenticated_signer.unwrap(),
                     cid.clone(),
                     reason.clone(),
+                    context.chain_id == system_api::current_application_id().creation.chain_id,
                 )
                 .await?;
                 let dest =
@@ -566,11 +588,15 @@ impl Review {
         reviewer: Owner,
         candidate: Owner,
         reason: Option<String>,
+        creation_chain: bool,
     ) -> Result<(), ContractError> {
-        match self
+        let _reviewer = self
             .approve_reviewer(reviewer, candidate, reason.unwrap_or_default())
-            .await?
-        {
+            .await?;
+        if !creation_chain {
+            return Ok(());
+        }
+        match _reviewer {
             Some(_reviewer) => {
                 // TODO: notify candidate is reviewer
             }
@@ -589,11 +615,15 @@ impl Review {
         reviewer: Owner,
         candidate: Owner,
         reason: Option<String>,
+        creation_chain: bool,
     ) -> Result<(), ContractError> {
-        match self
+        let _reviewer = self
             .reject_reviewer(reviewer, candidate, reason.unwrap_or_default())
-            .await?
-        {
+            .await?;
+        if !creation_chain {
+            return Ok(());
+        }
+        match _reviewer {
             Some(_reviewer) => {
                 // TODO: notify candidate is reviewer
             }
@@ -613,6 +643,7 @@ impl Review {
         title: String,
         content: String,
         author: Owner,
+        creation_chain: bool,
     ) -> Result<(), ContractError> {
         self.submit_content(Content {
             // TODO: notify author
@@ -627,6 +658,9 @@ impl Review {
             created_at: system_api::current_system_time(),
         })
         .await?;
+        if !creation_chain {
+            return Ok(());
+        }
         self.reward_credits(author, Amount::from_tokens(10)).await?;
         Ok(())
     }
@@ -637,9 +671,9 @@ impl Review {
         comment_to_cid: String,
         comment: String,
         author: Owner,
+        creation_chain: bool,
     ) -> Result<(), ContractError> {
         self.submit_content(Content {
-            // TODO: notify author
             cid,
             comment_to_cid: Some(comment_to_cid),
             title: String::default(),
@@ -651,6 +685,9 @@ impl Review {
             created_at: system_api::current_system_time(),
         })
         .await?;
+        if !creation_chain {
+            return Ok(());
+        }
         self.reward_credits(author, Amount::from_tokens(10)).await?;
         Ok(())
     }
@@ -661,15 +698,19 @@ impl Review {
         content_cid: String,
         reason_cid: Option<String>,
         reason: Option<String>,
+        creation_chain: bool,
     ) -> Result<(), ContractError> {
-        match self
+        let content = self
             .approve_content(
                 reviewer,
                 content_cid.clone(),
                 reason.clone().unwrap_or_default(),
             )
-            .await?
-        {
+            .await?;
+        if !creation_chain {
+            return Ok(());
+        }
+        match content {
             Some(content) => {
                 match content.comment_to_cid {
                     Some(comment_to_cid) => {
@@ -715,11 +756,15 @@ impl Review {
         reviewer: Owner,
         content_cid: String,
         reason: Option<String>,
+        creation_chain: bool,
     ) -> Result<(), ContractError> {
-        match self
+        let content = self
             .reject_content(reviewer, content_cid, reason.unwrap_or_default())
-            .await?
-        {
+            .await?;
+        if !creation_chain {
+            return Ok(());
+        }
+        match content {
             Some(_content) => {
                 // TODO: notify author content is rejected
             }
@@ -738,11 +783,15 @@ impl Review {
         reviewer: Owner,
         cid: String,
         reason: Option<String>,
+        creation_chain: bool,
     ) -> Result<(), ContractError> {
-        match self
+        let asset = self
             .approve_asset(reviewer, cid, reason.unwrap_or_default())
-            .await?
-        {
+            .await?;
+        if !creation_chain {
+            return Ok(());
+        }
+        match asset {
             Some(asset) => {
                 self.create_collection(
                     asset.base_uri,
@@ -769,11 +818,15 @@ impl Review {
         reviewer: Owner,
         cid: String,
         reason: Option<String>,
+        creation_chain: bool,
     ) -> Result<(), ContractError> {
-        match self
+        let asset = self
             .reject_asset(reviewer, cid, reason.unwrap_or_default())
-            .await?
-        {
+            .await?;
+        if !creation_chain {
+            return Ok(());
+        }
+        match asset {
             Some(_asset) => {
                 // TODO: notify author is approved
             }
