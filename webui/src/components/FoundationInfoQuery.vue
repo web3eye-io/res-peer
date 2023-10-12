@@ -77,6 +77,8 @@ const getFoundationInfo = () => {
         account: `${account.value}`,
         endpoint: 'foundation',
         chainId: targetChain.value
+      }, {
+        fetchPolicy: 'network-only'
       })
     }
     return useQuery(gql`
@@ -94,6 +96,8 @@ const getFoundationInfo = () => {
       `, {
       endpoint: 'foundation',
       chainId: targetChain.value
+    }, {
+      fetchPolicy: 'network-only'
     })
   })
 

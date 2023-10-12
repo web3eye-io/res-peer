@@ -6,7 +6,10 @@ use self::state::Foundation;
 use async_graphql::{EmptySubscription, Object, Request, Response, Schema};
 use async_trait::async_trait;
 use foundation::Operation;
-use linera_sdk::{base::WithServiceAbi, QueryContext, Service, ViewStateStorage};
+use linera_sdk::{
+    base::{Amount, WithServiceAbi},
+    QueryContext, Service, ViewStateStorage,
+};
 use std::sync::Arc;
 use thiserror::Error;
 
@@ -38,6 +41,10 @@ struct MutationRoot;
 impl MutationRoot {
     async fn request_subscribe(&self) -> Vec<u8> {
         bcs::to_bytes(&Operation::RequestSubscribe).unwrap()
+    }
+
+    async fn user_deposit(&self, amount: Amount) -> Vec<u8> {
+        bcs::to_bytes(&Operation::UserDeposit { amount }).unwrap()
     }
 }
 

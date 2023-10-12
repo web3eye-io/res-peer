@@ -43,6 +43,7 @@
           <q-tab v-if='reviewer' name='review-assets' label='Review Asset' />
           <q-tab v-if='reviewer' name='review-reviewers' label='Review Reviewer' />
           <q-tab v-if='!reviewer' name='apply-reviewer' label='Apply Reviewer' />
+          <q-tab name='ledger' label='Ledger' />
         </q-tabs>
       </template>
       <template #after>
@@ -82,15 +83,15 @@
             <div :style='{margin: "32px 0"}'>
               <mint-nft />
             </div>
-            <div :style='{margin: "32px 0"}'>
-              <deposit-balance />
-            </div>
             <collection-list :style='{margin: "32px 0"}' />
             <nft-list nft-type='MY_PUBLISHES' :style='{margin: "32px 0"}' />
             <nft-list nft-type='MY_ASSETS' :style='{margin: "32px 0"}' />
           </q-tab-panel>
           <q-tab-panel name='apply-reviewer'>
             <apply-reviewer />
+          </q-tab-panel>
+          <q-tab-panel name='ledger'>
+            <deposit-balance />
           </q-tab-panel>
         </q-tab-panels>
       </template>
