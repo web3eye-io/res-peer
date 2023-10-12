@@ -116,7 +116,6 @@ impl Contract for Feed {
                 reason_cid,
                 reason,
             } => {
-                log::info!("Message recommend from owner {:?} at {}", context.authenticated_signer, context.chain_id);
                 let author = context.authenticated_signer.unwrap();
                 self.publish(
                     reason_cid.clone(),
