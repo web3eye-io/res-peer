@@ -59,6 +59,7 @@ pub struct InitialState {
     pub credits_per_linera: Amount,
     pub max_credits_percent: u8,
     pub trade_fee_percent: u8,
+    pub collection_id: Option<u64>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -94,6 +95,7 @@ pub enum Operation {
         collection_id: u64,
         token_id: u16,
     },
+    RequestSubscribe,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -109,6 +111,9 @@ pub enum ApplicationCall {
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub enum Message {
+    InitialState {
+        state: InitialState,
+    },
     CreateCollection {
         base_uri: String,
         price: Option<Amount>,
@@ -147,4 +152,5 @@ pub enum Message {
         collection_id: u64,
         token_id: u16,
     },
+    RequestSubscribe,
 }

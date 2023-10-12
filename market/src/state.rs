@@ -34,9 +34,18 @@ pub struct Market {
 impl Market {
     pub(crate) async fn initialize(&mut self, state: InitialState) {
         self.credits_per_linera.set(state.credits_per_linera);
-        self.collection_id.set(1000);
+        self.collection_id.set(state.collection_id.unwrap_or(1000));
         self.max_credits_percent.set(state.max_credits_percent);
         self.trade_fee_percent.set(state.trade_fee_percent);
+    }
+
+    pub(crate) async fn initial_state(&self) -> Result<InitialState, StateError> {
+        Ok(InitialState { 
+            credits_per_linera: *self.credits_per_linera.get(),
+            max_credits_percent: *self.max_credits_percent.get(),
+            trade_fee_percent: *self.trade_fee_percent.get(),
+            collection_id: Some(*self.collection_id.get()),
+         })
     }
 
     pub(crate) async fn collections(&self, owner: Owner) -> Vec<u64> {

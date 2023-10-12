@@ -121,6 +121,10 @@ impl Contract for Market {
                     token_id,
                 },
             )),
+            Operation::RequestSubscribe => Ok(ExecutionResult::default().with_authenticated_message(
+                system_api::current_application_id().creation.chain_id,
+                Message::RequestSubscribe,
+            ))
         }
     }
 
@@ -130,6 +134,10 @@ impl Contract for Market {
         message: Self::Message,
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
         match message {
+            Message::InitialState { state } => {
+                self.initialize(state).await;
+                Ok(ExecutionResult::default())
+            }
             Message::CreateCollection {
                 base_uri,
                 price,
@@ -308,6 +316,25 @@ impl Contract for Market {
                         token_id,
                     },
                 ))
+            }
+            Message::RequestSubscribe => {
+                let mut result = ExecutionResult::default();
+                if context.message_id.chain_id
+                    == system_api::current_application_id().creation.chain_id
+                {
+                    return Ok(result);
+                }
+                result.subscribe.push((
+                    ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()),
+                    context.message_id.chain_id,
+                ));
+                result = result.with_authenticated_message(
+                    context.message_id.chain_id,
+                    Message::InitialState {
+                        state: self.initial_state().await?,
+                    },
+                );
+                return Ok(result);
             }
         }
     }
