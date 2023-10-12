@@ -3,8 +3,9 @@
 mod state;
 
 use self::state::Foundation;
-use async_graphql::{EmptyMutation, EmptySubscription, Request, Response, Schema};
+use async_graphql::{EmptySubscription, Object, Request, Response, Schema};
 use async_trait::async_trait;
+use foundation::Operation;
 use linera_sdk::{base::WithServiceAbi, QueryContext, Service, ViewStateStorage};
 use std::sync::Arc;
 use thiserror::Error;
@@ -25,9 +26,18 @@ impl Service for Foundation {
         _context: &QueryContext,
         request: Request,
     ) -> Result<Response, Self::Error> {
-        let schema = Schema::build(self.clone(), EmptyMutation, EmptySubscription).finish();
+        let schema = Schema::build(self.clone(), MutationRoot {}, EmptySubscription).finish();
         let response = schema.execute(request).await;
         Ok(response)
+    }
+}
+
+struct MutationRoot;
+
+#[Object]
+impl MutationRoot {
+    async fn request_subscribe(&self) -> Vec<u8> {
+        bcs::to_bytes(&Operation::RequestSubscribe).unwrap()
     }
 }
 

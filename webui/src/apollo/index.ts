@@ -27,6 +27,8 @@ export /* async */ function getClientOptions (/* {app, router, ...}, options?: P
           return 'http://localhost:' + port + '/chains/' + chainId + '/applications/' + constants.Apps.marketApp
         case 'review':
           return 'http://localhost:' + port + '/chains/' + chainId + '/applications/' + constants.Apps.reviewApp
+        case 'foundation':
+          return 'http://localhost:' + port + '/chains/' + chainId + '/applications/' + constants.Apps.foundationApp
         case 'main':
           return 'http://localhost:' + port
         default:
