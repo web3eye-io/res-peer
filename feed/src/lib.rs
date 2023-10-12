@@ -58,6 +58,16 @@ pub enum Operation {
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub enum Message {
+    Like {
+        cid: String,
+    },
+    Dislike {
+        cid: String,
+    },
+    Tip {
+        cid: String,
+        amount: Amount,
+    },
     Publish {
         cid: String,
         title: String,

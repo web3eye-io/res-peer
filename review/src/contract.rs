@@ -49,7 +49,7 @@ impl Contract for Review {
 
     async fn execute_operation(
         &mut self,
-        context: &OperationContext,
+        _context: &OperationContext,
         operation: Self::Operation,
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
         match operation {
@@ -162,11 +162,6 @@ impl Contract for Review {
                 ));
             }
             Operation::RequestSubscribe => {
-                log::info!(
-                    "Subscribe review from {} at {:?}",
-                    context.authenticated_signer.unwrap(),
-                    context.chain_id
-                );
                 return Ok(ExecutionResult::default().with_authenticated_message(
                     system_api::current_application_id().creation.chain_id,
                     Message::RequestSubscribe,
@@ -197,12 +192,6 @@ impl Contract for Review {
                 let candidate = context.authenticated_signer.unwrap();
                 self._apply_reviewer(context.chain_id, candidate, resume.clone())
                     .await?;
-                log::info!(
-                    "Message apply reviewer by {:?} at {:?}",
-                    candidate,
-                    context.chain_id,
-                );
-                // TODO: broadcast to other chains
                 let dest =
                     Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
                 return Ok(ExecutionResult::default()
@@ -254,12 +243,6 @@ impl Contract for Review {
                 content,
             } => {
                 let author = context.authenticated_signer.unwrap();
-                log::info!(
-                    "Message submit content cid {:?} by {:?} at {:?}",
-                    cid,
-                    author,
-                    context.chain_id,
-                );
                 self._submit_content(cid.clone(), title.clone(), content.clone(), author)
                     .await?;
                 let dest =
@@ -279,13 +262,6 @@ impl Contract for Review {
                 reason,
             } => {
                 let reviewer = context.authenticated_signer.unwrap();
-                log::info!(
-                    "Message approve content cid {:?} by {:?} with reason {:?} at {:?}",
-                    content_cid,
-                    reviewer,
-                    reason_cid,
-                    context.chain_id,
-                );
                 self._approve_content(
                     reviewer,
                     content_cid.clone(),
@@ -309,12 +285,6 @@ impl Contract for Review {
                 reason,
             } => {
                 let reviewer = context.authenticated_signer.unwrap();
-                log::info!(
-                    "Message reject content cid {:?} by {:?} with reason {:?}",
-                    content_cid,
-                    reviewer,
-                    reason,
-                );
                 self._reject_content(reviewer, content_cid.clone(), reason.clone())
                     .await?;
                 let dest =
@@ -333,13 +303,6 @@ impl Contract for Review {
                 comment,
             } => {
                 let author = context.authenticated_signer.unwrap();
-                log::info!(
-                    "Message comment content cid {:?} comment {:?} by {:?} at {:?}",
-                    cid,
-                    comment_cid,
-                    author,
-                    context.chain_id,
-                );
                 self._submit_comment(comment_cid.clone(), cid.clone(), comment.clone(), author)
                     .await?;
                 let dest =
@@ -408,34 +371,15 @@ impl Contract for Review {
             }
             Message::RequestSubscribe => {
                 let mut result = ExecutionResult::default();
-                log::info!(
-                    "Message subscribe review from {} at {} creation {}",
-                    context.message_id.chain_id,
-                    context.chain_id,
-                    system_api::current_application_id().creation.chain_id
-                );
                 if context.message_id.chain_id
                     == system_api::current_application_id().creation.chain_id
                 {
                     return Ok(result);
                 }
-                log::info!(
-                    "Subscribing review from {} at {} creation {}",
-                    context.message_id.chain_id,
-                    context.chain_id,
-                    system_api::current_application_id().creation.chain_id
-                );
                 result.subscribe.push((
                     ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()),
                     context.message_id.chain_id,
                 ));
-                log::info!(
-                    "Sync reviewers to {} at {} creation {} reviewers {:?}",
-                    context.message_id.chain_id,
-                    context.chain_id,
-                    system_api::current_application_id().creation.chain_id,
-                    self.reviewers.indices().await?,
-                );
                 /* Will be stuck in the for each so we use indices */
                 for reviewer in self.reviewers.indices().await? {
                     let reviewer = self.reviewers.get(&reviewer).await?.unwrap();
@@ -470,18 +414,6 @@ impl Contract for Review {
                     Message::InitialState {
                         state: self.initial_state().await?,
                     },
-                );
-                log::info!(
-                    "Synced reviewers to {} at {} creation {}",
-                    context.message_id.chain_id,
-                    context.chain_id,
-                    system_api::current_application_id().creation.chain_id
-                );
-                log::info!(
-                    "Subscribed to {} at {} creation {}",
-                    context.message_id.chain_id,
-                    context.chain_id,
-                    system_api::current_application_id().creation.chain_id
                 );
                 return Ok(result);
             }
@@ -533,16 +465,13 @@ impl Review {
     }
 
     async fn reward_credits(&mut self, owner: Owner, amount: Amount) -> Result<(), ContractError> {
-        log::info!("Reward credits owner {:?} amount {:?}", owner, amount);
         let call = credit::ApplicationCall::Reward { owner, amount };
         self.call_application(true, Self::credit_app_id()?, &call, vec![])
             .await?;
-        log::info!("Rewarded credits owner {:?} amount {:?}", owner, amount);
         Ok(())
     }
 
-    async fn reward_tokens(&mut self, reviewer: Owner) -> Result<(), ContractError> {
-        log::info!("Reward tokens owner {:?}", reviewer);
+    async fn reward_tokens(&mut self) -> Result<(), ContractError> {
         let call = foundation::ApplicationCall::Reward {
             reward_user: None,
             reward_type: foundation::RewardType::Review,
@@ -551,7 +480,6 @@ impl Review {
         };
         self.call_application(true, Self::foundation_app_id()?, &call, vec![])
             .await?;
-        log::info!("Rewarded tokens owner {:?}", reviewer);
         Ok(())
     }
 
@@ -562,7 +490,6 @@ impl Review {
         content: String,
         author: Owner,
     ) -> Result<(), ContractError> {
-        log::info!("Publish cid {:?}", cid);
         let call = feed::ApplicationCall::Publish {
             cid: cid.clone(),
             title,
@@ -571,7 +498,6 @@ impl Review {
         };
         self.call_application(true, Self::feed_app_id()?, &call, vec![])
             .await?;
-        log::info!("Published cid {:?}", cid);
         Ok(())
     }
 
@@ -581,7 +507,6 @@ impl Review {
         reason_cid: String,
         reason: String,
     ) -> Result<(), ContractError> {
-        log::info!("Recommend content {:?} reason {:?}", cid, reason_cid);
         let call = feed::ApplicationCall::Recommend {
             cid: cid.clone(),
             reason_cid: reason_cid.clone(),
@@ -589,7 +514,6 @@ impl Review {
         };
         self.call_application(true, Self::feed_app_id()?, &call, vec![])
             .await?;
-        log::info!("Recommended content {:?} reason {:?}", cid, reason_cid);
         Ok(())
     }
 
@@ -600,7 +524,6 @@ impl Review {
         comment: String,
         commentor: Owner,
     ) -> Result<(), ContractError> {
-        log::info!("Comment content {:?} comment {:?}", cid, comment_cid);
         let call = feed::ApplicationCall::Comment {
             cid: cid.clone(),
             comment_cid: comment_cid.clone(),
@@ -609,7 +532,6 @@ impl Review {
         };
         self.call_application(true, Self::feed_app_id()?, &call, vec![])
             .await?;
-        log::info!("Commented content {:?} comment {:?}", cid, comment_cid);
         Ok(())
     }
 
@@ -621,7 +543,6 @@ impl Review {
         name: String,
         publisher: Owner,
     ) -> Result<(), ContractError> {
-        log::info!("Create collection {:?}", base_uri.clone());
         let call = market::ApplicationCall::CreateCollection {
             base_uri: base_uri.clone(),
             price,
@@ -631,7 +552,6 @@ impl Review {
         };
         self.call_application(true, Self::market_app_id()?, &call, vec![])
             .await?;
-        log::info!("Created collection {:?}", base_uri);
         Ok(())
     }
 
@@ -678,7 +598,7 @@ impl Review {
         }
         self.reward_credits(reviewer, Amount::from_tokens(100))
             .await?;
-        self.reward_tokens(reviewer).await?;
+        self.reward_tokens().await?;
         Ok(())
     }
 
@@ -701,7 +621,7 @@ impl Review {
         }
         self.reward_credits(reviewer, Amount::from_tokens(100))
             .await?;
-        self.reward_tokens(reviewer).await?;
+        self.reward_tokens().await?;
         Ok(())
     }
 
@@ -804,7 +724,7 @@ impl Review {
         }
         self.reward_credits(reviewer, Amount::from_tokens(50))
             .await?;
-        self.reward_tokens(reviewer).await?;
+        self.reward_tokens().await?;
         Ok(())
     }
 
@@ -827,7 +747,7 @@ impl Review {
         }
         self.reward_credits(reviewer, Amount::from_tokens(50))
             .await?;
-        self.reward_tokens(reviewer).await?;
+        self.reward_tokens().await?;
         Ok(())
     }
 
@@ -858,7 +778,7 @@ impl Review {
         }
         self.reward_credits(reviewer, Amount::from_tokens(50))
             .await?;
-        self.reward_tokens(reviewer).await?;
+        self.reward_tokens().await?;
         Ok(())
     }
 
@@ -881,7 +801,7 @@ impl Review {
         }
         self.reward_credits(reviewer, Amount::from_tokens(50))
             .await?;
-        self.reward_tokens(reviewer).await?;
+        self.reward_tokens().await?;
         Ok(())
     }
 

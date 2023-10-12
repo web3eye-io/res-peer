@@ -177,7 +177,6 @@ impl Foundation {
                 .try_mul(*self.author_reward_factor.get() as u128)?
                 .saturating_div(Amount::from_atto(100)),
         );
-        log::info!("Reward {} tokens to {} for Publish", amount, reward_user);
         self.reward_user(reward_user, amount).await?;
         self.author_reward_balance
             .set(balance.saturating_sub(amount));

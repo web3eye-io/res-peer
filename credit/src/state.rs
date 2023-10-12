@@ -63,11 +63,6 @@ impl Credit {
             }
         }
 
-        log::info!(
-            "Supply balance {} reward amount {}",
-            self.balance.get(),
-            amount
-        );
         match self.balance.get().cmp(&amount) {
             Ordering::Less => {
                 log::error!(
@@ -129,13 +124,6 @@ impl Credit {
             };
             amounts.amounts.retain(|amount| {
                 let expired = current_system_time().saturating_diff_micros(amount.expired) > 0;
-                log::info!(
-                    "Current {:?} expired at {:?} expired {} amount {}",
-                    current_system_time(),
-                    amount.expired,
-                    expired,
-                    amount.amount
-                );
                 if expired {
                     self.balance
                         .set(self.balance.get().saturating_add(amount.amount));

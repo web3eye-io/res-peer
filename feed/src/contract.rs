@@ -41,35 +41,29 @@ impl Contract for Feed {
 
     async fn execute_operation(
         &mut self,
-        context: &OperationContext,
+        _context: &OperationContext,
         operation: Self::Operation,
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
         match operation {
-            Operation::Like { cid } => {
-                self.like(cid, context.authenticated_signer.unwrap())
-                    .await?
-            }
-            Operation::Dislike { cid } => {
-                self.dislike(cid, context.authenticated_signer.unwrap())
-                    .await?
-            }
-            Operation::Tip { cid, amount } => {
-                log::info!(
-                    "Tip cid {:?} amount {:?} sender {:?} chain {:?}",
-                    cid,
-                    amount,
-                    context.authenticated_signer.unwrap(),
-                    context.chain_id
-                );
-            }
-            Operation::RequestSubscribe => {
-                return Ok(ExecutionResult::default().with_message(
+            Operation::Like { cid } => Ok(ExecutionResult::default().with_authenticated_message(
+                system_api::current_application_id().creation.chain_id,
+                Message::Like { cid },
+            )),
+            Operation::Dislike { cid } => Ok(ExecutionResult::default()
+                .with_authenticated_message(
                     system_api::current_application_id().creation.chain_id,
-                    Message::RequestSubscribe,
-                ));
-            }
+                    Message::Dislike { cid },
+                )),
+            Operation::Tip { cid, amount } => Ok(ExecutionResult::default()
+                .with_authenticated_message(
+                    system_api::current_application_id().creation.chain_id,
+                    Message::Tip { cid, amount },
+                )),
+            Operation::RequestSubscribe => Ok(ExecutionResult::default().with_message(
+                system_api::current_application_id().creation.chain_id,
+                Message::RequestSubscribe,
+            )),
         }
-        Ok(ExecutionResult::default())
     }
 
     async fn execute_message(
@@ -78,6 +72,25 @@ impl Contract for Feed {
         message: Self::Message,
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
         match message {
+            Message::Like { cid } => {
+                self.like(cid.clone(), context.authenticated_signer.unwrap())
+                    .await?;
+                let dest =
+                    Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
+                Ok(ExecutionResult::default().with_message(dest, Message::Like { cid }))
+            }
+            Message::Dislike { cid } => {
+                self.dislike(cid.clone(), context.authenticated_signer.unwrap())
+                    .await?;
+                let dest =
+                    Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
+                Ok(ExecutionResult::default().with_message(dest, Message::Dislike { cid }))
+            }
+            Message::Tip { cid, amount } => {
+                let dest =
+                    Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
+                Ok(ExecutionResult::default().with_message(dest, Message::Tip { cid, amount }))
+            }
             Message::Publish {
                 cid,
                 title,
@@ -86,16 +99,9 @@ impl Contract for Feed {
             } => {
                 self.publish(cid.clone(), None, title.clone(), content.clone(), author)
                     .await?;
-                log::info!("Published cid {:?} sender {:?}", cid, author);
                 let dest =
                     Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
-                log::info!(
-                    "Broadcast published cid {:?} to {:?} at {}",
-                    cid,
-                    dest,
-                    context.chain_id
-                );
-                return Ok(ExecutionResult::default().with_message(
+                Ok(ExecutionResult::default().with_message(
                     dest,
                     Message::Publish {
                         cid,
@@ -103,7 +109,7 @@ impl Contract for Feed {
                         content,
                         author,
                     },
-                ));
+                ))
             }
             Message::Recommend {
                 cid,
@@ -121,23 +127,16 @@ impl Contract for Feed {
                 .await?;
                 self.recommend_content(cid.clone(), reason_cid.clone())
                     .await?;
-                log::info!("Recommend cid {:?} sender {:?}", cid, author);
                 let dest =
                     Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
-                log::info!(
-                    "Broadcast recommend cid {:?} to {:?} at {}",
-                    cid,
-                    dest,
-                    context.chain_id
-                );
-                return Ok(ExecutionResult::default().with_message(
+                Ok(ExecutionResult::default().with_message(
                     dest,
                     Message::Recommend {
                         cid,
                         reason_cid,
                         reason,
                     },
-                ));
+                ))
             }
             Message::Comment {
                 cid,
@@ -155,16 +154,9 @@ impl Contract for Feed {
                 .await?;
                 self.comment_content(cid.clone(), comment_cid.clone())
                     .await?;
-                log::info!("Comment cid {:?} sender {:?}", cid, commentor);
                 let dest =
                     Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
-                log::info!(
-                    "Broadcast recommend cid {:?} to {:?} at {}",
-                    cid,
-                    dest,
-                    context.chain_id
-                );
-                return Ok(ExecutionResult::default().with_message(
+                Ok(ExecutionResult::default().with_message(
                     dest,
                     Message::Comment {
                         cid,
@@ -172,16 +164,10 @@ impl Contract for Feed {
                         comment,
                         commentor,
                     },
-                ));
+                ))
             }
             Message::RequestSubscribe => {
                 let mut result = ExecutionResult::default();
-                log::info!(
-                    "Subscribe to {} at {} creation {}",
-                    context.message_id.chain_id,
-                    context.chain_id,
-                    system_api::current_application_id().creation.chain_id
-                );
                 if context.message_id.chain_id
                     == system_api::current_application_id().creation.chain_id
                 {
@@ -191,7 +177,7 @@ impl Contract for Feed {
                     ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()),
                     context.message_id.chain_id,
                 ));
-                return Ok(result);
+                Ok(result)
             }
         }
     }
@@ -209,7 +195,7 @@ impl Contract for Feed {
                 reason_cid,
                 reason,
             } => {
-                log::info!("Recommend cid {:?} reason {:?}", cid, reason_cid);
+                log::info!("Recommend from owner {:?}", _context.authenticated_signer);
                 let mut result = ApplicationCallResult::default();
                 result.execution_result = ExecutionResult::default().with_authenticated_message(
                     system_api::current_application_id().creation.chain_id,
@@ -219,7 +205,7 @@ impl Contract for Feed {
                         reason,
                     },
                 );
-                return Ok(result);
+                Ok(result)
             }
             ApplicationCall::Comment {
                 cid,
@@ -227,7 +213,6 @@ impl Contract for Feed {
                 comment,
                 commentor,
             } => {
-                log::info!("Comment cid {:?} comment {:?}", cid, comment_cid);
                 let mut result = ApplicationCallResult::default();
                 result.execution_result = ExecutionResult::default().with_authenticated_message(
                     system_api::current_application_id().creation.chain_id,
@@ -238,16 +223,18 @@ impl Contract for Feed {
                         commentor,
                     },
                 );
-                return Ok(result);
+                Ok(result)
             }
             ApplicationCall::Publish {
                 cid,
                 title,
                 content,
                 author,
-            } => self.publish(cid, None, title, content, author).await?,
+            } => {
+                self.publish(cid, None, title, content, author).await?;
+                Ok(ApplicationCallResult::default())
+            }
         }
-        Ok(ApplicationCallResult::default())
     }
 
     async fn handle_session_call(
@@ -272,16 +259,13 @@ impl Feed {
     }
 
     async fn reward_credits(&mut self, owner: Owner, amount: Amount) -> Result<(), ContractError> {
-        log::info!("Reward owner {:?} amount {:?}", owner, amount);
         let call = credit::ApplicationCall::Reward { owner, amount };
         self.call_application(true, Self::credit_app_id()?, &call, vec![])
             .await?;
-        log::info!("Rewarded owner {:?} amount {:?}", owner, amount);
         Ok(())
     }
 
     async fn reward_tokens(&mut self, author: Owner) -> Result<(), ContractError> {
-        log::info!("Reward tokens owner {:?}", author);
         let call = foundation::ApplicationCall::Reward {
             reward_user: Some(author),
             reward_type: foundation::RewardType::Publish,
@@ -290,7 +274,6 @@ impl Feed {
         };
         self.call_application(true, Self::foundation_app_id()?, &call, vec![])
             .await?;
-        log::info!("Rewarded tokens owner {:?}", author);
         Ok(())
     }
 
@@ -302,7 +285,6 @@ impl Feed {
         content: String,
         author: Owner,
     ) -> Result<(), ContractError> {
-        log::info!("Publish cid {:?} sender {:?}", cid, author,);
         match self
             .create_content(
                 Content {
@@ -331,7 +313,6 @@ impl Feed {
     }
 
     async fn like(&mut self, cid: String, owner: Owner) -> Result<(), ContractError> {
-        log::info!("Like cid {:?} sender {:?}", cid, owner,);
         match self.like_content(cid, owner, true).await {
             Ok(_) => {
                 return self.reward_credits(owner, Amount::from_tokens(100)).await;
@@ -341,7 +322,6 @@ impl Feed {
     }
 
     async fn dislike(&mut self, cid: String, owner: Owner) -> Result<(), ContractError> {
-        log::info!("Dislike cid {:?} sender {:?}", cid, owner,);
         match self.like_content(cid, owner, false).await {
             Ok(_) => {
                 return self.reward_credits(owner, Amount::from_tokens(100)).await;
