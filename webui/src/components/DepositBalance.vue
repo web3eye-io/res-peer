@@ -42,8 +42,8 @@ const onDepositClick = async () => {
   }
 
   const { mutate, onDone, onError } = provideApolloClient(apolloClient)(() => useMutation(gql`
-    mutation deposit ($amount: String!) {
-      deposit(amount: $amount)
+    mutation userDeposit ($amount: String!) {
+      userDeposit(amount: $amount)
     }
   `))
   onDone(() => {
@@ -54,7 +54,7 @@ const onDepositClick = async () => {
   })
   await mutate({
     amount: amount.value.toString(),
-    endpoint: 'market',
+    endpoint: 'foundation',
     chainId: targetChain.value
   })
 }

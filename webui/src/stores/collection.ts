@@ -33,7 +33,6 @@ export const useCollectionStore = defineStore('collection', {
     collectionsKeys: [] as Array<number>,
     collections: new Map<number, Collection>(),
     creditsPerLinera: '0.',
-    lineraBalance: '0.',
     assets: new Map<number, Array<number>>(),
     mutateKeys: [] as Array<number>,
     avatars: new Map<string, Array<number>>()

@@ -47,6 +47,8 @@
       <request-feed-subscribe />
       <request-review-subscribe />
       <request-credit-subscribe />
+      <request-foundation-subscribe />
+      <request-market-subscribe />
       <user-reviewer-query />
       <content-applications-keys-query />
       <content-applications-query />
@@ -55,6 +57,7 @@
       <reviewer-applications-keys-query />
       <reviewer-applications-query />
       <review-state-query />
+      <foundation-info-query />
     </q-page-container>
 
     <q-footer elevated :style='{height: "32px", lineHeight: "32px"}'>
@@ -123,6 +126,8 @@ import MarketCollectionsQuery from 'src/components/MarketCollectionsQuery.vue'
 import RequestApplication from 'src/components/RequestApplication.vue'
 import RequestFeedSubscribe from 'src/components/RequestFeedSubscribe.vue'
 import RequestCreditSubscribe from 'src/components/RequestCreditSubscribe.vue'
+import RequestFoundationSubscribe from 'src/components/RequestFoundationSubscribe.vue'
+import RequestMarketSubscribe from 'src/components/RequestMarketSubscribe.vue'
 import ChainQuery from 'src/components/ChainQuery.vue'
 import UserReviewerQuery from 'src/components/UserReviewerQuery.vue'
 import RequestReviewSubscribe from 'src/components/RequestReviewSubscribe.vue'
@@ -133,6 +138,7 @@ import AssetApplicationsQuery from 'src/components/AssetApplicationsQuery.vue'
 import ReviewerApplicationsKeysQuery from 'src/components/ReviewerApplicationsKeysQuery.vue'
 import ReviewerApplicationsQuery from 'src/components/ReviewerApplicationsQuery.vue'
 import ReviewStateQuery from 'src/components/ReviewStateQuery.vue'
+import FoundationInfoQuery from 'src/components/FoundationInfoQuery.vue'
 
 const router = useRouter()
 const account = ref('')

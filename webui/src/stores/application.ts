@@ -5,7 +5,8 @@ export const useApplicationStore = defineStore('application', {
     feedApp: undefined as unknown as string,
     creditApp: undefined as unknown as string,
     marketApp: undefined as unknown as string,
-    reviewApp: undefined as unknown as string
+    reviewApp: undefined as unknown as string,
+    foundationApp: undefined as unknown as string
   }),
   getters: {},
   actions: {}
