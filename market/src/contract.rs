@@ -7,13 +7,15 @@ use async_trait::async_trait;
 use credit::CreditAbi;
 use foundation::FoundationAbi;
 use linera_sdk::{
-    base::{Amount, ApplicationId, Owner, SessionId, WithContractAbi},
+    base::{Amount, ApplicationId, ChannelName, Destination, Owner, SessionId, WithContractAbi},
     contract::system_api,
     ApplicationCallResult, CalleeContext, Contract, ExecutionResult, MessageContext,
     OperationContext, SessionCallResult, ViewStateStorage,
 };
-use market::{ApplicationCall, Operation};
+use market::{ApplicationCall, Message, Operation};
 use thiserror::Error;
+
+const SUBSCRIPTION_CHANNEL: &[u8] = b"subscriptions";
 
 linera_sdk::contract!(Market);
 
@@ -50,46 +52,181 @@ impl Contract for Market {
                 uri_index,
                 price,
                 name,
-            } => {
-                self.validate_collection_owner(
-                    collection_id,
-                    context.authenticated_signer.unwrap(),
-                )
-                .await?;
-                self.mint_nft(
-                    context.authenticated_signer.unwrap(),
+            } => Ok(ExecutionResult::default().with_authenticated_message(
+                system_api::current_application_id().creation.chain_id,
+                Message::MintNFT {
                     collection_id,
                     uri_index,
                     price,
                     name,
+                },
+            )),
+            Operation::BuyNFT {
+                collection_id,
+                token_id,
+                credits,
+            } => Ok(ExecutionResult::default().with_authenticated_message(
+                system_api::current_application_id().creation.chain_id,
+                Message::BuyNFT {
+                    collection_id,
+                    token_id,
+                    credits,
+                },
+            )),
+            Operation::UpdateCreditsPerLinera { credits_per_linera } => {
+                Ok(ExecutionResult::default().with_authenticated_message(
+                    system_api::current_application_id().creation.chain_id,
+                    Message::UpdateCreditsPerLinera { credits_per_linera },
+                ))
+            }
+            Operation::UpdateNFTPrice {
+                collection_id,
+                token_id,
+                price,
+            } => Ok(ExecutionResult::default().with_authenticated_message(
+                system_api::current_application_id().creation.chain_id,
+                Message::UpdateNFTPrice {
+                    collection_id,
+                    token_id,
+                    price,
+                },
+            )),
+            Operation::OnSaleNFT {
+                collection_id,
+                token_id,
+            } => Ok(ExecutionResult::default().with_authenticated_message(
+                system_api::current_application_id().creation.chain_id,
+                Message::OnSaleNFT {
+                    collection_id,
+                    token_id,
+                },
+            )),
+            Operation::OffSaleNFT {
+                collection_id,
+                token_id,
+            } => Ok(ExecutionResult::default().with_authenticated_message(
+                system_api::current_application_id().creation.chain_id,
+                Message::OffSaleNFT {
+                    collection_id,
+                    token_id,
+                },
+            )),
+            Operation::SetAvatar {
+                collection_id,
+                token_id,
+            } => Ok(ExecutionResult::default().with_authenticated_message(
+                system_api::current_application_id().creation.chain_id,
+                Message::SetAvatar {
+                    collection_id,
+                    token_id,
+                },
+            )),
+        }
+    }
+
+    async fn execute_message(
+        &mut self,
+        context: &MessageContext,
+        message: Self::Message,
+    ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
+        match message {
+            Message::CreateCollection {
+                base_uri,
+                price,
+                name,
+                uris,
+                publisher,
+            } => {
+                self.create_collection(
+                    publisher,
+                    base_uri.clone(),
+                    price,
+                    name.clone(),
+                    uris.clone(),
                 )
                 .await?;
+                let dest =
+                    Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
+                Ok(ExecutionResult::default().with_authenticated_message(
+                    dest,
+                    Message::CreateCollection {
+                        base_uri,
+                        price,
+                        name,
+                        uris,
+                        publisher,
+                    },
+                ))
             }
-            Operation::BuyNFT {
+            Message::MintNFT {
+                collection_id,
+                uri_index,
+                price,
+                name,
+            } => {
+                let owner = context.authenticated_signer.unwrap();
+                self.mint_nft(owner, collection_id, uri_index, price, name.clone())
+                    .await?;
+                let dest =
+                    Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
+                Ok(ExecutionResult::default().with_authenticated_message(
+                    dest,
+                    Message::MintNFT {
+                        collection_id,
+                        uri_index,
+                        price,
+                        name,
+                    },
+                ))
+            }
+            Message::BuyNFT {
                 collection_id,
                 token_id,
                 credits,
             } => {
                 let owner = self.nft_owner(collection_id, token_id).await?;
+                let price = self.nft_price(collection_id, token_id).await?;
+                let fee = self.trading_fee(price).await?;
+                let discount = self.credits_to_tokens(credits).await?;
                 self.transfer_credits(context.authenticated_signer.unwrap(), owner, credits)
                     .await?;
-                let fee = self
-                    .buy_nft(
-                        context.authenticated_signer.unwrap(),
+                self.transfer_tokens(
+                    context.authenticated_signer.unwrap(),
+                    owner,
+                    price.saturating_sub(fee).saturating_sub(discount),
+                )
+                .await?;
+                self.deposit_commission(fee).await?;
+                self.buy_nft(
+                    context.authenticated_signer.unwrap(),
+                    collection_id,
+                    token_id,
+                )
+                .await?;
+                let dest =
+                    Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
+                Ok(ExecutionResult::default().with_authenticated_message(
+                    dest,
+                    Message::BuyNFT {
                         collection_id,
                         token_id,
                         credits,
-                    )
-                    .await?;
-                self.deposit_commission(fee).await?
+                    },
+                ))
             }
-            Operation::UpdateCreditsPerLinera { credits_per_linera } => {
+            Message::UpdateCreditsPerLinera { credits_per_linera } => {
                 if context.chain_id != system_api::current_application_id().creation.chain_id {
                     return Err(ContractError::OperationNotAllowed);
                 }
-                self.credits_per_linera.set(credits_per_linera)
+                self.credits_per_linera.set(credits_per_linera);
+                let dest =
+                    Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
+                Ok(ExecutionResult::default().with_authenticated_message(
+                    dest,
+                    Message::UpdateCreditsPerLinera { credits_per_linera },
+                ))
             }
-            Operation::UpdateNFTPrice {
+            Message::UpdateNFTPrice {
                 collection_id,
                 token_id,
                 price,
@@ -100,9 +237,19 @@ impl Contract for Market {
                     token_id,
                     price,
                 )
-                .await?
+                .await?;
+                let dest =
+                    Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
+                Ok(ExecutionResult::default().with_authenticated_message(
+                    dest,
+                    Message::UpdateNFTPrice {
+                        collection_id,
+                        token_id,
+                        price,
+                    },
+                ))
             }
-            Operation::OnSaleNFT {
+            Message::OnSaleNFT {
                 collection_id,
                 token_id,
             } => {
@@ -111,9 +258,18 @@ impl Contract for Market {
                     collection_id,
                     token_id,
                 )
-                .await?
+                .await?;
+                let dest =
+                    Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
+                Ok(ExecutionResult::default().with_authenticated_message(
+                    dest,
+                    Message::OnSaleNFT {
+                        collection_id,
+                        token_id,
+                    },
+                ))
             }
-            Operation::OffSaleNFT {
+            Message::OffSaleNFT {
                 collection_id,
                 token_id,
             } => {
@@ -122,13 +278,18 @@ impl Contract for Market {
                     collection_id,
                     token_id,
                 )
-                .await?
+                .await?;
+                let dest =
+                    Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
+                Ok(ExecutionResult::default().with_authenticated_message(
+                    dest,
+                    Message::OffSaleNFT {
+                        collection_id,
+                        token_id,
+                    },
+                ))
             }
-            Operation::Deposit { amount } => {
-                self.deposit(context.authenticated_signer.unwrap(), amount)
-                    .await?
-            }
-            Operation::SetAvatar {
+            Message::SetAvatar {
                 collection_id,
                 token_id,
             } => {
@@ -137,18 +298,18 @@ impl Contract for Market {
                     collection_id,
                     token_id,
                 )
-                .await?
+                .await?;
+                let dest =
+                    Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
+                Ok(ExecutionResult::default().with_authenticated_message(
+                    dest,
+                    Message::SetAvatar {
+                        collection_id,
+                        token_id,
+                    },
+                ))
             }
         }
-        Ok(ExecutionResult::default())
-    }
-
-    async fn execute_message(
-        &mut self,
-        _context: &MessageContext,
-        _message: Self::Message,
-    ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
-        Ok(ExecutionResult::default())
     }
 
     async fn handle_application_call(
@@ -166,11 +327,20 @@ impl Contract for Market {
                 uris,
                 publisher,
             } => {
-                self.create_collection(publisher, base_uri, price, name, uris)
-                    .await?
+                let mut result = ApplicationCallResult::default();
+                result.execution_result = ExecutionResult::default().with_authenticated_message(
+                    system_api::current_application_id().creation.chain_id,
+                    Message::CreateCollection {
+                        base_uri,
+                        price,
+                        name,
+                        uris,
+                        publisher,
+                    },
+                );
+                Ok(result)
             }
         }
-        Ok(ApplicationCallResult::default())
     }
 
     async fn handle_session_call(
@@ -181,7 +351,7 @@ impl Contract for Market {
         _forwarded_sessions: Vec<SessionId>,
     ) -> Result<SessionCallResult<Self::Message, Self::Response, Self::SessionState>, Self::Error>
     {
-        Ok(SessionCallResult::default())
+        Err(ContractError::SessionsNotSupported)
     }
 }
 
@@ -200,7 +370,6 @@ impl Market {
         to: Owner,
         amount: Amount,
     ) -> Result<(), ContractError> {
-        log::info!("Transfer {:?} credits from {:?} to {:?}", amount, from, to);
         let call = credit::ApplicationCall::Transfer { from, to, amount };
         self.call_application(true, Self::credit_app_id()?, &call, vec![])
             .await?;
@@ -208,8 +377,19 @@ impl Market {
     }
 
     async fn deposit_commission(&mut self, amount: Amount) -> Result<(), ContractError> {
-        log::info!("Deposit {:?}", amount);
         let call = foundation::ApplicationCall::Deposit { amount };
+        self.call_application(true, Self::foundation_app_id()?, &call, vec![])
+            .await?;
+        Ok(())
+    }
+
+    async fn transfer_tokens(
+        &mut self,
+        from: Owner,
+        to: Owner,
+        amount: Amount,
+    ) -> Result<(), ContractError> {
+        let call = foundation::ApplicationCall::Transfer { from, to, amount };
         self.call_application(true, Self::foundation_app_id()?, &call, vec![])
             .await?;
         Ok(())
@@ -238,4 +418,7 @@ pub enum ContractError {
 
     #[error("Invalid owner")]
     InvalidOwner,
+
+    #[error("Cross-application sessions not supported")]
+    SessionsNotSupported,
 }

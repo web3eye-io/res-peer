@@ -98,10 +98,6 @@ impl MutationRoot {
         .unwrap()
     }
 
-    async fn deposit(&self, amount: Amount) -> Vec<u8> {
-        bcs::to_bytes(&Operation::Deposit { amount }).unwrap()
-    }
-
     async fn set_avatar(&self, collection_id: u64, token_id: u16) -> Vec<u8> {
         bcs::to_bytes(&Operation::SetAvatar {
             collection_id,

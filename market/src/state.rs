@@ -1,4 +1,4 @@
-use std::{cmp::Ordering, collections::HashMap};
+use std::collections::HashMap;
 
 use linera_sdk::{
     base::{Amount, ArithmeticError, Owner},
@@ -22,7 +22,6 @@ pub struct Market {
     /// Linera token balance
     /// If user want to buy asset here, they should deposit balance firstly, then buy
     /// They balance could be withdrawed
-    pub balances: MapView<Owner, Amount>,
     pub token_ids: MapView<u64, u16>,
     pub collections: MapView<u64, Collection>,
     pub collection_uris: RegisterView<Vec<String>>,
@@ -115,6 +114,7 @@ impl Market {
         price: Option<Amount>,
         name: String,
     ) -> Result<(), StateError> {
+        self.validate_collection_owner(collection_id, owner).await?;
         match self.collections.get(&collection_id).await {
             Ok(Some(mut collection)) => {
                 if uri_index >= collection.uris.len() as u16 {
@@ -176,42 +176,12 @@ impl Market {
         buyer: Owner,
         collection_id: u64,
         token_id: u16,
-        credits: Amount,
-    ) -> Result<Amount, StateError> {
-        let credits = Amount::from_tokens(credits.into());
-        let commission;
+    ) -> Result<(), StateError> {
         match self.collections.get(&collection_id).await {
             Ok(Some(collection)) => match collection.nfts.get(&token_id) {
                 Some(nft) => {
                     if !nft.on_sale {
                         return Err(StateError::TokenNotOnSale);
-                    }
-                    let buyer_balance = match self.balances.get(&buyer).await {
-                        Ok(Some(balance)) => balance,
-                        _ => Amount::ZERO,
-                    };
-                    let mut price = if nft.price.is_some() {
-                        nft.price.unwrap()
-                    } else if collection.price.is_some() {
-                        collection.price.unwrap()
-                    } else {
-                        return Err(StateError::InvalidPrice);
-                    };
-                    let discount_amount = if self.credits_per_linera.get().ge(&Amount::ZERO) {
-                        let d1 = credits.saturating_div(*self.credits_per_linera.get());
-                        let d2 = price
-                            .saturating_mul(*self.max_credits_percent.get() as u128)
-                            .saturating_div(Amount::from_atto(100));
-                        Amount::from_atto(match d1.cmp(&d2) {
-                            Ordering::Less => d1,
-                            _ => d2,
-                        })
-                    } else {
-                        Amount::ZERO
-                    };
-                    price = price.saturating_sub(discount_amount);
-                    if price.gt(&buyer_balance) {
-                        return Err(StateError::InsufficientBalance);
                     }
                     let token_owners = match self.token_owners.get(&token_id).await {
                         Ok(Some(owners)) => owners,
@@ -225,35 +195,6 @@ impl Market {
                         log::info!("TODO: buyer could not be the same as owner");
                         return Err(StateError::BuyerIsOwner);
                     }
-                    commission = match price.try_mul(*self.trade_fee_percent.get() as u128) {
-                        Ok(amount) => {
-                            Amount::from_atto(amount.saturating_div(Amount::from_atto(100 as u128)))
-                        }
-                        Err(err) => return Err(StateError::ArithmeticError(err)),
-                    };
-                    let owner_balance = match self.balances.get(&owner).await {
-                        Ok(Some(balance)) => balance,
-                        _ => Amount::ZERO,
-                    };
-                    self.balances.insert(
-                        &owner,
-                        owner_balance.saturating_add(price.saturating_sub(commission)),
-                    )?;
-                    self.balances
-                        .insert(&buyer, buyer_balance.saturating_sub(price))?;
-                    log::info!(
-                        "{} buy {}-{} from {} with {} Lineras and {} Credits {} discount, buyer balance {}, owner balance {}, commission {}",
-                        buyer,
-                        collection_id,
-                        token_id,
-                        owner,
-                        price,
-                        credits,
-                        discount_amount,
-                        buyer_balance,
-                        owner_balance,
-                        commission,
-                    );
                     let mut token_owners = token_owners.clone();
                     token_owners.insert(collection_id, buyer);
                     self.token_owners.insert(&token_id, token_owners)?;
@@ -286,7 +227,7 @@ impl Market {
             },
             _ => return Err(StateError::CollectionNotExists),
         }
-        Ok(commission)
+        Ok(())
     }
 
     pub(crate) async fn nft_owner(
@@ -301,6 +242,26 @@ impl Market {
         match token_owners.get(&collection_id) {
             Some(owner) => Ok(*owner),
             _ => Err(StateError::NotCollectionOwner),
+        }
+    }
+
+    pub(crate) async fn nft_price(
+        &self,
+        collection_id: u64,
+        token_id: u16,
+    ) -> Result<Amount, StateError> {
+        match self.collections.get(&collection_id).await {
+            Ok(Some(collection)) => match collection.nfts.get(&token_id) {
+                Some(nft) => match nft.price {
+                    Some(price) => Ok(price),
+                    _ => match collection.price {
+                        Some(price) => Ok(price),
+                        _ => Err(StateError::InvalidPrice),
+                    },
+                },
+                _ => Err(StateError::TokenIDNotExists),
+            },
+            _ => Err(StateError::CollectionNotExists),
         }
     }
 
@@ -397,20 +358,6 @@ impl Market {
         Ok(())
     }
 
-    pub(crate) async fn deposit(&mut self, owner: Owner, amount: Amount) -> Result<(), StateError> {
-        match self.balances.get(&owner).await {
-            Ok(Some(balance)) => match self.balances.insert(&owner, balance.saturating_add(amount))
-            {
-                Ok(_) => Ok(()),
-                Err(err) => Err(StateError::ViewError(err)),
-            },
-            _ => match self.balances.insert(&owner, amount) {
-                Ok(_) => Ok(()),
-                Err(err) => Err(StateError::ViewError(err)),
-            },
-        }
-    }
-
     pub(crate) async fn set_avatar(
         &mut self,
         owner: Owner,
@@ -433,6 +380,20 @@ impl Market {
             }
             _ => Err(StateError::NotTokenOwner),
         }
+    }
+
+    pub(crate) async fn trading_fee(&self, amount: Amount) -> Result<Amount, StateError> {
+        Ok(Amount::from_atto(
+            Amount::from_atto(*self.trade_fee_percent.get() as u128)
+                .saturating_mul(amount.into())
+                .saturating_div(Amount::from_atto(100 as u128)),
+        ))
+    }
+
+    pub(crate) async fn credits_to_tokens(&self, credits: Amount) -> Result<Amount, StateError> {
+        Ok(Amount::from_atto(
+            credits.saturating_div(*self.credits_per_linera.get()),
+        ))
     }
 }
 
@@ -461,9 +422,6 @@ pub enum StateError {
 
     #[error("NFT not on sale")]
     TokenNotOnSale,
-
-    #[error("Insufficient balance")]
-    InsufficientBalance,
 
     #[error("Invalid price")]
     InvalidPrice,

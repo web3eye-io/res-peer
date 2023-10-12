@@ -10,7 +10,7 @@ impl ContractAbi for MarketAbi {
     type Parameters = MarketParameters;
     type InitializationArgument = InitialState;
     type Operation = Operation;
-    type Message = ();
+    type Message = Message;
     type ApplicationCall = ApplicationCall;
     type SessionCall = ();
     type SessionState = ();
@@ -90,9 +90,6 @@ pub enum Operation {
         collection_id: u64,
         token_id: u16,
     },
-    Deposit {
-        amount: Amount,
-    },
     SetAvatar {
         collection_id: u64,
         token_id: u16,
@@ -107,5 +104,47 @@ pub enum ApplicationCall {
         name: String,
         uris: Vec<String>,
         publisher: Owner,
+    },
+}
+
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
+pub enum Message {
+    CreateCollection {
+        base_uri: String,
+        price: Option<Amount>,
+        name: String,
+        uris: Vec<String>,
+        publisher: Owner,
+    },
+    MintNFT {
+        collection_id: u64,
+        uri_index: u16,
+        price: Option<Amount>,
+        name: String,
+    },
+    BuyNFT {
+        collection_id: u64,
+        token_id: u16,
+        credits: Amount,
+    },
+    UpdateCreditsPerLinera {
+        credits_per_linera: Amount,
+    },
+    UpdateNFTPrice {
+        collection_id: u64,
+        token_id: Option<u16>,
+        price: Amount,
+    },
+    OnSaleNFT {
+        collection_id: u64,
+        token_id: u16,
+    },
+    OffSaleNFT {
+        collection_id: u64,
+        token_id: u16,
+    },
+    SetAvatar {
+        collection_id: u64,
+        token_id: u16,
     },
 }

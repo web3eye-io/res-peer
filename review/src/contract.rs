@@ -41,10 +41,11 @@ impl Contract for Review {
         state: Self::InitializationArgument,
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
         self._initialize(state).await?;
-        return Ok(ExecutionResult::default().with_authenticated_message(
+        // We should add creator here to be a reviewer, but we keep the message as an test case of application id
+        Ok(ExecutionResult::default().with_authenticated_message(
             system_api::current_application_id().creation.chain_id,
             Message::GenesisReviewer,
-        ));
+        ))
     }
 
     async fn execute_operation(
@@ -53,120 +54,103 @@ impl Contract for Review {
         operation: Self::Operation,
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
         match operation {
-            Operation::ApplyReviewer { resume } => {
-                return Ok(ExecutionResult::default().with_authenticated_message(
+            Operation::ApplyReviewer { resume } => Ok(ExecutionResult::default()
+                .with_authenticated_message(
                     system_api::current_application_id().creation.chain_id,
                     Message::ApplyReviewer { resume },
-                ));
-            }
-            Operation::UpdateReviewerResume { resume } => {
-                return Ok(ExecutionResult::default().with_authenticated_message(
+                )),
+            Operation::UpdateReviewerResume { resume } => Ok(ExecutionResult::default()
+                .with_authenticated_message(
                     system_api::current_application_id().creation.chain_id,
                     Message::UpdateReviewerResume { resume },
-                ));
-            }
-            Operation::ApproveReviewer { candidate, reason } => {
-                return Ok(ExecutionResult::default().with_authenticated_message(
+                )),
+            Operation::ApproveReviewer { candidate, reason } => Ok(ExecutionResult::default()
+                .with_authenticated_message(
                     system_api::current_application_id().creation.chain_id,
                     Message::ApproveReviewer { candidate, reason },
-                ));
-            }
-            Operation::RejectReviewer { candidate, reason } => {
-                return Ok(ExecutionResult::default().with_authenticated_message(
+                )),
+            Operation::RejectReviewer { candidate, reason } => Ok(ExecutionResult::default()
+                .with_authenticated_message(
                     system_api::current_application_id().creation.chain_id,
                     Message::RejectReviewer { candidate, reason },
-                ));
-            }
+                )),
             Operation::SubmitContent {
                 cid,
                 title,
                 content,
-            } => {
-                return Ok(ExecutionResult::default().with_authenticated_message(
-                    system_api::current_application_id().creation.chain_id,
-                    Message::SubmitContent {
-                        cid,
-                        title,
-                        content,
-                    },
-                ));
-            }
+            } => Ok(ExecutionResult::default().with_authenticated_message(
+                system_api::current_application_id().creation.chain_id,
+                Message::SubmitContent {
+                    cid,
+                    title,
+                    content,
+                },
+            )),
             Operation::ApproveContent {
                 content_cid,
                 reason_cid,
                 reason,
-            } => {
-                return Ok(ExecutionResult::default().with_authenticated_message(
-                    system_api::current_application_id().creation.chain_id,
-                    Message::ApproveContent {
-                        content_cid,
-                        reason_cid,
-                        reason,
-                    },
-                ));
-            }
+            } => Ok(ExecutionResult::default().with_authenticated_message(
+                system_api::current_application_id().creation.chain_id,
+                Message::ApproveContent {
+                    content_cid,
+                    reason_cid,
+                    reason,
+                },
+            )),
             Operation::RejectContent {
                 content_cid,
                 reason,
-            } => {
-                return Ok(ExecutionResult::default().with_authenticated_message(
-                    system_api::current_application_id().creation.chain_id,
-                    Message::RejectContent {
-                        content_cid,
-                        reason,
-                    },
-                ));
-            }
+            } => Ok(ExecutionResult::default().with_authenticated_message(
+                system_api::current_application_id().creation.chain_id,
+                Message::RejectContent {
+                    content_cid,
+                    reason,
+                },
+            )),
             Operation::SubmitComment {
                 cid,
                 comment_cid,
                 comment,
-            } => {
-                return Ok(ExecutionResult::default().with_authenticated_message(
-                    system_api::current_application_id().creation.chain_id,
-                    Message::SubmitComment {
-                        cid,
-                        comment_cid,
-                        comment,
-                    },
-                ));
-            }
-            Operation::ApproveAsset { cid, reason } => {
-                return Ok(ExecutionResult::default().with_authenticated_message(
+            } => Ok(ExecutionResult::default().with_authenticated_message(
+                system_api::current_application_id().creation.chain_id,
+                Message::SubmitComment {
+                    cid,
+                    comment_cid,
+                    comment,
+                },
+            )),
+            Operation::ApproveAsset { cid, reason } => Ok(ExecutionResult::default()
+                .with_authenticated_message(
                     system_api::current_application_id().creation.chain_id,
                     Message::ApproveAsset { cid, reason },
-                ));
-            }
-            Operation::RejectAsset { cid, reason } => {
-                return Ok(ExecutionResult::default().with_authenticated_message(
+                )),
+            Operation::RejectAsset { cid, reason } => Ok(ExecutionResult::default()
+                .with_authenticated_message(
                     system_api::current_application_id().creation.chain_id,
                     Message::RejectAsset { cid, reason },
-                ));
-            }
+                )),
             Operation::SubmitAsset {
                 cid,
                 base_uri,
                 uris,
                 price,
                 name,
-            } => {
-                return Ok(ExecutionResult::default().with_authenticated_message(
-                    system_api::current_application_id().creation.chain_id,
-                    Message::SubmitAsset {
-                        cid,
-                        base_uri,
-                        uris,
-                        price,
-                        name,
-                    },
-                ));
-            }
-            Operation::RequestSubscribe => {
-                return Ok(ExecutionResult::default().with_authenticated_message(
+            } => Ok(ExecutionResult::default().with_authenticated_message(
+                system_api::current_application_id().creation.chain_id,
+                Message::SubmitAsset {
+                    cid,
+                    base_uri,
+                    uris,
+                    price,
+                    name,
+                },
+            )),
+            Operation::RequestSubscribe => Ok(ExecutionResult::default()
+                .with_authenticated_message(
                     system_api::current_application_id().creation.chain_id,
                     Message::RequestSubscribe,
-                ));
-            }
+                )),
         }
     }
 
@@ -182,11 +166,12 @@ impl Contract for Review {
                 self.genesis_reviewer(chain_id, reviewer).await?;
                 let dest =
                     Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
-                return Ok(ExecutionResult::default()
-                    .with_authenticated_message(dest, Message::GenesisReviewer));
+                Ok(ExecutionResult::default()
+                    .with_authenticated_message(dest, Message::GenesisReviewer))
             }
             Message::ExistReviewer { reviewer } => {
                 self.add_exist_reviewer(reviewer).await?;
+                Ok(ExecutionResult::default())
             }
             Message::ApplyReviewer { resume } => {
                 let candidate = context.authenticated_signer.unwrap();
@@ -194,18 +179,17 @@ impl Contract for Review {
                     .await?;
                 let dest =
                     Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
-                return Ok(ExecutionResult::default()
-                    .with_authenticated_message(dest, Message::ApplyReviewer { resume }));
+                Ok(ExecutionResult::default()
+                    .with_authenticated_message(dest, Message::ApplyReviewer { resume }))
             }
             Message::UpdateReviewerResume { resume } => {
                 let candidate = context.authenticated_signer.unwrap();
                 self._update_reviewer_resume(candidate, resume.clone())
                     .await?;
-                // TODO: broadcast to other chains
                 let dest =
                     Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
-                return Ok(ExecutionResult::default()
-                    .with_authenticated_message(dest, Message::UpdateReviewerResume { resume }));
+                Ok(ExecutionResult::default()
+                    .with_authenticated_message(dest, Message::UpdateReviewerResume { resume }))
             }
             Message::ApproveReviewer { candidate, reason } => {
                 self._approve_reviewer(
@@ -214,13 +198,12 @@ impl Contract for Review {
                     reason.clone(),
                 )
                 .await?;
-                // TODO: broadcast to other chains
                 let dest =
                     Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
-                return Ok(ExecutionResult::default().with_authenticated_message(
+                Ok(ExecutionResult::default().with_authenticated_message(
                     dest,
                     Message::ApproveReviewer { candidate, reason },
-                ));
+                ))
             }
             Message::RejectReviewer { candidate, reason } => {
                 self._reject_reviewer(
@@ -229,13 +212,12 @@ impl Contract for Review {
                     reason.clone(),
                 )
                 .await?;
-                // TODO: broadcast to other chains
                 let dest =
                     Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
-                return Ok(ExecutionResult::default().with_authenticated_message(
+                Ok(ExecutionResult::default().with_authenticated_message(
                     dest,
                     Message::RejectReviewer { candidate, reason },
-                ));
+                ))
             }
             Message::SubmitContent {
                 cid,
@@ -247,14 +229,14 @@ impl Contract for Review {
                     .await?;
                 let dest =
                     Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
-                return Ok(ExecutionResult::default().with_authenticated_message(
+                Ok(ExecutionResult::default().with_authenticated_message(
                     dest,
                     Message::SubmitContent {
                         cid,
                         title,
                         content,
                     },
-                ));
+                ))
             }
             Message::ApproveContent {
                 content_cid,
@@ -271,14 +253,14 @@ impl Contract for Review {
                 .await?;
                 let dest =
                     Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
-                return Ok(ExecutionResult::default().with_authenticated_message(
+                Ok(ExecutionResult::default().with_authenticated_message(
                     dest,
                     Message::ApproveContent {
                         content_cid,
                         reason_cid,
                         reason,
                     },
-                ));
+                ))
             }
             Message::RejectContent {
                 content_cid,
@@ -289,13 +271,13 @@ impl Contract for Review {
                     .await?;
                 let dest =
                     Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
-                return Ok(ExecutionResult::default().with_authenticated_message(
+                Ok(ExecutionResult::default().with_authenticated_message(
                     dest,
                     Message::RejectContent {
                         content_cid,
                         reason,
                     },
-                ));
+                ))
             }
             Message::SubmitComment {
                 cid,
@@ -307,14 +289,14 @@ impl Contract for Review {
                     .await?;
                 let dest =
                     Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
-                return Ok(ExecutionResult::default().with_authenticated_message(
+                Ok(ExecutionResult::default().with_authenticated_message(
                     dest,
                     Message::SubmitComment {
                         cid,
                         comment_cid,
                         comment,
                     },
-                ));
+                ))
             }
             Message::ApproveAsset { cid, reason } => {
                 self._approve_asset(
@@ -325,8 +307,8 @@ impl Contract for Review {
                 .await?;
                 let dest =
                     Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
-                return Ok(ExecutionResult::default()
-                    .with_authenticated_message(dest, Message::ApproveAsset { cid, reason }));
+                Ok(ExecutionResult::default()
+                    .with_authenticated_message(dest, Message::ApproveAsset { cid, reason }))
             }
             Message::RejectAsset { cid, reason } => {
                 self._reject_asset(
@@ -337,8 +319,8 @@ impl Contract for Review {
                 .await?;
                 let dest =
                     Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
-                return Ok(ExecutionResult::default()
-                    .with_authenticated_message(dest, Message::RejectAsset { cid, reason }));
+                Ok(ExecutionResult::default()
+                    .with_authenticated_message(dest, Message::RejectAsset { cid, reason }))
             }
             Message::SubmitAsset {
                 cid,
@@ -358,7 +340,7 @@ impl Contract for Review {
                 .await?;
                 let dest =
                     Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
-                return Ok(ExecutionResult::default().with_authenticated_message(
+                Ok(ExecutionResult::default().with_authenticated_message(
                     dest,
                     Message::SubmitAsset {
                         cid,
@@ -367,7 +349,7 @@ impl Contract for Review {
                         price,
                         name,
                     },
-                ));
+                ))
             }
             Message::RequestSubscribe => {
                 let mut result = ExecutionResult::default();
@@ -415,14 +397,14 @@ impl Contract for Review {
                         state: self.initial_state().await?,
                     },
                 );
-                return Ok(result);
+                Ok(result)
             }
             Message::InitialState { state } => {
                 log::info!("Initial state {:?}", state);
-                self.initialize(state).await?
+                self.initialize(state).await?;
+                Ok(ExecutionResult::default())
             }
         }
-        Ok(ExecutionResult::default())
     }
 
     async fn handle_application_call(
