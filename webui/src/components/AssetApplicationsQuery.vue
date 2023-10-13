@@ -39,6 +39,8 @@ const getAssetApplication = (assetApplicationKey: string, done?: () => void) => 
     assetApplicationKey: `${assetApplicationKey}`,
     endpoint: 'review',
     chainId: targetChain.value
+  }, {
+    fetchPolicy: 'network-only'
   }))
 
   watch(result, () => {

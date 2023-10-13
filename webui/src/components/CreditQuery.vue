@@ -41,6 +41,8 @@ const getBalance = () => {
     owner: account.value,
     endpoint: 'credit',
     chainId: targetChain.value
+  }, {
+    fetchPolicy: 'network-only'
   }))
 
   watch(result, () => {

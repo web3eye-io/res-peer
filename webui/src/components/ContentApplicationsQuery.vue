@@ -38,6 +38,8 @@ const getContentApplication = (contentApplicationKey: string, done?: () => void)
     contentApplicationKey: `${contentApplicationKey}`,
     endpoint: 'review',
     chainId: targetChain.value
+  }, {
+    fetchPolicy: 'network-only'
   }))
 
   watch(result, () => {

@@ -11,12 +11,15 @@ import { Asset, useReviewStore } from 'src/stores/review'
 import { computed } from 'vue'
 import { useUserStore } from 'src/stores/user'
 import { useRouter } from 'vue-router'
+import { useFoundationStore } from 'src/stores/foundation'
 
 const review = useReviewStore()
 const assets = computed(() => Array.from(review.assetApplications.values()) || [])
 const user = useUserStore()
 const account = computed(() => user.account)
 const router = useRouter()
+const foundation = useFoundationStore()
+const estimatedReward = computed(() => Number(foundation.reviewRewardBalance) / foundation.reviewRewardFactor)
 
 const columns = computed(() => [
   {
@@ -35,6 +38,10 @@ const columns = computed(() => [
     name: 'Rejected',
     label: 'Rejected',
     field: (row: Asset) => row.rejected
+  }, {
+    name: 'Estimated Reward',
+    label: 'Estimated Reward',
+    field: (row: Asset) => review.assetReviewed(row.cid, account.value) ? '-' : estimatedReward.value.toString() + ' Lineras'
   }, {
     name: 'Reviewed',
     label: 'Reviewed',

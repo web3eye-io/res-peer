@@ -34,6 +34,8 @@ const getReviewState = () => {
   `, {
     endpoint: 'review',
     chainId: targetChain.value
+  }, {
+    fetchPolicy: 'network-only'
   }))
 
   watch(blockHeight, () => {

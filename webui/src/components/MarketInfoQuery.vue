@@ -71,6 +71,8 @@ const getMarketInfo = () => {
         account: `${account.value}`,
         endpoint: 'market',
         chainId: targetChain.value
+      }, {
+        fetchPolicy: 'network-only'
       })
     }
     return useQuery(gql`
@@ -82,6 +84,8 @@ const getMarketInfo = () => {
       account: `${account.value}`,
       endpoint: 'market',
       chainId: targetChain.value
+    }, {
+      fetchPolicy: 'network-only'
     })
   })
 

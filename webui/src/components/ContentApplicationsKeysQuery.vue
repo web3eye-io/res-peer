@@ -25,6 +25,8 @@ const getContentApplicationsKeys = () => {
   `, {
     endpoint: 'review',
     chainId: targetChain.value
+  }, {
+    fetchPolicy: 'network-only'
   }))
 
   // TODO: is it still work

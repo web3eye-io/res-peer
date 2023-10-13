@@ -29,6 +29,8 @@ const getContentsKeys = () => {
   `, {
     endpoint: 'feed',
     chainId: targetChain.value
+  }, {
+    fetchPolicy: 'network-only'
   }))
 
   // TODO: is it still work

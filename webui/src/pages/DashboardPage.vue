@@ -1,5 +1,5 @@
 <template>
-  <div :style='{width: "1080px", margin: "32px auto"}'>
+  <div :style='{width: "1440px", margin: "32px auto"}'>
     <div class='row'>
       <q-space />
       <div class='row' :style='{textAlign: "end"}'>
@@ -43,7 +43,7 @@
           <q-tab v-if='reviewer' name='review-assets' label='Review Asset' />
           <q-tab v-if='reviewer' name='review-reviewers' label='Review Reviewer' />
           <q-tab v-if='!reviewer' name='apply-reviewer' label='Apply Reviewer' />
-          <q-tab name='ledger' label='Ledger' />
+          <q-tab name='foundation' label='Foundation' />
         </q-tabs>
       </template>
       <template #after>
@@ -62,6 +62,7 @@
           <q-tab-panel name='contents'>
             <submit-content />
             <q-separator :style='{margin: "32px 0"}' />
+            <content-application-list :style='{margin: "32px 0"}' />
             <article-list article-type='MY_ARTICLE' :style='{margin: "32px 0"}' />
             <article-list article-type='MY_LIKE' :style='{margin: "32px 0"}' />
             <article-list article-type='MY_DISLIKE' :style='{margin: "32px 0"}' />
@@ -83,6 +84,7 @@
             <div :style='{margin: "32px 0"}'>
               <mint-nft />
             </div>
+            <asset-application-list :style='{margin: "32px 0"}' />
             <collection-list :style='{margin: "32px 0"}' />
             <nft-list nft-type='MY_PUBLISHES' :style='{margin: "32px 0"}' />
             <nft-list nft-type='MY_ASSETS' :style='{margin: "32px 0"}' />
@@ -90,8 +92,14 @@
           <q-tab-panel name='apply-reviewer'>
             <apply-reviewer />
           </q-tab-panel>
-          <q-tab-panel name='ledger'>
-            <deposit-balance />
+          <q-tab-panel name='foundation'>
+            <div :style='{marginBottom: "16px"}'>
+              <deposit-balance />
+            </div>
+            <q-separator />
+            <div :style='{marginTop: "16px"}'>
+              <foundation-page />
+            </div>
           </q-tab-panel>
         </q-tab-panels>
       </template>
@@ -119,6 +127,9 @@ import ReviewContents from 'src/components/ReviewContents.vue'
 import ReviewAssets from 'src/components/ReviewAssets.vue'
 import ReviewReviewers from 'src/components/ReviewReviewers.vue'
 import ApplyReviewer from 'src/components/ApplyReviewer.vue'
+import ContentApplicationList from 'src/components/ContentApplicationList.vue'
+import AssetApplicationList from 'src/components/AssetApplicationList.vue'
+import FoundationPage from 'src/components/FoundationPage.vue'
 
 interface Query {
   tab: string

@@ -65,6 +65,18 @@ export const useReviewStore = defineStore('review', {
         return this.contentApplications.get(cid)
       }
     },
+    contents (): (author?: string) => Array<Content> {
+      return (author?: string) => {
+        const contents = [] as Array<Content>
+        this.contentApplications.forEach((el) => {
+          if (author && el.author !== author) {
+            return
+          }
+          contents.push(el)
+        })
+        return contents
+      }
+    },
     contentReview (): (cid: string, owner: string) => Review | undefined {
       return (cid: string, owner: string) => {
         const content = this.contentApplications.get(cid)
@@ -79,6 +91,18 @@ export const useReviewStore = defineStore('review', {
     asset (): (cid: string) => Asset | undefined {
       return (cid: string) => {
         return this.assetApplications.get(cid)
+      }
+    },
+    assets (): (author?: string) => Array<Asset> {
+      return (author?: string) => {
+        const assets = [] as Array<Asset>
+        this.assetApplications.forEach((el) => {
+          if (author && el.author !== author) {
+            return
+          }
+          assets.push(el)
+        })
+        return assets
       }
     },
     assetReview (): (cid: string, owner: string) => Review | undefined {
