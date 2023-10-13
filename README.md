@@ -67,16 +67,14 @@ Users can reward content they like with Linera token. They also can use the asse
 
 
 ## Compiling and Deployment
+You should install yarn, rust before next steps.
 ```
-cargo build
-linera --wallet "$LINERA_WALLET" --storage "$LINERA_STORAGE" publish-bytecode ../res-peer/target/wasm32-unknown-unknown/release/credit_{contract,service}.wasm
-linera --wallet "$LINERA_WALLET" --storage "$LINERA_STORAGE" create-application e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65010000000000000001000000 --json-argument '{"initial_supply":"999999999999999.","amount_alive_ms":70}'
-linera --wallet "$LINERA_WALLET" --storage "$LINERA_STORAGE" publish-bytecode ../res-peer/target/wasm32-unknown-unknown/release/feed_{contract,service}.wasm
-linera --wallet "$LINERA_WALLET" --storage "$LINERA_STORAGE" create-application e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65040000000000000000000000 --json-argument '{"react_interval_ms":600000}' --json-parameters='"e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65d30000000000000000000000e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65d50000000000000000000000"' --required-application-ids e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65d30000000000000000000000e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65d50000000000000000000000
-linera --wallet "$LINERA_WALLET" --storage "$LINERA_STORAGE" publish-bytecode ../res-peer/target/wasm32-unknown-unknown/release/market_{contract,service}.wasm
-linera --wallet "$LINERA_WALLET" --storage "$LINERA_STORAGE" create-application 
-e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65920000000000000000000000 --json-argument '{"credits_per_linera":"30.", "max_credits_percent":13, "trade_fee_percent": 3}' --json-parameters='"e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65010000000000000001000000e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65030000000000000000000000"' --required-application-ids e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65010000000000000001000000e476187f6ddfeb9d588c7b45d3df334d5501d6499b3f9ad5595cae86cce16a65030000000000000000000000
-cd webui
+git clone https://github.com/linera-project/linera-protocol.git
+cd linera-protocol
+cargo install --path linera-service
+git clone https://github.com/web3eye-io/res-peer.git
+cd res-peer
+./deploy.sh
 yarn
 yarn start
 ```
