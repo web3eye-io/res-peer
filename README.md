@@ -74,6 +74,7 @@ cd linera-protocol
 cargo install --path linera-service
 git clone https://github.com/web3eye-io/res-peer.git
 cd res-peer
+cargo build --release
 ./deploy.sh
 yarn
 yarn start
