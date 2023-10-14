@@ -76,7 +76,7 @@
       </div>
     </div>
     <div v-if='comments.length && expand' :style='{marginTop:"16px", padding:"8px", borderRadius:"8px"}' class='bg-grey-2'>
-      <div v-for='comment in comments' :key='comment.cid'>
+      <div v-for='(comment, index) in comments' :key='comment.cid' :style='{margin:"16px 0"}'>
         <div class='row'>
           <q-icon name='comment' color='blue' size='24px' />
           <div>
@@ -98,6 +98,7 @@
             {{ comment.dislikes }}
           </div>
         </div>
+        <q-separator v-if='index < comments.length - 1' :style='{margin:"16px 0"}' />
       </div>
     </div>
   </div>
