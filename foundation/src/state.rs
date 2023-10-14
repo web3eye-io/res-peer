@@ -52,7 +52,17 @@ impl Foundation {
 
     // When transaction happen, transaction fee will be deposited here
     // It'll be separated to different reward balance according to reward ratio
-    pub(crate) async fn deposit(&mut self, amount: Amount) -> Result<(), StateError> {
+    pub(crate) async fn deposit(&mut self, from: Owner, amount: Amount) -> Result<(), StateError> {
+        let from_amount = match self.user_balances.get(&from).await? {
+            Some(amount) => amount,
+            _ => return Err(StateError::InsufficientBalance),
+        };
+        if from_amount.lt(&amount) {
+            return Err(StateError::InsufficientBalance);
+        }
+        self.user_balances
+            .insert(&from, from_amount.saturating_sub(amount))?;
+
         let review_amount = amount.try_mul(*self.review_reward_percent.get() as u128)?;
         let review_amount = review_amount.saturating_div(Amount::from_atto(100 as u128));
         let review_amount = self

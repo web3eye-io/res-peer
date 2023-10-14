@@ -400,8 +400,10 @@ impl Market {
     }
 
     pub(crate) async fn credits_to_tokens(&self, credits: Amount) -> Result<Amount, StateError> {
-        Ok(Amount::from_tokens(
-            credits.saturating_div(*self.credits_per_linera.get()),
+        Ok(Amount::from_atto(
+            credits
+                .saturating_mul(Amount::ONE.into())
+                .saturating_div(*self.credits_per_linera.get()),
         ))
     }
 }

@@ -46,6 +46,7 @@ pub enum Operation {
 #[derive(Debug, Deserialize, Serialize)]
 pub enum ApplicationCall {
     Deposit {
+        from: Owner,
         amount: Amount,
     },
     Transfer {
@@ -80,6 +81,7 @@ pub enum Message {
         state: InitialState,
     },
     Deposit {
+        from: Owner,
         amount: Amount,
     },
     Transfer {

@@ -199,22 +199,16 @@ impl Contract for Market {
                     let price = self.nft_price(collection_id, token_id).await?;
                     let fee = self.trading_fee(price).await?;
                     let discount = self.credits_to_tokens(credits).await?;
-                    self.transfer_credits(buyer, owner, credits)
-                        .await?;
+                    self.transfer_credits(buyer, owner, credits).await?;
                     self.transfer_tokens(
                         buyer,
                         owner,
                         price.saturating_sub(fee).saturating_sub(discount),
                     )
                     .await?;
-                    self.deposit_commission(fee).await?;
+                    self.deposit_commission(buyer, fee).await?;
                 }
-                self.buy_nft(
-                    buyer,
-                    collection_id,
-                    token_id,
-                )
-                .await?;
+                self.buy_nft(buyer, collection_id, token_id).await?;
                 let dest =
                     Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
                 Ok(ExecutionResult::default().with_authenticated_message(
@@ -407,8 +401,12 @@ impl Market {
         Ok(())
     }
 
-    async fn deposit_commission(&mut self, amount: Amount) -> Result<(), ContractError> {
-        let call = foundation::ApplicationCall::Deposit { amount };
+    async fn deposit_commission(
+        &mut self,
+        from: Owner,
+        amount: Amount,
+    ) -> Result<(), ContractError> {
+        let call = foundation::ApplicationCall::Deposit { from, amount };
         self.call_application(true, Self::foundation_app_id()?, &call, vec![])
             .await?;
         Ok(())

@@ -91,12 +91,12 @@ impl Contract for Foundation {
                 );
                 return Ok(result);
             }
-            Message::Deposit { amount } => {
-                self.deposit(amount).await?;
+            Message::Deposit { from, amount } => {
+                self.deposit(from, amount).await?;
                 let dest =
                     Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
                 Ok(ExecutionResult::default()
-                    .with_authenticated_message(dest, Message::Deposit { amount }))
+                    .with_authenticated_message(dest, Message::Deposit { from, amount }))
             }
             Message::Lock {
                 activity_id,
@@ -174,10 +174,10 @@ impl Contract for Foundation {
     ) -> Result<ApplicationCallResult<Self::Message, Self::Response, Self::SessionState>, Self::Error>
     {
         let execution_result = match call {
-            ApplicationCall::Deposit { amount } => ExecutionResult::default()
+            ApplicationCall::Deposit { from, amount } => ExecutionResult::default()
                 .with_authenticated_message(
                     system_api::current_application_id().creation.chain_id,
-                    Message::Deposit { amount },
+                    Message::Deposit { from, amount },
                 ),
             ApplicationCall::Lock {
                 activity_id,
