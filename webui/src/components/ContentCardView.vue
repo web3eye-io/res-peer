@@ -112,7 +112,7 @@ import gql from 'graphql-tag'
 import { getClientOptions } from 'src/apollo'
 import { useCollectionStore } from 'src/stores/collection'
 import { targetChain } from 'src/stores/chain'
-import { date } from 'quasar'
+import { Cookies, date } from 'quasar'
 import { useRouter } from 'vue-router'
 
 interface Props {
@@ -135,6 +135,7 @@ const collection = useCollectionStore()
 const options = /* await */ getClientOptions(/* {app, router ...} */)
 const apolloClient = new ApolloClient(options)
 const router = useRouter()
+const port = computed(() => Cookies.get('service-port'))
 
 const userAvatar = (account: string) => {
   const ids = collection.avatars.get(account)
@@ -225,7 +226,8 @@ const onCommentClick = (cid: string) => {
     void router.push({
       path: '/content',
       query: {
-        cid
+        cid,
+        port: port.value
       }
     })
     return
@@ -237,7 +239,8 @@ const onTitleClick = (cid: string) => {
   void router.push({
     path: '/content',
     query: {
-      cid
+      cid,
+      port: port.value
     }
   })
 }

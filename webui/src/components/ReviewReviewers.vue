@@ -12,6 +12,7 @@ import { computed } from 'vue'
 import { useUserStore } from 'src/stores/user'
 import { useRouter } from 'vue-router'
 import { useFoundationStore } from 'src/stores/foundation'
+import { Cookies } from 'quasar'
 
 const review = useReviewStore()
 const reviewers = computed(() => Array.from(review.reviewerApplications.values()) || [])
@@ -20,6 +21,7 @@ const account = computed(() => user.account)
 const router = useRouter()
 const foundation = useFoundationStore()
 const estimatedReward = computed(() => Number(foundation.reviewRewardBalance) / foundation.reviewRewardFactor)
+const port = computed(() => Cookies.get('service-port'))
 
 const columns = computed(() => [
   {
@@ -53,7 +55,8 @@ const onReviewerClick = (reviewer: Reviewer) => {
   void router.push({
     path: '/reviewreviewer',
     query: {
-      reviewer: reviewer.reviewer
+      reviewer: reviewer.reviewer,
+      port: port.value
     }
   })
 }

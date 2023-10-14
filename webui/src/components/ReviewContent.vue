@@ -57,7 +57,7 @@
 import { useReviewStore } from 'src/stores/review'
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { date } from 'quasar'
+import { Cookies, date } from 'quasar'
 import { provideApolloClient, useMutation } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
 import { getClientOptions } from 'src/apollo'
@@ -84,6 +84,7 @@ const account = computed(() => user.account)
 const reviewed = computed(() => review.contentReviewed(cid.value, account.value))
 const _review = computed(() => review.contentReview(cid.value, account.value))
 const reason = ref(_review.value?.reason || 'I supper like this article not only it\'s about Linera, but also it\'s write by KK.')
+const port = computed(() => Cookies.get('service-port'))
 
 const onApproveClick = async () => {
   if (!content.value || !reason.value.length) {
@@ -112,7 +113,12 @@ const onApproveClick = async () => {
     endpoint: 'review',
     chainId: targetChain.value
   })
-  void router.push({ path: '/' })
+  void router.push({
+    path: '/',
+    query: {
+      port: port.value
+    }
+  })
 }
 
 const onRejectClick = async () => {
@@ -140,7 +146,8 @@ const onRejectClick = async () => {
   void router.push({
     path: '/dashboard',
     query: {
-      tab: 'review-contents'
+      tab: 'review-contents',
+      port: port.value
     }
   })
 }
@@ -149,7 +156,8 @@ const onBackClick = () => {
   void router.push({
     path: '/dashboard',
     query: {
-      tab: 'review-contents'
+      tab: 'review-contents',
+      port: port.value
     }
   })
 }

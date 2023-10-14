@@ -234,8 +234,17 @@ impl Contract for Feed {
                 content,
                 author,
             } => {
-                self.publish(cid, None, title, content, author).await?;
-                Ok(ApplicationCallResult::default())
+                let mut result = ApplicationCallResult::default();
+                result.execution_result = ExecutionResult::default().with_authenticated_message(
+                    system_api::current_application_id().creation.chain_id,
+                    Message::Publish {
+                        cid,
+                        title,
+                        content,
+                        author,
+                    },
+                );
+                Ok(result)
             }
         }
     }

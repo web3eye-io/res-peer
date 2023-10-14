@@ -65,6 +65,7 @@
 </template>
 
 <script setup lang='ts'>
+import { Cookies } from 'quasar'
 import { useCollectionStore, Collection } from 'src/stores/collection'
 import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
@@ -72,6 +73,7 @@ import { useRouter } from 'vue-router'
 const collection = useCollectionStore()
 const collections = computed(() => Array.from(collection.collections.values()).filter((el) => collection.nftsByCollectionID(el.collectionId).length > 0))
 const collectionBanners = ref(new Map<number, string>())
+const port = computed(() => Cookies.get('service-port'))
 
 watch(collections, () => {
   collections.value.forEach((el) => {
@@ -85,7 +87,13 @@ const collectionBanner = (_collection: Collection) => {
 
 const router = useRouter()
 const onCollectionClick = (_collection: Collection) => {
-  void router.push({ path: '/collection', query: { collectionId: _collection.collectionId } })
+  void router.push({
+    path: '/collection',
+    query: {
+      collectionId: _collection.collectionId,
+      port: port.value
+    }
+  })
 }
 
 </script>

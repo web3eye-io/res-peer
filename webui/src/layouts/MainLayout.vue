@@ -156,10 +156,20 @@ const onGithubClick = (uri: string) => {
   window.open(uri)
 }
 const onDashboardClick = () => {
-  void router.push({ path: '/dashboard' })
+  void router.push({
+    path: '/dashboard',
+    query: {
+      port: port.value
+    }
+  })
 }
 const onLogoClick = () => {
-  void router.push({ path: '/' })
+  void router.push({
+    path: '/',
+    query: {
+      port: port.value
+    }
+  })
 }
 const onLoginClick = () => {
   logining.value = true
@@ -189,7 +199,12 @@ const onLogoutClick = () => {
   account.value = undefined as unknown as string
 }
 const onNFTMarketClick = () => {
-  void router.push({ path: '/market' })
+  void router.push({
+    path: '/market',
+    query: {
+      port: port.value
+    }
+  })
 }
 </script>
 
