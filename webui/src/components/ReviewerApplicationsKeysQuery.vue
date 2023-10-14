@@ -22,7 +22,7 @@ const ready = () => {
 }
 
 const getReviewerApplicationsKeys = () => {
-  const { /* result, */ refetch /*, fetchMore */, onResult /*, onError */ } = provideApolloClient(apolloClient)(() => useQuery(gql`
+  const { /* result, refetch, fetchMore, */ onResult /*, onError */ } = provideApolloClient(apolloClient)(() => useQuery(gql`
     query getReviewerApplicationsKeys {
       reviewerApplicationsKeys
     }
@@ -33,15 +33,16 @@ const getReviewerApplicationsKeys = () => {
     fetchPolicy: 'network-only'
   }))
 
-  watch(blockHeight, () => {
-    void refetch()
-  })
-
   onResult((res) => {
     if (res.loading) return
     review.reviewerApplicationsKeys = (res.data as Record<string, Array<string>>).reviewerApplicationsKeys
   })
 }
+
+watch(blockHeight, () => {
+  if (!ready()) return
+  getReviewerApplicationsKeys()
+})
 
 watch(reviewApp, () => {
   if (!ready()) return

@@ -97,7 +97,7 @@ impl Review {
         owner: Owner,
         resume: String,
     ) -> Result<(), StateError> {
-        if !self.is_reviewer(owner).await? {
+        if self.is_reviewer(owner).await? {
             return Err(StateError::InvalidReviewer);
         }
         match self.reviewer_applications.get(&owner).await? {
