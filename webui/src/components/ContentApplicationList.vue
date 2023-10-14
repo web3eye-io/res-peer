@@ -49,7 +49,22 @@ const columns = computed(() => [
   }, {
     name: 'State',
     label: 'State',
-    field: (row: Content) => row.rejected >= review.contentRejectedThreshold ? 'Rejected' : (review.contentApprovedThreshold - row.approved).toString() + ' Approvals Needed'
+    field: (row: Content) => {
+      if (row.approved >= review.reviewerNumber) {
+        return 'Approved'
+      }
+      if (row.approved >= review.contentApprovedThreshold) {
+        return 'Approved'
+      }
+      if (row.rejected >= review.contentRejectedThreshold) {
+        return 'Rejected'
+      }
+      let approvedNeeded = review.reviewerNumber - row.approved
+      if (review.contentApprovedThreshold < review.reviewerNumber) {
+        approvedNeeded = review.contentApprovedThreshold - row.approved
+      }
+      return approvedNeeded.toString() + ' Approvals Needed'
+    }
   }
 ])
 

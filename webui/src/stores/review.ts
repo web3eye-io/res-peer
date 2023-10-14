@@ -52,7 +52,8 @@ export const useReviewStore = defineStore('review', {
     assetApprovedThreshold: 0,
     assetRejectedThreshold: 0,
     reviewerApprovedThreshold: 0,
-    reviewerRejectedThreshold: 0
+    reviewerRejectedThreshold: 0,
+    reviewerNumber: 0
   }),
   getters: {
     contentReviewed (): (cid: string, owner: string) => boolean {

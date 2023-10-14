@@ -30,6 +30,7 @@ const getReviewState = () => {
       assetRejectedThreshold
       reviewerApprovedThreshold
       reviewerRejectedThreshold
+      reviewerNumber
     }
   `, {
     endpoint: 'review',
@@ -51,6 +52,7 @@ const getReviewState = () => {
     review.assetRejectedThreshold = ret.assetRejectedThreshold
     review.reviewerApprovedThreshold = ret.reviewerApprovedThreshold
     review.reviewerRejectedThreshold = ret.reviewerRejectedThreshold
+    review.reviewerNumber = ret.reviewerNumber
   })
 }
 
