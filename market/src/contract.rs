@@ -193,19 +193,21 @@ impl Contract for Market {
                 token_id,
                 credits,
             } => {
-                let owner = self.nft_owner(collection_id, token_id).await?;
-                let price = self.nft_price(collection_id, token_id).await?;
-                let fee = self.trading_fee(price).await?;
-                let discount = self.credits_to_tokens(credits).await?;
-                self.transfer_credits(context.authenticated_signer.unwrap(), owner, credits)
+                if context.chain_id == system_api::current_application_id().creation.chain_id {
+                    let owner = self.nft_owner(collection_id, token_id).await?;
+                    let price = self.nft_price(collection_id, token_id).await?;
+                    let fee = self.trading_fee(price).await?;
+                    let discount = self.credits_to_tokens(credits).await?;
+                    self.transfer_credits(context.authenticated_signer.unwrap(), owner, credits)
+                        .await?;
+                    self.transfer_tokens(
+                        context.authenticated_signer.unwrap(),
+                        owner,
+                        price.saturating_sub(fee).saturating_sub(discount),
+                    )
                     .await?;
-                self.transfer_tokens(
-                    context.authenticated_signer.unwrap(),
-                    owner,
-                    price.saturating_sub(fee).saturating_sub(discount),
-                )
-                .await?;
-                self.deposit_commission(fee).await?;
+                    self.deposit_commission(fee).await?;
+                }
                 self.buy_nft(
                     context.authenticated_signer.unwrap(),
                     collection_id,

@@ -74,16 +74,24 @@ impl Contract for Feed {
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
         match message {
             Message::Like { cid } => {
-                self.like(cid.clone(), context.authenticated_signer.unwrap())
-                    .await?;
+                self.like(
+                    cid.clone(),
+                    context.authenticated_signer.unwrap(),
+                    context.chain_id == system_api::current_application_id().creation.chain_id,
+                )
+                .await?;
                 let dest =
                     Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
                 Ok(ExecutionResult::default()
                     .with_authenticated_message(dest, Message::Like { cid }))
             }
             Message::Dislike { cid } => {
-                self.dislike(cid.clone(), context.authenticated_signer.unwrap())
-                    .await?;
+                self.dislike(
+                    cid.clone(),
+                    context.authenticated_signer.unwrap(),
+                    context.chain_id == system_api::current_application_id().creation.chain_id,
+                )
+                .await?;
                 let dest =
                     Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
                 Ok(ExecutionResult::default()
@@ -101,8 +109,15 @@ impl Contract for Feed {
                 content,
                 author,
             } => {
-                self.publish(cid.clone(), None, title.clone(), content.clone(), author)
-                    .await?;
+                self.publish(
+                    cid.clone(),
+                    None,
+                    title.clone(),
+                    content.clone(),
+                    author,
+                    context.chain_id == system_api::current_application_id().creation.chain_id,
+                )
+                .await?;
                 let dest =
                     Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
                 Ok(ExecutionResult::default().with_authenticated_message(
@@ -127,6 +142,7 @@ impl Contract for Feed {
                     String::default(),
                     reason.clone(),
                     author,
+                    context.chain_id == system_api::current_application_id().creation.chain_id,
                 )
                 .await?;
                 self.recommend_content(cid.clone(), reason_cid.clone())
@@ -154,6 +170,7 @@ impl Contract for Feed {
                     String::default(),
                     comment.clone(),
                     commentor,
+                    context.chain_id == system_api::current_application_id().creation.chain_id,
                 )
                 .await?;
                 self.comment_content(cid.clone(), comment_cid.clone())
@@ -296,6 +313,7 @@ impl Feed {
         title: String,
         content: String,
         author: Owner,
+        creation_chain: bool,
     ) -> Result<(), ContractError> {
         match self
             .create_content(
@@ -315,6 +333,9 @@ impl Feed {
             .await
         {
             Ok(_) => {
+                if !creation_chain {
+                    return Ok(());
+                }
                 self.reward_credits(author, Amount::from_tokens(500))
                     .await?;
                 self.reward_tokens(author).await?;
@@ -324,18 +345,34 @@ impl Feed {
         }
     }
 
-    async fn like(&mut self, cid: String, owner: Owner) -> Result<(), ContractError> {
+    async fn like(
+        &mut self,
+        cid: String,
+        owner: Owner,
+        creation_chain: bool,
+    ) -> Result<(), ContractError> {
         match self.like_content(cid, owner, true).await {
             Ok(_) => {
+                if !creation_chain {
+                    return Ok(());
+                }
                 return self.reward_credits(owner, Amount::from_tokens(100)).await;
             }
             Err(err) => return Err(ContractError::StateError(err)),
         }
     }
 
-    async fn dislike(&mut self, cid: String, owner: Owner) -> Result<(), ContractError> {
+    async fn dislike(
+        &mut self,
+        cid: String,
+        owner: Owner,
+        creation_chain: bool,
+    ) -> Result<(), ContractError> {
         match self.like_content(cid, owner, false).await {
             Ok(_) => {
+                if !creation_chain {
+                    return Ok(());
+                }
                 return self.reward_credits(owner, Amount::from_tokens(100)).await;
             }
             Err(err) => return Err(ContractError::StateError(err)),
