@@ -22,7 +22,7 @@ const ready = () => {
 }
 
 const getAssetApplicationsKeys = () => {
-  const { /* result, */ refetch /*, fetchMore */, onResult /*, onError */ } = provideApolloClient(apolloClient)(() => useQuery(gql`
+  const { /* result, refetch, fetchMore, */ onResult /*, onError */ } = provideApolloClient(apolloClient)(() => useQuery(gql`
     query getAssetApplicationsKeys {
       assetApplicationsKeys
     }
@@ -33,16 +33,16 @@ const getAssetApplicationsKeys = () => {
     fetchPolicy: 'network-only'
   }))
 
-  // TODO: is it still work
-  watch(blockHeight, () => {
-    void refetch()
-  })
-
   onResult((res) => {
     if (res.loading) return
     review.assetApplicationsKeys = (res.data as Record<string, Array<string>>).assetApplicationsKeys
   })
 }
+
+watch(blockHeight, () => {
+  if (!ready()) return
+  getAssetApplicationsKeys()
+})
 
 watch(reviewApp, () => {
   if (!ready()) return
