@@ -55,6 +55,9 @@ const columns = computed(() => [
       if (row.rejected >= review.contentRejectedThreshold) {
         return '-'
       }
+      if (row.rejected >= review.reviewerNumber) {
+        return '-'
+      }
       return estimatedReward.value.toString() + ' Lineras'
     }
   }, {
@@ -68,6 +71,9 @@ const columns = computed(() => [
         return 'Approved'
       }
       if (row.rejected >= review.contentRejectedThreshold) {
+        return 'Rejected'
+      }
+      if (row.rejected >= review.reviewerNumber) {
         return 'Rejected'
       }
       let approvedNeeded = review.reviewerNumber - row.approved

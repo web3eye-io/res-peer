@@ -59,6 +59,9 @@ const columns = computed(() => [
       if (row.rejected >= review.assetRejectedThreshold) {
         return 'Rejected'
       }
+      if (row.rejected >= review.reviewerNumber) {
+        return 'Rejected'
+      }
       let approvedNeeded = review.reviewerNumber - row.approved
       if (review.assetApprovedThreshold < review.reviewerNumber) {
         approvedNeeded = review.assetApprovedThreshold - row.approved
