@@ -46,7 +46,6 @@ watch(blockHeight, () => {
 const collection = useCollectionStore()
 
 const onResult = (res: Record<string, unknown>) => {
-  // TODO: a bug here will cause balances to be another value from credits, don't know why
   collection.collectionsKeys = (res as Record<string, Array<number>>).collectionsKeys
   collection.creditsPerLinera = (res as Record<string, string>).creditsPerLinera
   collection.maxCreditsPercent = (res as Record<string, number>).maxCreditsPercent

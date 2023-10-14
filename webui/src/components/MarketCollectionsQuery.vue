@@ -16,11 +16,11 @@ const collectionKey = computed(() => collectionIndex.value >= 0 ? collectionsKey
 const mutateKeys = computed(() => collection.mutateKeys)
 const block = useBlockStore()
 const blockHeight = computed(() => block.blockHeight)
-
+const forceFetch = ref(false)
 const options = /* await */ getClientOptions(/* {app, router ...} */)
 const apolloClient = new ApolloClient(options)
 
-const getCollection = (collectionKey: number, force: boolean, done?: () => void) => {
+const getCollection = (collectionKey: number, done?: () => void) => {
   const { result /*, fetchMore, onResult, onError */ } = provideApolloClient(apolloClient)(() => useQuery(gql`
     query getCollection($collectionKey: Int!) {
       collections(u64: $collectionKey) {
@@ -39,7 +39,7 @@ const getCollection = (collectionKey: number, force: boolean, done?: () => void)
     endpoint: 'market',
     chainId: targetChain.value
   }, {
-    fetchPolicy: force ? 'network-only' : 'cache-and-network'
+    fetchPolicy: 'network-only'
   }))
 
   watch(result, () => {
@@ -53,11 +53,11 @@ watch(collectionKey, () => {
     return
   }
   const index = collection.mutateKeys.findIndex((el) => el === collectionKey.value)
-  if (collections.value.get(collectionKey.value) && index < 0) {
+  if (collections.value.get(collectionKey.value) && index < 0 && !forceFetch.value) {
     collectionIndex.value++
     return
   }
-  getCollection(collectionKey.value, index >= 0, () => {
+  getCollection(collectionKey.value, () => {
     collectionIndex.value++
   })
 })
@@ -66,6 +66,7 @@ watch(targetChain, () => {
   if (collectionsKeys.value.length === 0) {
     return
   }
+  forceFetch.value = false
   collectionIndex.value = 0
 })
 
@@ -73,6 +74,7 @@ watch(collectionsKeys, () => {
   if (collectionsKeys.value.length === 0) {
     return
   }
+  forceFetch.value = false
   collectionIndex.value = 0
 })
 
@@ -80,6 +82,7 @@ watch(blockHeight, () => {
   if (collectionsKeys.value.length === 0) {
     return
   }
+  forceFetch.value = true
   collectionIndex.value = 0
 })
 
@@ -87,6 +90,7 @@ watch(mutateKeys, () => {
   if (collectionsKeys.value.length === 0) {
     return
   }
+  forceFetch.value = false
   collectionIndex.value = 0
 })
 

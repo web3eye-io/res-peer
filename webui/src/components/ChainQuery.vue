@@ -24,7 +24,7 @@ const getChains = () => {
   `, {
     endpoint: 'main'
   }, {
-    fetchPolicy: 'cache-and-network'
+    fetchPolicy: 'network-only'
   }))
 
   watch(result, () => {

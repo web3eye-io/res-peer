@@ -22,7 +22,7 @@ const blockHeight = computed(() => block.blockHeight)
 const options = /* await */ getClientOptions(/* {app, router ...} */)
 const apolloClient = new ApolloClient(options)
 
-const getContent = (contentKey: string, force: boolean, done?: () => void) => {
+const getContent = (contentKey: string, done?: () => void) => {
   const { result /*, fetchMore, onResult, onError */ } = provideApolloClient(apolloClient)(() => useQuery(gql`
     query getContent($contentKey: String!) {
       contents(string: $contentKey) {
@@ -44,7 +44,7 @@ const getContent = (contentKey: string, force: boolean, done?: () => void) => {
     endpoint: 'feed',
     chainId: targetChain.value
   }, {
-    fetchPolicy: force ? 'network-only' : 'cache-and-network'
+    fetchPolicy: 'network-only'
   }))
 
   watch(result, () => {
@@ -65,7 +65,7 @@ watch(contentKey, () => {
     return
   }
 
-  getContent(contentKey.value, index >= 0, () => {
+  getContent(contentKey.value, () => {
     contentIndex.value++
     mutateKeys.value.splice(index, 1)
   })
@@ -87,7 +87,7 @@ watch(blockHeight, () => {
 
 onMounted(() => {
   content.mutateKeys.forEach((contentKey) => {
-    getContent(contentKey, true)
+    getContent(contentKey)
   })
   content.mutateKeys = []
 })

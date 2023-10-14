@@ -20,7 +20,7 @@ const blockHeight = computed(() => block.blockHeight)
 const options = /* await */ getClientOptions(/* {app, router ...} */)
 const apolloClient = new ApolloClient(options)
 
-const getReviewerApplication = (reviewerApplicationKey: string, force: boolean, done?: () => void) => {
+const getReviewerApplication = (reviewerApplicationKey: string, done?: () => void) => {
   const { result /*, fetchMore, onResult, onError */ } = provideApolloClient(apolloClient)(() => useQuery(gql`
     query getReviewerApplication($reviewerApplicationKey: String!) {
       reviewerApplications(owner: $reviewerApplicationKey) {
@@ -38,7 +38,7 @@ const getReviewerApplication = (reviewerApplicationKey: string, force: boolean, 
     endpoint: 'review',
     chainId: targetChain.value
   }, {
-    fetchPolicy: force ? 'network-only' : 'cache-and-network'
+    fetchPolicy: 'network-only'
   }))
 
   watch(result, () => {
@@ -58,7 +58,7 @@ watch(reviewerApplicationKey, () => {
     return
   }
 
-  getReviewerApplication(reviewerApplicationKey.value, index >= 0, () => {
+  getReviewerApplication(reviewerApplicationKey.value, () => {
     reviewerIndex.value++
     reviewerMutateKeys.value.splice(index, 1)
   })
@@ -80,7 +80,7 @@ watch(blockHeight, () => {
 
 onMounted(() => {
   reviewerMutateKeys.value.forEach((reviewerKey) => {
-    getReviewerApplication(reviewerKey, true)
+    getReviewerApplication(reviewerKey)
   })
   review.reviewerMutateKeys = []
 })
