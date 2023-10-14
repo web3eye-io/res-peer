@@ -49,6 +49,8 @@ const onResult = (res: Record<string, unknown>) => {
   // TODO: a bug here will cause balances to be another value from credits, don't know why
   collection.collectionsKeys = (res as Record<string, Array<number>>).collectionsKeys
   collection.creditsPerLinera = (res as Record<string, string>).creditsPerLinera
+  collection.maxCreditsPercent = (res as Record<string, number>).maxCreditsPercent
+  collection.tradeFeePercent = (res as Record<string, number>).tradeFeePercent
   const assets = (res as Record<string, Record<number, Array<number>>>).assets
   if (assets) {
     Object.keys(assets).forEach((key, index) => {
@@ -64,6 +66,8 @@ const getMarketInfo = () => {
         query getMarketInfo($account: String!) {
           collectionsKeys
           creditsPerLinera
+          tradeFeePercent
+          maxCreditsPercent
           assets(owner: $account)
           avatars(owner: $account)
         }
@@ -79,6 +83,8 @@ const getMarketInfo = () => {
         query getMarketInfo {
           collectionsKeys
           creditsPerLinera
+          tradeFeePercent
+          maxCreditsPercent
         }
       `, {
       account: `${account.value}`,

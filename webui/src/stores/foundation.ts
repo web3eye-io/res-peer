@@ -11,7 +11,6 @@ export const useFoundationStore = defineStore('foundation', {
     authorRewardFactor: 0,
     activityRewardPercent: 0,
     activityRewardBalance: '0.',
-    activityRewardFactor: 0,
     activityOwners: new Map<number, string>(),
     activityLockFunds: new Map<number, string>(),
     userLineraBalance: '0.'
