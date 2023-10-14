@@ -124,8 +124,9 @@ const onApproveClick = async () => {
     chainId: targetChain.value
   })
   void router.push({
-    path: '/',
+    path: '/dashboard',
     query: {
+      tab: 'review-assets',
       port: port.value
     }
   })
