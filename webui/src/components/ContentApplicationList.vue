@@ -45,7 +45,18 @@ const columns = computed(() => [
   }, {
     name: 'Estimated Reward',
     label: 'Estimated Reward',
-    field: () => estimatedReward.value.toString() + ' Lineras'
+    field: (row: Content) => {
+      if (row.approved >= review.reviewerNumber) {
+        return '-'
+      }
+      if (row.approved >= review.contentApprovedThreshold) {
+        return '-'
+      }
+      if (row.rejected >= review.contentRejectedThreshold) {
+        return '-'
+      }
+      return estimatedReward.value.toString() + ' Lineras'
+    }
   }, {
     name: 'State',
     label: 'State',
