@@ -30,9 +30,9 @@ const account = computed(() => user.account)
 const contents = computed(() => {
   switch (articleType.value) {
     case 'MY_ARTICLE':
-      return Array.from(content.contents.values()).sort((a, b) => a.createdAt > b.createdAt ? 1 : -1).filter((el) => el.author === account.value)
+      return Array.from(content._contents(account.value)).sort((a, b) => a.createdAt > b.createdAt ? 1 : -1).filter((el) => el.author === account.value)
     case 'MY_LIKE':
-      return Array.from(content.contents.values()).sort((a, b) => a.createdAt > b.createdAt ? 1 : -1).filter((el) => {
+      return Array.from(content._contents(account.value)).sort((a, b) => a.createdAt > b.createdAt ? 1 : -1).filter((el) => {
         if (el.accounts === undefined) {
           return false
         }
@@ -43,7 +43,7 @@ const contents = computed(() => {
         return Object.values(el.accounts)[index]
       })
     case 'MY_DISLIKE':
-      return Array.from(content.contents.values()).sort((a, b) => a.createdAt > b.createdAt ? 1 : -1).filter((el) => {
+      return Array.from(content._contents(account.value)).sort((a, b) => a.createdAt > b.createdAt ? 1 : -1).filter((el) => {
         if (el.accounts === undefined) {
           return false
         }
@@ -54,7 +54,7 @@ const contents = computed(() => {
         return !Object.values(el.accounts)[index]
       })
   }
-  return Array.from(content.contents.values()).sort((a, b) => a.createdAt > b.createdAt ? 1 : -1).filter((el) => el.author === account.value)
+  return Array.from(content._contents(account.value)).sort((a, b) => a.createdAt > b.createdAt ? 1 : -1).filter((el) => el.author === account.value)
 })
 const tableLabel = computed(() => {
   switch (articleType.value) {

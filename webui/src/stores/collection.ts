@@ -38,6 +38,15 @@ export const useCollectionStore = defineStore('collection', {
     avatars: new Map<string, Array<number>>()
   }),
   getters: {
+    _collections (): (publisher?: string) => Array<Collection> {
+      return (author?: string) => {
+        return Array.from(this.collections.values()).filter((el) => {
+          let ok = true
+          if (author) ok &&= el.publisher === author
+          return ok
+        }).sort((a: Collection, b: Collection) => a.createdAt < b.createdAt ? 1 : -1)
+      }
+    },
     nftsByPublisher (): (publisher?: string) => Array<NFTExt> {
       return (publisher?: string) => {
         const nfts = [] as Array<NFTExt>

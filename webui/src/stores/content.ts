@@ -26,10 +26,12 @@ export const useContentStore = defineStore('content', {
         return this.contents.get(cid)
       }
     },
-    _contents (): () => Array<Content> {
-      return () => {
+    _contents (): (author?: string) => Array<Content> {
+      return (author?: string) => {
         return Array.from(this.contents.values()).filter((el) => {
-          return !el.commentToCid
+          let ok = !el.commentToCid
+          if (author) ok &&= el.author === author
+          return ok
         }).sort((a: Content, b: Content) => a.createdAt < b.createdAt ? 1 : -1)
       }
     },

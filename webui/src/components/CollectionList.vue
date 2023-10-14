@@ -13,10 +13,13 @@
 
 <script setup lang='ts'>
 import { Collection, useCollectionStore } from 'src/stores/collection'
+import { useUserStore } from 'src/stores/user'
 import { computed } from 'vue'
 
 const collection = useCollectionStore()
-const collections = computed(() => Array.from(collection.collections.values()))
+const user = useUserStore()
+const account = computed(() => user.account)
+const collections = computed(() => Array.from(collection._collections(account.value)))
 
 const columns = computed(() => [
   {
