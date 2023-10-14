@@ -97,7 +97,7 @@ impl Review {
         owner: Owner,
         resume: String,
     ) -> Result<(), StateError> {
-        if self.is_reviewer(owner).await? {
+        if !self.is_reviewer(owner).await? {
             return Err(StateError::InvalidReviewer);
         }
         match self.reviewer_applications.get(&owner).await? {
@@ -290,7 +290,7 @@ impl Review {
                 );
                 self.content_applications.insert(&content_cid, content)?;
             }
-            _ => return Err(StateError::InvalidReviewer),
+            _ => return Err(StateError::InvalidContent),
         }
         match self.content_applications.get(&content_cid).await? {
             Some(content) => {
