@@ -24,6 +24,7 @@ jobs:
       - run: rustup component add rustfmt
       - run: rustup component add rustfmt --toolchain nightly
       - run: git clone https://github.com/linera-io/linera-protocol.git ../linera-protocol
+      - run: cd ../linera-protocol; git checkout v0.6.0
       - run: cd ../linera-protocol; cargo build -p linera-sdk --bin linera-wasm-test-runner --release
       - run: cargo build --verbose
       - run: mkdir -p target/release

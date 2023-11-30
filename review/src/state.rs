@@ -27,7 +27,7 @@ pub struct Review {
 
 #[allow(dead_code)]
 impl Review {
-    pub(crate) async fn initialize(&mut self, state: InitialState) -> Result<(), StateError> {
+    pub(crate) async fn initialize_review(&mut self, state: InitialState) -> Result<(), StateError> {
         self.content_approved_threshold
             .set(state.content_approved_threshold);
         self.content_rejected_threshold

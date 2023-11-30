@@ -35,7 +35,7 @@ impl Contract for Feed {
         _context: &OperationContext,
         state: Self::InitializationArgument,
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
-        self.initialize(state).await;
+        self.initialize_feed(state).await;
         Ok(ExecutionResult::default())
     }
 

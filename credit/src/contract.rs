@@ -31,7 +31,7 @@ impl Contract for Credit {
         _context: &OperationContext,
         state: Self::InitializationArgument,
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
-        self.initialize(state).await;
+        self.initialize_credit(state).await;
         Ok(ExecutionResult::default())
     }
 
@@ -80,7 +80,7 @@ impl Contract for Credit {
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
         match message {
             Message::InitialState { state } => {
-                self.initialize(state).await;
+                self.initialize_credit(state).await;
                 Ok(ExecutionResult::default())
             }
             Message::Liquidate => {

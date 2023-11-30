@@ -423,7 +423,7 @@ impl Contract for Review {
             }
             Message::InitialState { state } => {
                 log::info!("Initial state {:?}", state);
-                self.initialize(state).await?;
+                self.initialize_review(state).await?;
                 Ok(ExecutionResult::default())
             }
         }
@@ -560,7 +560,7 @@ impl Review {
     }
 
     async fn _initialize(&mut self, state: InitialState) -> Result<(), ContractError> {
-        self.initialize(state).await?;
+        self.initialize_review(state).await?;
         Ok(())
     }
 

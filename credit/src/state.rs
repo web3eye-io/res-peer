@@ -23,7 +23,7 @@ pub struct Credit {
 
 #[allow(dead_code)]
 impl Credit {
-    pub(crate) async fn initialize(&mut self, mut state: InitialState) {
+    pub(crate) async fn initialize_credit(&mut self, mut state: InitialState) {
         if state.initial_supply.eq(&Amount::ZERO) {
             state.initial_supply = Amount::from_tokens(100000000);
         }

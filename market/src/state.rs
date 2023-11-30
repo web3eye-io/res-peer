@@ -32,7 +32,7 @@ pub struct Market {
 
 #[allow(dead_code)]
 impl Market {
-    pub(crate) async fn initialize(&mut self, state: InitialState) {
+    pub(crate) async fn initialize_market(&mut self, state: InitialState) {
         self.credits_per_linera.set(state.credits_per_linera);
         self.collection_id.set(state.collection_id.unwrap_or(1000));
         self.max_credits_percent.set(state.max_credits_percent);

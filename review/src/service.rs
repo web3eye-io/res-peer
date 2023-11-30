@@ -24,7 +24,7 @@ impl Service for Review {
     type Error = ServiceError;
     type Storage = ViewStateStorage<Self>;
 
-    async fn query_application(
+    async fn handle_query(
         self: Arc<Self>,
         _context: &QueryContext,
         request: Request,

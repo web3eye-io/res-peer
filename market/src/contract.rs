@@ -33,7 +33,7 @@ impl Contract for Market {
         _context: &OperationContext,
         state: Self::InitializationArgument,
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
-        self.initialize(state).await;
+        self.initialize_market(state).await;
         Ok(ExecutionResult::default())
     }
 
@@ -136,7 +136,7 @@ impl Contract for Market {
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
         match message {
             Message::InitialState { state } => {
-                self.initialize(state).await;
+                self.initialize_market(state).await;
                 Ok(ExecutionResult::default())
             }
             Message::CreateCollection {

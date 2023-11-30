@@ -25,7 +25,7 @@ pub struct Foundation {
 
 #[allow(dead_code)]
 impl Foundation {
-    pub(crate) async fn initialize(&mut self, state: InitialState) -> Result<(), StateError> {
+    pub(crate) async fn initialize_foundation(&mut self, state: InitialState) -> Result<(), StateError> {
         if state.review_reward_percent + state.author_reward_percent + state.activity_reward_percent
             > 100
         {

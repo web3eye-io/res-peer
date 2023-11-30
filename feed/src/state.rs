@@ -22,7 +22,7 @@ pub struct Feed {
 
 #[allow(dead_code)]
 impl Feed {
-    pub(crate) async fn initialize(&mut self, state: InitialState) {
+    pub(crate) async fn initialize_feed(&mut self, state: InitialState) {
         self.react_interval_ms.set(state.react_interval_ms);
     }
 
