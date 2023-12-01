@@ -48,7 +48,6 @@ pub enum ObjectType {
 
 #[derive(Debug, Deserialize, Serialize, Clone, SimpleObject, Eq, PartialEq)]
 pub struct ObjectCondition {
-    cids: Option<Vec<String>>,
     class: Option<Vec<String>>,
     min_words: u32,
     max_words: u32,
@@ -81,8 +80,9 @@ pub struct ActivityItem {
     votable: bool,
     vote_type: VoteType,
     object_type: Option<ObjectType>,
+    object_candidates: Vec<String>,
     condition: ObjectCondition,
-    sponsors: Vec<u64>,
+    sponsors: Vec<Owner>,
     prize_configs: Vec<PrizeConfig>,
     announcements: Vec<String>,
     prize_announcement: String,
@@ -94,5 +94,48 @@ pub struct ActivityItem {
     location: String,
     comments: Vec<String>,
     registers: Vec<Owner>,
+    register_start_at: Timestamp,
+    register_end_at: Timestamp,
+    vote_start_at: Timestamp,
+    vote_end_at: Timestamp,
     participantors: Vec<Owner>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub enum Operation {
+    Create {
+        slogan: Option<String>,
+        banner: String,
+        posters: Vec<String>,
+        introduction: String,
+        activity_type: ActivityType,
+        votable: bool,
+        vote_type: VoteType,
+        object_type: ObjectType,
+        condition: ObjectCondition,
+        sponsors: Vec<Owner>,
+        prize_configs: Vec<PrizeConfig>,
+        voter_reward_percent: u8,
+        budget_amount: Amount,
+        join_type: JoinType,
+        location: String,
+        register_start_at: Timestamp,
+        register_end_at: Timestamp,
+        vote_start_at: Timestamp,
+        vote_end_at: Timestamp
+    },
+    Register {
+        activity_id: u64,
+        object_id: Option<String>
+    },
+    Vote {
+        activity_id: u64,
+        object_id: String
+    },
+    Announce {
+        activity_id: u64,
+        title: String,
+        content: String,
+        announce_prize: bool
+    }
 }
