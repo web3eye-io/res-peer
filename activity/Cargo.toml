@@ -1,0 +1,28 @@
+[package]
+name = "activity"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+async-graphql = { workspace = true, default-features = false }
+async-trait = { workspace = true }
+bcs = { workspace = true }
+futures = { workspace = true }
+linera-sdk = { workspace = true }
+linera-views = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+linera-sdk = { workspace = true, features = ["test"] }
+webassembly-test = "0.1.0"
+
+[[bin]]
+name = "activity_contract"
+path = "src/contract.rs"
+
+[[bin]]
+name = "activity_service"
+path = "src/service.rs"
+
