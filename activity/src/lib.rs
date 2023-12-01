@@ -1,8 +1,10 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, convert::Infallible};
 
-use async_graphql::{Enum, SimpleObject};
-use linera_sdk::base::{Amount, ContractAbi, Owner, ServiceAbi, Timestamp};
+use async_graphql::{scalar, Enum, Request, Response, SimpleObject};
+use linera_sdk::base::{Amount, ArithmeticError, ContractAbi, Owner, ServiceAbi, Timestamp};
+use linera_views::views::ViewError;
 use serde::{Deserialize, Serialize};
+use thiserror::Error;
 
 pub struct ActivityAbi;
 
@@ -19,8 +21,8 @@ impl ContractAbi for ActivityAbi {
 
 impl ServiceAbi for ActivityAbi {
     type Parameters = ();
-    type Query = ();
-    type QueryResponse = ();
+    type Query = Request;
+    type QueryResponse = Response;
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, Eq, PartialEq, Enum, Copy)]
@@ -122,20 +124,44 @@ pub enum Operation {
         register_start_at: Timestamp,
         register_end_at: Timestamp,
         vote_start_at: Timestamp,
-        vote_end_at: Timestamp
+        vote_end_at: Timestamp,
     },
     Register {
         activity_id: u64,
-        object_id: Option<String>
+        object_id: Option<String>,
     },
     Vote {
         activity_id: u64,
-        object_id: String
+        object_id: String,
     },
     Announce {
         activity_id: u64,
         title: String,
         content: String,
-        announce_prize: bool
-    }
+        announce_prize: bool,
+    },
+}
+
+scalar!(Operation);
+
+#[derive(Debug, Error)]
+#[allow(dead_code)]
+pub enum ActivityError {
+    #[error("Already registered")]
+    AlreadyRegistered,
+
+    #[error("Invalid query")]
+    InvalidQuery(#[from] serde_json::Error),
+
+    #[error(transparent)]
+    BcsError(#[from] bcs::Error),
+
+    #[error(transparent)]
+    ViewError(#[from] ViewError),
+
+    #[error(transparent)]
+    ArithmeticError(#[from] ArithmeticError),
+
+    #[error(transparent)]
+    Infallible(#[from] Infallible),
 }

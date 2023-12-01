@@ -3,10 +3,12 @@
 mod state;
 
 use self::state::Activity;
+use async_graphql::{EmptySubscription, Object, Request, Response, Schema};
 use async_trait::async_trait;
 use linera_sdk::{base::WithServiceAbi, QueryContext, Service, ViewStateStorage};
 use std::sync::Arc;
-use thiserror::Error;
+
+use activity::{ActivityError, Operation};
 
 linera_sdk::service!(Activity);
 
@@ -16,27 +18,25 @@ impl WithServiceAbi for Activity {
 
 #[async_trait]
 impl Service for Activity {
-    type Error = ServiceError;
+    type Error = ActivityError;
     type Storage = ViewStateStorage<Self>;
 
     async fn handle_query(
         self: Arc<Self>,
         _context: &QueryContext,
-        _query: Self::Query,
-    ) -> Result<(), Self::Error> {
-        Err(ServiceError::QueriesNotSupported)
+        request: Request,
+    ) -> Result<Response, Self::Error> {
+        let schema = Schema::build(self.clone(), MutationRoot, EmptySubscription).finish();
+        let response = schema.execute(request).await;
+        Ok(response)
     }
 }
 
-/// An error that can occur while querying the service.
-#[derive(Debug, Error)]
-pub enum ServiceError {
-    /// Query not supported by the application.
-    #[error("Queries not supported by application")]
-    QueriesNotSupported,
+struct MutationRoot;
 
-    /// Invalid query argument; could not deserialize request.
-    #[error("Invalid query argument; could not deserialize request")]
-    InvalidQuery(#[from] serde_json::Error),
-    // Add error variants here.
+#[Object]
+impl MutationRoot {
+    async fn operation(&self, operation: Operation) -> Vec<u8> {
+        bcs::to_bytes(&operation).unwrap()
+    }
 }

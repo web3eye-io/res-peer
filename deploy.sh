@@ -86,12 +86,19 @@ print $'\U01f499' $LIGHTGREEN " Review application deployed"
 echo -e "    Bytecode ID:    $BLUE$review_bid$NC"
 echo -e "    Application ID: $BLUE$review_appid$NC"
 
+print $'\U01F4AB' $YELLOW " Deploying Activity application ..."
+activity_bid=`linera --with-wallet 0 publish-bytecode ./target/wasm32-unknown-unknown/release/activity_{contract,service}.wasm`
+activity_appid=`linera --with-wallet 0 create-application $activity_bid --required-application-ids $feed_appid --required-application-ids $credit_appid --required-application-ids $foundation_appid --required-application-ids $market_appid`
+print $'\U01f499' $LIGHTGREEN " Activity application deployed"
+echo -e "    Bytecode ID:    $BLUE$activity_bid$NC"
+echo -e "    Application ID: $BLUE$activity_appid$NC"
 
 sed -i "s/feedApp =.*/feedApp = '$feed_appid',/g" webui/src/const/index.ts
 sed -i "s/creditApp =.*/creditApp = '$credit_appid',/g" webui/src/const/index.ts
 sed -i "s/marketApp =.*/marketApp = '$market_appid',/g" webui/src/const/index.ts
 sed -i "s/reviewApp =.*/reviewApp = '$review_appid',/g" webui/src/const/index.ts
 sed -i "s/foundationApp =.*/foundationApp = '$foundation_appid'/g" webui/src/const/index.ts
+sed -i "s/activityApp =.*/activityApp = '$activity_appid',/g" webui/src/const/index.ts
 
 function run_new_service() {
   BASE_PORT=8080
