@@ -3,7 +3,7 @@
 mod state;
 
 use self::state::Activity;
-use activity::{ActivityError, Message, ObjectType, Operation};
+use activity::{ActivityError, Message, Operation};
 use async_trait::async_trait;
 use linera_sdk::{
     base::{ChannelName, Destination, SessionId, WithContractAbi},
