@@ -2,20 +2,20 @@
 
 mod state;
 
-use self::state::Application;
+use self::state::Activity;
 use async_trait::async_trait;
 use linera_sdk::{base::WithServiceAbi, QueryContext, Service, ViewStateStorage};
 use std::sync::Arc;
 use thiserror::Error;
 
-linera_sdk::service!(Application);
+linera_sdk::service!(Activity);
 
-impl WithServiceAbi for Application {
-    type Abi = activity::ApplicationAbi;
+impl WithServiceAbi for Activity {
+    type Abi = activity::ActivityAbi;
 }
 
 #[async_trait]
-impl Service for Application {
+impl Service for Activity {
     type Error = ServiceError;
     type Storage = ViewStateStorage<Self>;
 
