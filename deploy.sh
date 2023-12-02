@@ -85,7 +85,7 @@ echo -e "    Application ID: $BLUE$review_appid$NC"
 
 print $'\U01F4AB' $YELLOW " Deploying Activity application ..."
 activity_bid=`linera --with-wallet 0 publish-bytecode ./target/wasm32-unknown-unknown/release/activity_{contract,service}.wasm`
-activity_appid=`linera --with-wallet 0 create-application $activity_bid --required-application-ids $feed_appid --required-application-ids $credit_appid --required-application-ids $foundation_appid --required-application-ids $market_appid`
+activity_appid=`linera --with-wallet 0 create-application $activity_bid --json-parameters "{\"review_app_id\":\"$review_appid\",\"foundation_app_id\":\"$foundation_appid\"}" --required-application-ids $review_appid --required-application-ids $foundation_appid`
 print $'\U01f499' $LIGHTGREEN " Activity application deployed"
 echo -e "    Bytecode ID:    $BLUE$activity_bid$NC"
 echo -e "    Application ID: $BLUE$activity_appid$NC"
