@@ -11,7 +11,7 @@ impl ContractAbi for ReviewAbi {
     type InitializationArgument = InitialState;
     type Operation = Operation;
     type Message = Message;
-    type ApplicationCall = ();
+    type ApplicationCall = ApplicationCall;
     type SessionCall = ();
     type SessionState = ();
     type Response = ();
@@ -198,5 +198,14 @@ pub enum Message {
     RequestSubscribe,
     InitialState {
         state: InitialState,
+    },
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub enum ApplicationCall {
+    SubmitContent {
+        cid: String,
+        title: String,
+        content: String,
     },
 }

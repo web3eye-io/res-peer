@@ -13,6 +13,7 @@ linera-views = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
 thiserror = { workspace = true }
+review = { workspace = true }
 
 [dev-dependencies]
 linera-sdk = { workspace = true, features = ["test"] }

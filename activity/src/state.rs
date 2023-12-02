@@ -4,7 +4,7 @@ use activity::{ActivityError, ActivityItem, CreateParams};
 use linera_sdk::{
     base::Owner,
     contract::system_api,
-    views::{generic_array::typenum::False, MapView, RegisterView, ViewStorageContext},
+    views::{MapView, RegisterView, ViewStorageContext},
 };
 use linera_views::views::{GraphQLView, RootView};
 
@@ -43,7 +43,7 @@ impl Activity {
                 prize_configs: params.prize_configs,
                 voter_reward_percent: params.voter_reward_percent,
                 object_candidates: HashMap::default(),
-                announcements: Vec::new(),
+                announcements: HashMap::default(),
                 prize_announcement: String::default(),
                 vote_powers: HashMap::default(),
                 voters: HashMap::default(),
@@ -120,27 +120,42 @@ impl Activity {
             Ok(false) => {}
             Err(err) => return Err(err),
         }
-        match self.activities.get(&activity_id).await {
-            Ok(Some(mut activity)) => match activity.object_candidates.get(&object_id) {
-                Some(_) => {
-                    let vote_power = match activity.vote_powers.get(&object_id) {
-                        Some(votes) => votes + power,
-                        None => power,
-                    };
-                    activity.vote_powers.insert(object_id.clone(), vote_power);
-                    let mut voters = match activity.voters.get(&object_id) {
-                        Some(voters) => voters.clone(),
-                        None => HashMap::default(),
-                    };
-                    voters.insert(owner, true);
-                    activity.voters.insert(object_id, voters);
-                    self.activities.insert(&activity_id, activity)?;
-                    Ok(())
-                }
-                _ => return Err(ActivityError::ActivityObjectNotFound),
-            },
-            Ok(None) => Err(ActivityError::InvalidActivity),
-            Err(err) => Err(ActivityError::ViewError(err)),
+        let mut activity = self.activity(activity_id).await?;
+        match activity.object_candidates.get(&object_id) {
+            Some(_) => {
+                let vote_power = match activity.vote_powers.get(&object_id) {
+                    Some(votes) => votes + power,
+                    None => power,
+                };
+                activity.vote_powers.insert(object_id.clone(), vote_power);
+                let mut voters = match activity.voters.get(&object_id) {
+                    Some(voters) => voters.clone(),
+                    None => HashMap::default(),
+                };
+                voters.insert(owner, true);
+                activity.voters.insert(object_id, voters);
+                self.activities.insert(&activity_id, activity)?;
+                Ok(())
+            }
+            _ => return Err(ActivityError::ActivityObjectNotFound),
         }
+    }
+
+    pub(crate) async fn announce(
+        &mut self,
+        activity_id: u64,
+        cid: String,
+        announce_prize: bool,
+    ) -> Result<(), ActivityError> {
+        let mut activity = self.activity(activity_id).await?;
+        match activity.announcements.get(&cid) {
+            Some(_) => return Err(ActivityError::ActivityAnnouncementAlreadyCreated),
+            None => {}
+        }
+        activity.announcements.insert(cid.clone(), true);
+        if announce_prize {
+            activity.prize_announcement = cid;
+        }
+        Ok(())
     }
 }

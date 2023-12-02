@@ -1,7 +1,9 @@
 use std::{collections::HashMap, convert::Infallible};
 
 use async_graphql::{scalar, Enum, Request, Response, SimpleObject};
-use linera_sdk::base::{Amount, ArithmeticError, ContractAbi, Owner, ServiceAbi, Timestamp};
+use linera_sdk::base::{
+    Amount, ApplicationId, ArithmeticError, ContractAbi, Owner, ServiceAbi, Timestamp,
+};
 use linera_views::views::ViewError;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -9,7 +11,7 @@ use thiserror::Error;
 pub struct ActivityAbi;
 
 impl ContractAbi for ActivityAbi {
-    type Parameters = ();
+    type Parameters = ActivityParameters;
     type InitializationArgument = ();
     type Operation = Operation;
     type Message = Message;
@@ -20,9 +22,14 @@ impl ContractAbi for ActivityAbi {
 }
 
 impl ServiceAbi for ActivityAbi {
-    type Parameters = ();
+    type Parameters = ActivityParameters;
     type Query = Request;
     type QueryResponse = Response;
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct ActivityParameters {
+    pub review_app_id: ApplicationId<review::ReviewAbi>,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, Eq, PartialEq, Enum, Copy)]
@@ -86,7 +93,7 @@ pub struct ActivityItem {
     pub condition: ObjectCondition,
     pub sponsors: Vec<Owner>,
     pub prize_configs: Vec<PrizeConfig>,
-    pub announcements: Vec<String>,
+    pub announcements: HashMap<String, bool>,
     pub prize_announcement: String,
     pub voter_reward_percent: u8,
     pub vote_powers: HashMap<String, u128>,
@@ -126,25 +133,21 @@ pub struct CreateParams {
     pub vote_end_at: Timestamp,
 }
 
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct AnnounceParams {
+    pub activity_id: u64,
+    pub cid: String,
+    pub title: String,
+    pub content: String,
+    pub announce_prize: bool,
+}
+
 #[derive(Debug, Deserialize, Serialize)]
 pub enum Operation {
-    Create {
-        params: CreateParams,
-    },
-    Register {
-        activity_id: u64,
-        object_id: String,
-    },
-    Vote {
-        activity_id: u64,
-        object_id: String,
-    },
-    Announce {
-        activity_id: u64,
-        title: String,
-        content: String,
-        announce_prize: bool,
-    },
+    Create { params: CreateParams },
+    Register { activity_id: u64, object_id: String },
+    Vote { activity_id: u64, object_id: String },
+    Announce { params: AnnounceParams },
     RequestSubscribe,
 }
 
@@ -152,23 +155,10 @@ scalar!(Operation);
 
 #[derive(Debug, Deserialize, Serialize)]
 pub enum Message {
-    Create {
-        params: CreateParams,
-    },
-    Register {
-        activity_id: u64,
-        object_id: String,
-    },
-    Vote {
-        activity_id: u64,
-        object_id: String,
-    },
-    Announce {
-        activity_id: u64,
-        title: String,
-        content: String,
-        announce_prize: bool,
-    },
+    Create { params: CreateParams },
+    Register { activity_id: u64, object_id: String },
+    Vote { activity_id: u64, object_id: String },
+    Announce { params: AnnounceParams },
     RequestSubscribe,
 }
 
@@ -192,6 +182,9 @@ pub enum ActivityError {
 
     #[error("Activity object already voted")]
     ActivityObjectAlreadyVoted,
+
+    #[error("Activity announcement already created")]
+    ActivityAnnouncementAlreadyCreated,
 
     #[error("Invalid query")]
     InvalidQuery(#[from] serde_json::Error),

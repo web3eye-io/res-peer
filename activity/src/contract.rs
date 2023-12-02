@@ -3,14 +3,15 @@
 mod state;
 
 use self::state::Activity;
-use activity::{ActivityError, Message, Operation};
+use activity::{ActivityError, AnnounceParams, Message, Operation};
 use async_trait::async_trait;
 use linera_sdk::{
-    base::{ChannelName, Destination, SessionId, WithContractAbi},
+    base::{ApplicationId, ChannelName, Destination, SessionId, WithContractAbi},
     contract::system_api,
     ApplicationCallResult, CalleeContext, Contract, ExecutionResult, MessageContext,
     OperationContext, SessionCallResult, ViewStateStorage,
 };
+use review::ReviewAbi;
 
 linera_sdk::contract!(Activity);
 
@@ -64,20 +65,11 @@ impl Contract for Activity {
                     object_id,
                 },
             )),
-            Operation::Announce {
-                activity_id,
-                title,
-                content,
-                announce_prize,
-            } => Ok(ExecutionResult::default().with_authenticated_message(
-                system_api::current_application_id().creation.chain_id,
-                Message::Announce {
-                    activity_id,
-                    title,
-                    content,
-                    announce_prize,
-                },
-            )),
+            Operation::Announce { params } => Ok(ExecutionResult::default()
+                .with_authenticated_message(
+                    system_api::current_application_id().creation.chain_id,
+                    Message::Announce { params },
+                )),
             Operation::RequestSubscribe => Ok(ExecutionResult::default()
                 .with_authenticated_message(
                     system_api::current_application_id().creation.chain_id,
@@ -142,12 +134,19 @@ impl Contract for Activity {
                     },
                 ))
             }
-            Message::Announce {
-                activity_id,
-                title,
-                content,
-                announce_prize,
-            } => Ok(ExecutionResult::default()),
+            Message::Announce { params } => {
+                self.create_announcement(params.clone()).await?;
+                self.announce(
+                    params.activity_id,
+                    params.cid.clone(),
+                    params.announce_prize,
+                )
+                .await?;
+                let dest =
+                    Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
+                Ok(ExecutionResult::default()
+                    .with_authenticated_message(dest, Message::Announce { params }))
+            }
             Message::RequestSubscribe => {
                 let mut result = ExecutionResult::default();
                 if context.message_id.chain_id
@@ -183,5 +182,22 @@ impl Contract for Activity {
     ) -> Result<SessionCallResult<Self::Message, Self::Response, Self::SessionState>, Self::Error>
     {
         Err(ActivityError::SessionsNotSupported)
+    }
+}
+
+impl Activity {
+    fn review_app_id() -> Result<ApplicationId<ReviewAbi>, ActivityError> {
+        Ok(Self::parameters().unwrap().review_app_id)
+    }
+
+    async fn create_announcement(&mut self, params: AnnounceParams) -> Result<(), ActivityError> {
+        let call = review::ApplicationCall::SubmitContent {
+            cid: params.cid,
+            title: params.title,
+            content: params.content,
+        };
+        self.call_application(true, Self::review_app_id()?, &call, vec![])
+            .await?;
+        Ok(())
     }
 }
