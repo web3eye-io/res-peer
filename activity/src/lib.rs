@@ -56,7 +56,7 @@ pub enum ObjectType {
     Creator,
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone, SimpleObject, Eq, PartialEq, InputObject)]
+#[derive(Debug, Deserialize, Serialize, Clone, SimpleObject, Eq, PartialEq)]
 pub struct ObjectCondition {
     class: Option<Vec<String>>,
     min_words: u32,
@@ -119,7 +119,7 @@ pub struct ActivityItem {
     pub finalized: bool,
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone, InputObject)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct CreateParams {
     pub slogan: Option<String>,
     pub banner: String,
@@ -142,7 +142,9 @@ pub struct CreateParams {
     pub vote_end_at: Timestamp,
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone, InputObject)]
+scalar!(CreateParams);
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct AnnounceParams {
     pub activity_id: u64,
     pub cid: String,
@@ -150,6 +152,8 @@ pub struct AnnounceParams {
     pub content: String,
     pub announce_prize: bool,
 }
+
+scalar!(AnnounceParams);
 
 #[derive(Debug, Deserialize, Serialize)]
 pub enum Operation {
