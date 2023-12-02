@@ -89,8 +89,8 @@ pub struct ActivityItem {
     pub announcements: Vec<String>,
     pub prize_announcement: String,
     pub voter_reward_percent: u8,
-    pub vote_counts: HashMap<String, u32>,
-    pub voters: HashMap<String, Vec<Owner>>,
+    pub vote_powers: HashMap<String, u128>,
+    pub voters: HashMap<String, HashMap<Owner, bool>>,
     pub budget_amount: Amount,
     pub join_type: JoinType,
     pub location: String,
@@ -181,11 +181,20 @@ pub enum ActivityError {
     #[error("Invalid activity")]
     InvalidActivity,
 
-    #[error("Invalid query")]
-    InvalidQuery(#[from] serde_json::Error),
-
     #[error("Cross-application sessions not supported")]
     SessionsNotSupported,
+
+    #[error("Activity not votable")]
+    ActivityNotVotable,
+
+    #[error("Activity object not found")]
+    ActivityObjectNotFound,
+
+    #[error("Activity object already voted")]
+    ActivityObjectAlreadyVoted,
+
+    #[error("Invalid query")]
+    InvalidQuery(#[from] serde_json::Error),
 
     #[error(transparent)]
     BcsError(#[from] bcs::Error),

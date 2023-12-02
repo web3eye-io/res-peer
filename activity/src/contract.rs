@@ -118,7 +118,30 @@ impl Contract for Activity {
             Message::Vote {
                 activity_id,
                 object_id,
-            } => Ok(ExecutionResult::default()),
+            } => {
+                match self.votable(activity_id).await {
+                    Ok(true) => {}
+                    Ok(false) => return Err(ActivityError::ActivityNotVotable),
+                    Err(err) => return Err(err),
+                }
+                // TODO: get account balance in foundation
+                self.vote(
+                    context.authenticated_signer.unwrap(),
+                    activity_id,
+                    object_id.clone(),
+                    1,
+                )
+                .await?;
+                let dest =
+                    Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
+                Ok(ExecutionResult::default().with_authenticated_message(
+                    dest,
+                    Message::Vote {
+                        activity_id,
+                        object_id,
+                    },
+                ))
+            }
             Message::Announce {
                 activity_id,
                 title,
