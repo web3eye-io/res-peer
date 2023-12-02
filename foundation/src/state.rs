@@ -256,6 +256,15 @@ impl Foundation {
         self.activity_owners.insert(&activity_id, _activity_host)?;
         Ok(())
     }
+
+    pub(crate) async fn balance(&self, owner: Owner) -> Result<Amount, StateError> {
+        Ok(self
+            .user_balances
+            .get(&owner)
+            .await
+            .unwrap()
+            .unwrap_or_default())
+    }
 }
 
 #[derive(Debug, Error)]

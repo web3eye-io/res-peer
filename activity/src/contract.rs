@@ -3,10 +3,11 @@
 mod state;
 
 use self::state::Activity;
-use activity::{ActivityError, AnnounceParams, Message, Operation};
+use activity::{ActivityError, AnnounceParams, Message, Operation, VoteType};
 use async_trait::async_trait;
+use foundation::FoundationAbi;
 use linera_sdk::{
-    base::{ApplicationId, ChannelName, Destination, SessionId, WithContractAbi},
+    base::{Amount, ApplicationId, ChannelName, Destination, Owner, SessionId, WithContractAbi},
     contract::system_api,
     ApplicationCallResult, CalleeContext, Contract, ExecutionResult, MessageContext,
     OperationContext, SessionCallResult, ViewStateStorage,
@@ -126,12 +127,22 @@ impl Contract for Activity {
                     Ok(false) => return Err(ActivityError::ActivityNotVotable),
                     Err(err) => return Err(err),
                 }
-                // TODO: get account balance in foundation
+                let balance = self
+                    .account_balance(context.authenticated_signer.unwrap())
+                    .await?;
+                let activity = self.activity(activity_id).await?;
+                let power = match activity.vote_type {
+                    VoteType::Account => 1 as u128,
+                    VoteType::Power => balance.into(),
+                };
+                if power == 0 {
+                    return Err(ActivityError::AccountBalanceRequired);
+                }
                 self.vote(
                     context.authenticated_signer.unwrap(),
                     activity_id,
                     object_id.clone(),
-                    1,
+                    power,
                 )
                 .await?;
                 let dest =
@@ -207,6 +218,10 @@ impl Activity {
         Ok(Self::parameters().unwrap().review_app_id)
     }
 
+    fn foundation_app_id() -> Result<ApplicationId<FoundationAbi>, ActivityError> {
+        Ok(Self::parameters().unwrap().foundation_app_id)
+    }
+
     async fn create_announcement(&mut self, params: AnnounceParams) -> Result<(), ActivityError> {
         let call = review::ApplicationCall::SubmitContent {
             cid: params.cid,
@@ -216,5 +231,14 @@ impl Activity {
         self.call_application(true, Self::review_app_id()?, &call, vec![])
             .await?;
         Ok(())
+    }
+
+    async fn account_balance(&mut self, owner: Owner) -> Result<Amount, ActivityError> {
+        let call = foundation::ApplicationCall::Balance { owner };
+        let (resp, _) = self
+            .call_application(true, Self::foundation_app_id()?, &call, vec![])
+            .await?;
+        let balance = resp.data.to_string().parse().unwrap();
+        Ok(balance)
     }
 }

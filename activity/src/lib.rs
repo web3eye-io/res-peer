@@ -30,6 +30,7 @@ impl ServiceAbi for ActivityAbi {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ActivityParameters {
     pub review_app_id: ApplicationId<review::ReviewAbi>,
+    pub foundation_app_id: ApplicationId<foundation::FoundationAbi>,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, Eq, PartialEq, Enum, Copy)]
@@ -201,6 +202,9 @@ pub enum ActivityError {
 
     #[error("Activity already finalized")]
     ActivityAlreadyFinalized,
+
+    #[error("Account balance required")]
+    AccountBalanceRequired,
 
     #[error("Invalid query")]
     InvalidQuery(#[from] serde_json::Error),

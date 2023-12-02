@@ -12,7 +12,7 @@ impl ContractAbi for FoundationAbi {
     type ApplicationCall = ApplicationCall;
     type SessionCall = ();
     type SessionState = ();
-    type Response = ();
+    type Response = Response;
 }
 
 impl ServiceAbi for FoundationAbi {
@@ -68,6 +68,9 @@ pub enum ApplicationCall {
         activity_id: u64,
         activity_host: Owner,
         amount: Amount,
+    },
+    Balance {
+        owner: Owner,
     },
 }
 

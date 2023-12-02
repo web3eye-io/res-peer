@@ -3,6 +3,7 @@
 mod state;
 
 use self::state::Foundation;
+use async_graphql::Response;
 use async_trait::async_trait;
 use foundation::{ApplicationCall, Message, Operation, RewardType};
 use linera_sdk::{
@@ -210,6 +211,12 @@ impl Contract for Foundation {
                     system_api::current_application_id().creation.chain_id,
                     Message::Transfer { from, to, amount },
                 ),
+            ApplicationCall::Balance { owner } => {
+                let balance = self.balance(owner).await?;
+                let mut result = ApplicationCallResult::default();
+                result.value = Response::new(balance.to_string());
+                return Ok(result);
+            }
         };
         let mut result = ApplicationCallResult::default();
         result.execution_result = execution_result;
