@@ -1,8 +1,5 @@
 #!/bin/bash
 
-unset LINERA_WALLET
-unset LINERA_STORAGE
-
 killall -15 linera > /dev/null 2>&1
 killall -15 linera-proxy > /dev/null 2>&1
 killall -15 linera-server > /dev/null 2>&1
@@ -115,7 +112,6 @@ for i in `seq 0 $EXTRA_WALLET_NUMBER`; do
 done
 
 function cleanup() {
-  rm -rf `dirname $LINERA_WALLET`
   killall -15 linera > /dev/null 2>&1
   killall -15 linera-proxy > /dev/null 2>&1
   killall -15 linera-server > /dev/null 2>&1
