@@ -8,7 +8,7 @@ use async_trait::async_trait;
 use linera_sdk::{base::WithServiceAbi, QueryContext, Service, ViewStateStorage};
 use std::sync::Arc;
 
-use activity::{ActivityError, Operation};
+use activity::{ActivityError, AnnounceParams, CreateParams, Operation};
 
 linera_sdk::service!(Activity);
 
@@ -36,7 +36,35 @@ struct MutationRoot;
 
 #[Object]
 impl MutationRoot {
-    async fn operation(&self, operation: Operation) -> Vec<u8> {
-        bcs::to_bytes(&operation).unwrap()
+    async fn create(&self, params: CreateParams) -> Vec<u8> {
+        bcs::to_bytes(&Operation::Create { params }).unwrap()
+    }
+
+    async fn register(&self, activity_id: u64, object_id: String) -> Vec<u8> {
+        bcs::to_bytes(&Operation::Register {
+            activity_id,
+            object_id,
+        })
+        .unwrap()
+    }
+
+    async fn vote(&self, activity_id: u64, object_id: String) -> Vec<u8> {
+        bcs::to_bytes(&Operation::Vote {
+            activity_id,
+            object_id,
+        })
+        .unwrap()
+    }
+
+    async fn announce(&self, params: AnnounceParams) -> Vec<u8> {
+        bcs::to_bytes(&Operation::Announce { params }).unwrap()
+    }
+
+    async fn request_subscribe(&self) -> Vec<u8> {
+        bcs::to_bytes(&Operation::RequestSubscribe).unwrap()
+    }
+
+    async fn finalize(&self, activity_id: u64) -> Vec<u8> {
+        bcs::to_bytes(&Operation::Finalize { activity_id }).unwrap()
     }
 }

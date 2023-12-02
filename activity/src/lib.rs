@@ -1,6 +1,6 @@
 use std::{collections::HashMap, convert::Infallible};
 
-use async_graphql::{scalar, Enum, Request, Response, SimpleObject};
+use async_graphql::{scalar, Enum, InputObject, Request, Response, SimpleObject};
 use linera_sdk::base::{
     Amount, ApplicationId, ArithmeticError, ContractAbi, Owner, ServiceAbi, Timestamp,
 };
@@ -56,14 +56,14 @@ pub enum ObjectType {
     Creator,
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone, SimpleObject, Eq, PartialEq)]
+#[derive(Debug, Deserialize, Serialize, Clone, SimpleObject, Eq, PartialEq, InputObject)]
 pub struct ObjectCondition {
     class: Option<Vec<String>>,
     min_words: u32,
     max_words: u32,
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone, SimpleObject, Eq, PartialEq)]
+#[derive(Debug, Deserialize, Serialize, Clone, SimpleObject, Eq, PartialEq, InputObject)]
 pub struct PrizeConfig {
     place: u16,
     medal: String,
@@ -119,7 +119,7 @@ pub struct ActivityItem {
     pub finalized: bool,
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone, InputObject)]
 pub struct CreateParams {
     pub slogan: Option<String>,
     pub banner: String,
@@ -142,7 +142,7 @@ pub struct CreateParams {
     pub vote_end_at: Timestamp,
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone, InputObject)]
 pub struct AnnounceParams {
     pub activity_id: u64,
     pub cid: String,
