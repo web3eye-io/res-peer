@@ -1,6 +1,6 @@
-use std::collections::HashMap;
+use std::{cmp::Ordering, collections::HashMap};
 
-use activity::{ActivityError, ActivityItem, CreateParams};
+use activity::{ActivityError, ActivityItem, CreateParams, Winner};
 use linera_sdk::{
     base::Owner,
     contract::system_api,
@@ -57,6 +57,8 @@ impl Activity {
                 vote_start_at: params.vote_start_at,
                 vote_end_at: params.vote_end_at,
                 participantors: Vec::new(),
+                winners: Vec::new(),
+                finalized: false,
             },
         )?)
     }
@@ -156,6 +158,66 @@ impl Activity {
         if announce_prize {
             activity.prize_announcement = cid;
         }
+        Ok(())
+    }
+
+    pub(crate) async fn finalize(&mut self, activity_id: u64) -> Result<(), ActivityError> {
+        let mut activity = self.activity(activity_id).await?;
+        if activity.finalized {
+            return Err(ActivityError::ActivityAlreadyFinalized);
+        }
+        let mut winners = Vec::<Winner>::new();
+        let mut least_winner_power = 0 as u128;
+        let mut least_winner_index = 0;
+        activity
+            .vote_powers
+            .clone()
+            .into_iter()
+            .for_each(|(object_id, power)| {
+                if winners.len() < activity.prize_configs.len() {
+                    winners.push(Winner {
+                        object_id,
+                        place: 1,
+                    });
+                    if power < least_winner_power {
+                        least_winner_power = power;
+                        least_winner_index = winners.len() - 1;
+                    }
+                    return;
+                }
+                if power < least_winner_power {
+                    return;
+                }
+                winners[least_winner_index] = Winner {
+                    object_id,
+                    place: 1,
+                };
+                least_winner_power = power;
+                for i in 0..winners.len() {
+                    let winner_power = activity
+                        .vote_powers
+                        .get(&winners[i].object_id)
+                        .unwrap()
+                        .clone();
+                    if winner_power < least_winner_power {
+                        least_winner_index = i;
+                        least_winner_power = winner_power;
+                    }
+                }
+            });
+        winners.sort_by(|a, b| {
+            let a_power = activity.vote_powers.get(&a.object_id).unwrap().clone();
+            let b_power = activity.vote_powers.get(&b.object_id).unwrap().clone();
+            if a_power > b_power {
+                return Ordering::Greater;
+            }
+            Ordering::Less
+        });
+        for i in 0..winners.len() {
+            winners[i].place = i as u16 + 1;
+        }
+        activity.winners = winners;
+        activity.finalized = true;
         Ok(())
     }
 }

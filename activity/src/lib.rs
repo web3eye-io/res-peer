@@ -77,6 +77,12 @@ pub enum JoinType {
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, SimpleObject, Eq, PartialEq)]
+pub struct Winner {
+    pub place: u16,
+    pub object_id: String,
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone, SimpleObject, Eq, PartialEq)]
 pub struct ActivityItem {
     pub id: u64,
     pub slogan: Option<String>,
@@ -108,6 +114,8 @@ pub struct ActivityItem {
     pub vote_start_at: Timestamp,
     pub vote_end_at: Timestamp,
     pub participantors: Vec<Owner>,
+    pub winners: Vec<Winner>,
+    pub finalized: bool,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
@@ -149,6 +157,7 @@ pub enum Operation {
     Vote { activity_id: u64, object_id: String },
     Announce { params: AnnounceParams },
     RequestSubscribe,
+    Finalize { activity_id: u64 },
 }
 
 scalar!(Operation);
@@ -160,6 +169,7 @@ pub enum Message {
     Vote { activity_id: u64, object_id: String },
     Announce { params: AnnounceParams },
     RequestSubscribe,
+    Finalize { activity_id: u64 },
 }
 
 #[derive(Debug, Error)]
@@ -185,6 +195,12 @@ pub enum ActivityError {
 
     #[error("Activity announcement already created")]
     ActivityAnnouncementAlreadyCreated,
+
+    #[error("Only host can finalize activity")]
+    NotActivityHost,
+
+    #[error("Activity already finalized")]
+    ActivityAlreadyFinalized,
 
     #[error("Invalid query")]
     InvalidQuery(#[from] serde_json::Error),

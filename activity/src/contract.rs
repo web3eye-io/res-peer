@@ -36,7 +36,7 @@ impl Contract for Activity {
 
     async fn execute_operation(
         &mut self,
-        _context: &OperationContext,
+        context: &OperationContext,
         operation: Self::Operation,
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
         match operation {
@@ -75,6 +75,16 @@ impl Contract for Activity {
                     system_api::current_application_id().creation.chain_id,
                     Message::RequestSubscribe,
                 )),
+            Operation::Finalize { activity_id } => {
+                let activity = self.activity(activity_id).await?;
+                if activity.host != context.authenticated_signer.unwrap() {
+                    return Err(ActivityError::NotActivityHost);
+                }
+                Ok(ExecutionResult::default().with_authenticated_message(
+                    system_api::current_application_id().creation.chain_id,
+                    Message::Finalize { activity_id },
+                ))
+            }
         }
     }
 
@@ -159,6 +169,13 @@ impl Contract for Activity {
                     context.message_id.chain_id,
                 ));
                 Ok(result)
+            }
+            Message::Finalize { activity_id } => {
+                self.finalize(activity_id).await?;
+                let dest =
+                    Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
+                Ok(ExecutionResult::default()
+                    .with_authenticated_message(dest, Message::Finalize { activity_id }))
             }
         }
     }
