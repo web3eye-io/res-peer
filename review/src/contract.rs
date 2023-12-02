@@ -19,7 +19,7 @@ use linera_sdk::{
 };
 // use linera_views::views::ViewError;
 use market::MarketAbi;
-use review::{Asset, Content, InitialState, Message, Operation};
+use review::{ApplicationCall, Asset, Content, InitialState, Message, Operation};
 use thiserror::Error;
 
 linera_sdk::contract!(Review);
@@ -432,11 +432,28 @@ impl Contract for Review {
     async fn handle_application_call(
         &mut self,
         _context: &CalleeContext,
-        _call: Self::ApplicationCall,
+        call: Self::ApplicationCall,
         _forwarded_sessions: Vec<SessionId>,
     ) -> Result<ApplicationCallResult<Self::Message, Self::Response, Self::SessionState>, Self::Error>
     {
-        Ok(ApplicationCallResult::default())
+        match call {
+            ApplicationCall::SubmitContent {
+                cid,
+                title,
+                content,
+            } => {
+                let mut result = ApplicationCallResult::default();
+                result.execution_result = ExecutionResult::default().with_authenticated_message(
+                    system_api::current_application_id().creation.chain_id,
+                    Message::SubmitContent {
+                        cid,
+                        title,
+                        content,
+                    },
+                );
+                Ok(result)
+            }
+        }
     }
 
     async fn handle_session_call(
