@@ -46,6 +46,9 @@ const requestApplication = async (index: number, retry: boolean) => {
         case 4:
           application.foundationApp = constants.Apps.foundationApp
           break
+        case 5:
+          application.activityApp = constants.Apps.activityApp
+          break
       }
     }, 1000)
     void requestApplication(index + 1, false)

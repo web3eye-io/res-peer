@@ -44,6 +44,7 @@
           <q-tab v-if='reviewer' name='review-reviewers' label='Review Reviewer' />
           <q-tab v-if='!reviewer' name='apply-reviewer' label='Apply Reviewer' />
           <q-tab name='foundation' label='Foundation' />
+          <q-tab name='activity' label='Activity' />
         </q-tabs>
       </template>
       <template #after>
@@ -101,6 +102,9 @@
               <foundation-page />
             </div>
           </q-tab-panel>
+          <q-tab-panel name='activity'>
+            <activity-page />
+          </q-tab-panel>
         </q-tab-panels>
       </template>
     </q-splitter>
@@ -130,6 +134,7 @@ import ApplyReviewer from 'src/components/ApplyReviewer.vue'
 import ContentApplicationList from 'src/components/ContentApplicationList.vue'
 import AssetApplicationList from 'src/components/AssetApplicationList.vue'
 import FoundationPage from 'src/components/FoundationPage.vue'
+import ActivityPage from 'src/components/ActivityPage.vue'
 
 interface Query {
   tab: string

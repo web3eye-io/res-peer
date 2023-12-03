@@ -19,6 +19,11 @@
             @click='onLoginClick'
           />
           <q-icon
+            name='local_activity' size='24px' color='black' class='cursor-pointer'
+            :style='{marginLeft: "8px"}'
+            @click='onActivityClick'
+          />
+          <q-icon
             v-if='account?.length'
             name='dashboard' size='24px' color='black' class='cursor-pointer'
             :style='{marginLeft: "8px"}'
@@ -162,6 +167,9 @@ const onDashboardClick = () => {
       port: port.value
     }
   })
+}
+const onActivityClick = () => {
+  // TODO
 }
 const onLogoClick = () => {
   void router.push({
