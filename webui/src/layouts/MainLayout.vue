@@ -63,6 +63,7 @@
       <reviewer-applications-query />
       <review-state-query />
       <foundation-info-query />
+      <activities-keys-query />
     </q-page-container>
 
     <q-footer elevated :style='{height: "32px", lineHeight: "32px"}'>
@@ -144,6 +145,7 @@ import ReviewerApplicationsKeysQuery from 'src/components/ReviewerApplicationsKe
 import ReviewerApplicationsQuery from 'src/components/ReviewerApplicationsQuery.vue'
 import ReviewStateQuery from 'src/components/ReviewStateQuery.vue'
 import FoundationInfoQuery from 'src/components/FoundationInfoQuery.vue'
+import ActivitiesKeysQuery from 'src/components/ActivitiesKeysQuery.vue'
 
 const router = useRouter()
 const account = ref('')
