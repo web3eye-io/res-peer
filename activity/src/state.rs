@@ -28,6 +28,7 @@ impl Activity {
             &activity_id,
             ActivityItem {
                 id: activity_id,
+                title: params.title,
                 slogan: params.slogan,
                 banner: params.banner,
                 posters: params.posters,

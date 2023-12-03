@@ -45,6 +45,7 @@ export interface Winner {
 
 export interface Activity {
   id: number
+  title: string
   slogan?: string
   banner: string
   posters: Array<string>
@@ -53,26 +54,26 @@ export interface Activity {
   createdAt: number
   activityType: ActivityType
   votable: boolean
-  vote_type: VoteType
-  object_type: ObjectType
-  object_candidates: Map<string, boolean>
+  voteType: VoteType
+  objectType: ObjectType
+  objectCandidates: Map<string, boolean>
   condition: ObjectCondition
   sponsors: Array<string>
   prizeConfigs: Array<PrizeConfig>
-  announcements: Array<string>
+  announcements: Map<string, boolean>
   prizeAnnouncement: string
-  voter_reward_percent: number
-  vote_powers: Map<string, string>
+  voterRewardPercent: number
+  votePowers: Map<string, string>
   voters: Map<string, Map<string, boolean>>
   budgetAmount: string
   joinType: JoinType
   location: string
   comments: Array<string>
   registers: Array<string>
-  register_start_at: number
-  register_end_at: number
-  vote_start_at: number
-  vote_end_at: number
+  registerStartAt: number
+  registerEndAt: number
+  voteStartAt: number
+  voteEndAt: number
   participantors: Array<string>
   winners: Array<Winner>
   finalized: boolean
@@ -81,8 +82,18 @@ export interface Activity {
 export const useActivityStore = defineStore('activity', {
   state: () => ({
     activitiesKeys: [] as Array<number>,
-    activities: new Map<string, Activity>()
+    activities: new Map<number, Activity>()
   }),
-  getters: {},
+  getters: {
+    _activities (): (host?: string) => Array<Activity> {
+      return (host?: string) => {
+        return Array.from(this.activities.values()).filter((el) => {
+          let ok = true
+          if (host) ok &&= el.host === host
+          return ok
+        }).sort((a, b) => a.createdAt - b.createdAt)
+      }
+    }
+  },
   actions: {}
 })

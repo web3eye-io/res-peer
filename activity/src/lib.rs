@@ -86,6 +86,7 @@ pub struct Winner {
 #[derive(Debug, Deserialize, Serialize, Clone, SimpleObject, Eq, PartialEq)]
 pub struct ActivityItem {
     pub id: u64,
+    pub title: String,
     pub slogan: Option<String>,
     pub banner: String,
     pub posters: Vec<String>,
@@ -121,6 +122,7 @@ pub struct ActivityItem {
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct CreateParams {
+    pub title: String,
     pub slogan: Option<String>,
     pub banner: String,
     pub posters: Vec<String>,
