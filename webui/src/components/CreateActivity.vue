@@ -170,7 +170,12 @@ const params = ref({
   voteType: VoteType.Power,
   objectType: ObjectType.Content,
   joinType: JoinType.Online,
-  condition: {} as ObjectCondition
+  condition: {
+    minWords: 0,
+    maxWords: 1000000
+  } as ObjectCondition,
+  voterRewardPercent: 12,
+  budgetAmount: '10000000'
 } as CreateParams)
 
 const newPoster = ref('')
