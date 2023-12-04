@@ -175,7 +175,11 @@ const params = ref({
     maxWords: 1000000
   } as ObjectCondition,
   voterRewardPercent: 12,
-  budgetAmount: '10000000'
+  budgetAmount: '10000000',
+  registerStartAt: new Date().getTime(),
+  registerEndAt: new Date().getTime(),
+  voteStartAt: new Date().getTime(),
+  voteEndAt: new Date().getTime()
 } as CreateParams)
 
 const newPoster = ref('')
@@ -235,12 +239,72 @@ const onAddPrizeClick = () => {
 
 const router = useRouter()
 
-const onSubmitClick = async () => {
-  const { mutate, onDone, onError } = provideApolloClient(apolloClient)(() => useMutation(gql`
-    mutation createActivity ($params: CreateParams!) {
-      create(params: $params)
+const params2Gql = () => {
+  let s = `mutation createActivity {
+    create (params: {
+      title: ${params.value.title},
+      slogan: ${params.value.slogan as string},
+      banner: ${params.value.banner},
+      posters: [
+  `
+  params.value.posters?.forEach((poster, i) => {
+    s += i < params.value.posters.length - 1 ? poster + ',' : poster
+  })
+  s += '],'
+  s += `
+    introduction: ${params.value.introduction},
+    activity_type: ${params.value.activityType},
+    votable: ${params.value.votable as unknown as string},
+    vote_type: ${params.value.voteType},
+    object_type: ${params.value.objectType},
+    condition: {
+      classes: [
+  `
+  params.value.condition.classes?.forEach((clazz, i) => {
+    s += i < (params.value.condition.classes?.length || 0 - 1) ? clazz + ',' : clazz
+  })
+  s += `    ],
+      min_words: ${params.value.condition.minWords},
+      max_words: ${params.value.condition.maxWords},
+    },
+    prize_configs: [
+  `
+  params.value.prizeConfigs?.forEach((prize, i) => {
+    s += `{
+      place: ${prize.place},
+      medal: ${prize.medal},
+      title: ${prize.title}
+    `
+    if (prize.rewardAmount) {
+      s += `,reward_amount: ${prize.rewardAmount}`
     }
-  `))
+    s += '}'
+    if (i < params.value.prizeConfigs.length - 1) {
+      s += ','
+    }
+  })
+  s += `  ],
+    voter_reward_percent: ${params.value.voterRewardPercent},
+    budget_amount: "${params.value.budgetAmount as unknown as string}",
+    join_type: ${params.value.joinType},
+    location: ${params.value.joinType},
+    register_start_at: ${params.value.registerStartAt},
+    register_end_at: ${params.value.registerEndAt},
+    vote_start_at: ${params.value.voteStartAt},
+    vote_end_at: ${params.value.voteEndAt},
+    sponsors: []
+  `
+  s += '})'
+  s += '}'
+  return s
+}
+
+const onSubmitClick = async () => {
+  const gqlStr = params2Gql()
+  console.log(gqlStr)
+  const { mutate, onDone, onError } = provideApolloClient(apolloClient)(() => useMutation(gql(
+    gqlStr
+  )))
   onDone(() => {
     void router.back()
   })
