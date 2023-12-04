@@ -173,7 +173,12 @@ const onDashboardClick = () => {
   })
 }
 const onActivityClick = () => {
-  // TODO
+  void router.push({
+    path: '/activity',
+    query: {
+      port: port.value
+    }
+  })
 }
 const onLogoClick = () => {
   void router.push({
