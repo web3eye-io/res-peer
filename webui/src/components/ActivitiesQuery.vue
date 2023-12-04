@@ -24,6 +24,7 @@ const getActivities = (activityKey: number, done?: () => void) => {
     query getActivities($activityKey: Int!) {
       activities(u64: $activityKey) {
         id
+        title
         slogan
         banner
         posters
@@ -36,7 +37,7 @@ const getActivities = (activityKey: number, done?: () => void) => {
         objectType
         objectCandidates
         condition {
-          class
+          classes
           minWords
           maxWords
         }

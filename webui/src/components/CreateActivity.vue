@@ -287,7 +287,7 @@ const params2Gql = () => {
     voter_reward_percent: ${params.value.voterRewardPercent},
     budget_amount: "${params.value.budgetAmount as unknown as string}",
     join_type: ${params.value.joinType},
-    location: ${params.value.joinType},
+    location: ${params.value.location},
     register_start_at: ${params.value.registerStartAt},
     register_end_at: ${params.value.registerEndAt},
     vote_start_at: ${params.value.voteStartAt},

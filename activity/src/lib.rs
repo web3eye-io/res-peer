@@ -58,7 +58,7 @@ pub enum ObjectType {
 
 #[derive(Debug, Deserialize, Serialize, Clone, SimpleObject, Eq, PartialEq)]
 pub struct ObjectCondition {
-    class: Option<Vec<String>>,
+    classes: Option<Vec<String>>,
     min_words: u32,
     max_words: u32,
 }
