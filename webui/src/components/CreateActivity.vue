@@ -69,7 +69,6 @@
     <q-input type='number' label='Voter Reward Percent' v-model='params.voterRewardPercent' />
     <q-input label='Budget Amount' v-model='params.budgetAmount' />
     <q-input label='Activity Location (Url or Address)' v-model='params.location' />
-    <div>{{ params.registerStartAt }}</div>
     <div class='row'>
       <q-input
         filled v-model='params.registerStartAt' mask='date' :rules='["date"]'
@@ -307,7 +306,12 @@ const onSubmitClick = async () => {
     gqlStr
   )))
   onDone(() => {
-    void router.back()
+    void router.push({
+      path: '/dashboard',
+      query: {
+        tab: 'activity'
+      }
+    })
   })
   onError((error) => {
     console.log(error)

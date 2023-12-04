@@ -23,7 +23,7 @@ import { Activity, useActivityStore } from 'src/stores/activity'
 import { useUserStore } from 'src/stores/user'
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { date } from 'quasar'
+import { Cookies, date } from 'quasar'
 
 const user = useUserStore()
 const account = computed(() => user.account)
@@ -50,9 +50,16 @@ const columns = computed(() => [
   }
 ])
 
+const port = computed(() => Cookies.get('service-port'))
+
 const router = useRouter()
 const onCreateActivityClick = () => {
-  void router.push({ path: '/create/activity' })
+  void router.push({
+    path: '/create/activity',
+    query: {
+      port: port.value
+    }
+  })
 }
 
 </script>
