@@ -303,7 +303,6 @@ const params2Gql = () => {
 
 const onSubmitClick = async () => {
   const gqlStr = params2Gql()
-  console.log(gqlStr)
   const { mutate, onDone, onError } = provideApolloClient(apolloClient)(() => useMutation(gql(
     gqlStr
   )))
