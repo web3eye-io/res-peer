@@ -23,6 +23,7 @@ import { Activity, useActivityStore } from 'src/stores/activity'
 import { useUserStore } from 'src/stores/user'
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { date } from 'quasar'
 
 const user = useUserStore()
 const account = computed(() => user.account)
@@ -41,11 +42,11 @@ const columns = computed(() => [
   }, {
     name: 'RegisterStartAt',
     label: 'Register Start At',
-    field: (row: Activity) => row.registerEndAt
+    field: (row: Activity) => date.formatDate(row.registerEndAt)
   }, {
     name: 'VoteStartAt',
     label: 'Vote Start At',
-    field: (row: Activity) => row.voteStartAt
+    field: (row: Activity) => date.formatDate(row.voteStartAt)
   }
 ])
 

@@ -68,10 +68,10 @@ export interface CreateParams {
   budgetAmount: string
   joinType: JoinType
   location: string
-  registerStartAt: number
-  registerEndAt: number
-  voteStartAt: number
-  voteEndAt: number
+  registerStartAt: string
+  registerEndAt: string
+  voteStartAt: string
+  voteEndAt: string
 }
 
 export interface Activity {

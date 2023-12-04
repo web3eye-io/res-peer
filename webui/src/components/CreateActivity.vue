@@ -69,6 +69,7 @@
     <q-input type='number' label='Voter Reward Percent' v-model='params.voterRewardPercent' />
     <q-input label='Budget Amount' v-model='params.budgetAmount' />
     <q-input label='Activity Location (Url or Address)' v-model='params.location' />
+    <div>{{ params.registerStartAt }}</div>
     <div class='row'>
       <q-input
         filled v-model='params.registerStartAt' mask='date' :rules='["date"]'
@@ -160,6 +161,7 @@ import { provideApolloClient, useMutation } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
 import { targetChain } from 'src/stores/chain'
 import { useRouter } from 'vue-router'
+import { date } from 'quasar'
 
 const options = /* await */ getClientOptions(/* {app, router ...} */)
 const apolloClient = new ApolloClient(options)
@@ -176,10 +178,10 @@ const params = ref({
   } as ObjectCondition,
   voterRewardPercent: 12,
   budgetAmount: '10000000',
-  registerStartAt: new Date().getTime(),
-  registerEndAt: new Date().getTime(),
-  voteStartAt: new Date().getTime(),
-  voteEndAt: new Date().getTime()
+  registerStartAt: date.formatDate(new Date().toString(), 'YYYY/MM/DD'),
+  registerEndAt: date.formatDate(new Date().toString(), 'YYYY/MM/DD'),
+  voteStartAt: date.formatDate(new Date().toString(), 'YYYY/MM/DD'),
+  voteEndAt: date.formatDate(new Date().toString(), 'YYYY/MM/DD')
 } as CreateParams)
 
 const newPoster = ref('')
@@ -288,10 +290,10 @@ const params2Gql = () => {
     budget_amount: "${params.value.budgetAmount as unknown as string}",
     join_type: ${params.value.joinType},
     location: ${params.value.location},
-    register_start_at: ${params.value.registerStartAt},
-    register_end_at: ${params.value.registerEndAt},
-    vote_start_at: ${params.value.voteStartAt},
-    vote_end_at: ${params.value.voteEndAt},
+    register_start_at: ${Date.parse(params.value.registerStartAt)},
+    register_end_at: ${Date.parse(params.value.registerEndAt)},
+    vote_start_at: ${Date.parse(params.value.voteStartAt)},
+    vote_end_at: ${Date.parse(params.value.voteEndAt)},
     sponsors: []
   `
   s += '})'
