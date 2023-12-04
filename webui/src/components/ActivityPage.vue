@@ -22,6 +22,7 @@
 import { Activity, useActivityStore } from 'src/stores/activity'
 import { useUserStore } from 'src/stores/user'
 import { computed } from 'vue'
+import { useRouter } from 'vue-router'
 
 const user = useUserStore()
 const account = computed(() => user.account)
@@ -48,8 +49,9 @@ const columns = computed(() => [
   }
 ])
 
+const router = useRouter()
 const onCreateActivityClick = () => {
-  // TODO
+  void router.push({ path: '/create/activity' })
 }
 
 </script>

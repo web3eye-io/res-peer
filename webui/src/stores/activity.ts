@@ -5,10 +5,14 @@ export enum ActivityType {
   Campaign = 'Campaign'
 }
 
+export const ActivityTypes = Object.values(ActivityType)
+
 export enum VoteType {
   Account = 'Account',
   Power = 'Power'
 }
+
+export const VoteTypes = Object.values(VoteType)
 
 export enum ObjectType {
   Content = 'Content',
@@ -20,8 +24,10 @@ export enum ObjectType {
   Creator = 'Creator'
 }
 
+export const ObjectTypes = Object.values(ObjectType)
+
 export interface ObjectCondition {
-  class?: Array<string>
+  classes?: Array<string>
   minWords: number
   maxWords: number
 }
@@ -38,9 +44,34 @@ export enum JoinType {
   InPerson = 'InPerson'
 }
 
+export const JoinTypes = Object.values(JoinType)
+
 export interface Winner {
   place: number
   object_id: string
+}
+
+export interface CreateParams {
+  title: string
+  slogan?: string
+  banner: string
+  posters: Array<string>
+  introduction: string
+  activityType: ActivityType
+  votable: boolean
+  voteType: VoteType
+  objectType: ObjectType
+  condition: ObjectCondition
+  sponsors: Array<string>
+  prizeConfigs: Array<PrizeConfig>
+  voterRewardPercent: number
+  budgetAmount: string
+  joinType: JoinType
+  location: string
+  registerStartAt: number
+  registerEndAt: number
+  voteStartAt: number
+  voteEndAt: number
 }
 
 export interface Activity {
