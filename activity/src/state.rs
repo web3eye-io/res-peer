@@ -34,6 +34,7 @@ impl Activity {
                 posters: params.posters,
                 introduction: params.introduction,
                 host: owner,
+                host_resume: params.host_resume,
                 created_at: system_api::current_system_time(),
                 activity_type: params.activity_type,
                 votable: params.votable,

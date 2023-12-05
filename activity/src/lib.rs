@@ -92,6 +92,7 @@ pub struct ActivityItem {
     pub posters: Vec<String>,
     pub introduction: String,
     pub host: Owner,
+    pub host_resume: String,
     pub created_at: Timestamp,
     pub activity_type: ActivityType,
     pub votable: bool,
@@ -125,6 +126,7 @@ pub struct CreateParams {
     pub title: String,
     pub slogan: Option<String>,
     pub banner: String,
+    pub host_resume: String,
     pub posters: Vec<String>,
     pub introduction: String,
     pub activity_type: ActivityType,
@@ -147,6 +149,33 @@ pub struct CreateParams {
 scalar!(CreateParams);
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct UpdateParams {
+    pub title: Option<String>,
+    pub slogan: Option<String>,
+    pub banner: Option<String>,
+    pub host_resume: Option<String>,
+    pub posters: Option<Vec<String>>,
+    pub introduction: Option<String>,
+    pub activity_type: Option<ActivityType>,
+    pub votable: Option<bool>,
+    pub vote_type: Option<VoteType>,
+    pub object_type: Option<ObjectType>,
+    pub condition: Option<ObjectCondition>,
+    pub sponsors: Option<Vec<Owner>>,
+    pub prize_configs: Option<Vec<PrizeConfig>>,
+    pub voter_reward_percent: Option<u8>,
+    pub budget_amount: Option<Amount>,
+    pub join_type: Option<JoinType>,
+    pub location: Option<String>,
+    pub register_start_at: Option<Timestamp>,
+    pub register_end_at: Option<Timestamp>,
+    pub vote_start_at: Option<Timestamp>,
+    pub vote_end_at: Option<Timestamp>
+}
+
+scalar!(UpdateParams);
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct AnnounceParams {
     pub activity_id: u64,
     pub cid: String,
@@ -160,6 +189,7 @@ scalar!(AnnounceParams);
 #[derive(Debug, Deserialize, Serialize)]
 pub enum Operation {
     Create { params: CreateParams },
+    Update { params: UpdateParams },
     Register { activity_id: u64, object_id: String },
     Vote { activity_id: u64, object_id: String },
     Announce { params: AnnounceParams },
@@ -172,6 +202,7 @@ scalar!(Operation);
 #[derive(Debug, Deserialize, Serialize)]
 pub enum Message {
     Create { params: CreateParams },
+    Update { params: UpdateParams },
     Register { activity_id: u64, object_id: String },
     Vote { activity_id: u64, object_id: String },
     Announce { params: AnnounceParams },

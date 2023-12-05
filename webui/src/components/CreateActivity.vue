@@ -204,6 +204,7 @@ const onConfirmAddPosterClick = () => {
   }
   params.value.posters.push(newPoster.value)
   addPoster.value = false
+  newPoster.value = ''
 }
 
 const onCancelAddPosterClick = () => {
@@ -220,6 +221,7 @@ const onConfirmAddClassClick = () => {
   }
   params.value.condition.classes?.push(newClass.value)
   addClass.value = false
+  newClass.value = ''
 }
 
 const onCancelAddClassClick = () => {
@@ -236,6 +238,7 @@ const onConfirmAddPrizeClick = () => {
   }
   params.value.prizeConfigs.push({ ...newPrize.value })
   addPrize.value = false
+  newPrize.value = {} as unknown as PrizeConfig
 }
 
 const onCancelAddPrizeClick = () => {
@@ -253,8 +256,8 @@ const params2Gql = () => {
     create (params: {
       title: "${params.value.title}",
   `
-  if (!params.value.slogan?.length) {
-    s += `slogan: "${params.value.slogan as string}",`
+  if (params.value.slogan?.length) {
+    s += `slogan: "${params.value.slogan}",`
   }
   s += `
       banner: "${params.value.banner}",

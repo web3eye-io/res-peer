@@ -3,10 +3,10 @@
     <q-space />
     <div :style='{width:"960px"}'>
       <activity-card
-        v-for='_activity in activities'
+        v-for='(_activity, i) in activities'
         :key='_activity.id'
         :activity='_activity'
-        :style='{margin:"64px 0",paddingBottom:"32px",borderBottom:"1px solid grey"}'
+        :style='{margin:"64px 0",paddingBottom:"32px",borderBottom: i < activities.length - 1 ? "1px solid grey" : ""}'
       />
     </div>
     <q-space />

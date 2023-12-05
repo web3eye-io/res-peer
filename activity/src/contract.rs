@@ -46,6 +46,11 @@ impl Contract for Activity {
                     system_api::current_application_id().creation.chain_id,
                     Message::Create { params },
                 )),
+            Operation::Update { params } => Ok(ExecutionResult::default()
+                .with_authenticated_message(
+                    system_api::current_application_id().creation.chain_id,
+                    Message::Update { params },
+                )),
             Operation::Register {
                 activity_id,
                 object_id,
@@ -102,6 +107,14 @@ impl Contract for Activity {
                     Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
                 Ok(ExecutionResult::default()
                     .with_authenticated_message(dest, Message::Create { params }))
+            }
+            Message::Update { params } => {
+                self.update_activity(context.authenticated_signer.unwrap(), params.clone())
+                    .await?;
+                let dest =
+                    Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
+                Ok(ExecutionResult::default()
+                    .with_authenticated_message(dest, Message::Update { params }))
             }
             Message::Register {
                 activity_id,

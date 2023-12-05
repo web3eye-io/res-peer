@@ -9,7 +9,7 @@
           />
           <q-space />
           <q-icon
-            name='store' size='24px' color='black' class='cursor-pointer'
+            name='store' size='24px' :color='tab == "store" ? "green" : "black"' class='cursor-pointer'
             @click='onNFTMarketClick'
           />
           <q-icon
@@ -19,13 +19,13 @@
             @click='onLoginClick'
           />
           <q-icon
-            name='local_activity' size='24px' color='black' class='cursor-pointer'
+            name='local_activity' size='24px' :color='tab == "activity" ? "green" : "black"' class='cursor-pointer'
             :style='{marginLeft: "8px"}'
             @click='onActivityClick'
           />
           <q-icon
             v-if='account?.length'
-            name='dashboard' size='24px' color='black' class='cursor-pointer'
+            name='dashboard' size='24px' :color='tab == "dashboard" ? "green" : "black"' class='cursor-pointer'
             :style='{marginLeft: "8px"}'
             @click='onDashboardClick'
           />
@@ -154,6 +154,7 @@ const account = ref('')
 const logining = ref(false)
 const user = useUserStore()
 const route = useRoute()
+const tab = ref('feed')
 
 interface Query {
   port: number
@@ -165,6 +166,7 @@ const onGithubClick = (uri: string) => {
   window.open(uri)
 }
 const onDashboardClick = () => {
+  tab.value = 'dashboard'
   void router.push({
     path: '/dashboard',
     query: {
@@ -173,6 +175,7 @@ const onDashboardClick = () => {
   })
 }
 const onActivityClick = () => {
+  tab.value = 'activity'
   void router.push({
     path: '/activity',
     query: {
@@ -181,6 +184,7 @@ const onActivityClick = () => {
   })
 }
 const onLogoClick = () => {
+  tab.value = 'feed'
   void router.push({
     path: '/',
     query: {
@@ -216,6 +220,7 @@ const onLogoutClick = () => {
   account.value = undefined as unknown as string
 }
 const onNFTMarketClick = () => {
+  tab.value = 'store'
   void router.push({
     path: '/market',
     query: {
