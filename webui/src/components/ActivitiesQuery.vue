@@ -80,7 +80,7 @@ const getActivities = (activityKey: number, done?: () => void) => {
   }))
 
   watch(result, () => {
-    activities.value.set(activityKey, (result.value as Record<string, Activity>).activities)
+    activities.value.set(Number(activityKey), (result.value as Record<string, Activity>).activities)
     done?.()
   })
 }

@@ -52,6 +52,7 @@ export interface Winner {
 }
 
 export interface CreateParams {
+  id?: number
   title: string
   slogan?: string
   banner: string
@@ -134,6 +135,11 @@ export const useActivityStore = defineStore('activity', {
           votes += el.size
         })
         return votes
+      }
+    },
+    activity (): (id: number) => Activity | undefined {
+      return (id: number) => {
+        return this.activities.get(id)
       }
     }
   },

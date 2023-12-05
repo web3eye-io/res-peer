@@ -41,7 +41,7 @@
       </q-avatar>
     </div>
     <div class='row'>
-      <div :style='{width:"46%"}'>
+      <div :style='{width:"50%"}'>
         <q-separator :style='{margin:"32px 0 0 0"}' />
         <q-splitter v-model='splitter' unit='px'>
           <template #before>
@@ -126,7 +126,7 @@
       </q-img>
     </div>
     <div
-      class='text-grey-7'
+      class='text-grey-10'
       :style='{margin: "24px 0 24px 0", fontSize: "16px", wordBreak: "break-word"}'
       v-html='activity.introduction?.length ? activity.introduction : "You should have some introduction!"'
     />

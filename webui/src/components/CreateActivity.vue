@@ -146,7 +146,7 @@
 </template>
 
 <script lang='ts' setup>
-import { ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import {
   ActivityTypes,
   ActivityType,
@@ -158,18 +158,57 @@ import {
   JoinTypes,
   JoinType,
   CreateParams,
-  ObjectCondition
+  ObjectCondition,
+  useActivityStore
 } from 'src/stores/activity'
 import { getClientOptions } from 'src/apollo'
 import { ApolloClient } from '@apollo/client/core'
 import { provideApolloClient, useMutation } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
 import { targetChain } from 'src/stores/chain'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { date } from 'quasar'
 
 const options = /* await */ getClientOptions(/* {app, router ...} */)
 const apolloClient = new ApolloClient(options)
+
+interface Query {
+  activityId?: number
+}
+const route = useRoute()
+const activityId = ref((route.query as unknown as Query).activityId)
+const activity = useActivityStore()
+const _activity = computed(() => activity.activity(Number(activityId.value)))
+
+watch(_activity, () => {
+  if (!_activity.value) {
+    return
+  }
+  params.value = {
+    id: activityId.value,
+    title: _activity.value.title,
+    slogan: _activity.value.slogan,
+    banner: _activity.value.banner,
+    hostResume: _activity.value.hostResume,
+    posters: _activity.value.posters,
+    introduction: _activity.value.introduction,
+    activityType: _activity.value.activityType,
+    votable: _activity.value.votable,
+    voteType: _activity.value.voteType,
+    objectType: _activity.value.objectType,
+    condition: _activity.value.condition,
+    sponsors: _activity.value.sponsors,
+    prizeConfigs: _activity.value.prizeConfigs,
+    voterRewardPercent: _activity.value.voterRewardPercent,
+    budgetAmount: _activity.value.budgetAmount,
+    joinType: _activity.value.joinType,
+    location: _activity.value.location,
+    registerStartAt: date.formatDate(_activity.value.registerStartAt, 'YYYY/MM/DD').toString(),
+    registerEndAt: date.formatDate(_activity.value.registerEndAt, 'YYYY/MM/DD').toString(),
+    voteStartAt: date.formatDate(_activity.value.voteStartAt, 'YYYY/MM/DD').toString(),
+    voteEndAt: date.formatDate(_activity.value.voteEndAt, 'YYYY/MM/DD').toString()
+  } as CreateParams
+})
 
 const params = ref({
   votable: true,
@@ -253,8 +292,18 @@ const onAddPrizeClick = () => {
 const router = useRouter()
 
 const params2Gql = () => {
-  let s = `mutation createActivity {
-    create (params: {
+  let s = 'mutation'
+  if (!_activity.value) {
+    s += ` createActivity {
+      create (params: {
+    `
+  } else {
+    s += ` updateActivity {
+      update (params: {
+        id: ${_activity.value.id},
+    `
+  }
+  s += `
       title: "${params.value.title}",
   `
   if (params.value.slogan?.length) {
@@ -319,7 +368,6 @@ const params2Gql = () => {
 
 const onSubmitClick = async () => {
   const gqlStr = params2Gql()
-  console.log(gqlStr)
   const { mutate, onDone, onError } = provideApolloClient(apolloClient)(() => useMutation(gql(
     gqlStr
   )))

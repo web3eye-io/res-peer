@@ -2,6 +2,7 @@
   <q-table
     :rows='activities'
     :columns='(columns as never)'
+    @row-click='(evt, row, index) => onActivityClick(row)'
   >
     <template #top-left>
       <div class='text-h5'>
@@ -58,6 +59,16 @@ const onCreateActivityClick = () => {
     path: '/create/activity',
     query: {
       port: port.value
+    }
+  })
+}
+
+const onActivityClick = (activity: Activity) => {
+  void router.push({
+    path: '/create/activity',
+    query: {
+      port: port.value,
+      activityId: activity.id
     }
   })
 }
