@@ -32,7 +32,7 @@ export const useContentStore = defineStore('content', {
           let ok = !el.commentToCid
           if (author) ok &&= el.author === author
           return ok
-        }).sort((a: Content, b: Content) => a.createdAt < b.createdAt ? 1 : -1)
+        }).sort((a: Content, b: Content) => a.createdAt - b.createdAt)
       }
     },
     _recommends (): (cid: string) => Array<Content> {

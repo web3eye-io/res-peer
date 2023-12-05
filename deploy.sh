@@ -24,6 +24,7 @@ lineradir=`whereis linera | awk '{print $2}'`
 lineradir=`dirname $lineradir`
 cd $lineradir
 linera net up --extra-wallets $EXTRA_WALLET_NUMBER --shards 3 --validators 3 2>&1 | sh -c 'exec cat' > $NODE_LOG_FILE &
+# linera net up --extra-wallets $EXTRA_WALLET_NUMBER 2>&1 | sh -c 'exec cat' > $NODE_LOG_FILE &
 cd -
 
 for i in `seq 0 $EXTRA_WALLET_NUMBER`; do
@@ -37,7 +38,9 @@ for i in `seq 0 $EXTRA_WALLET_NUMBER`; do
     break
   done
 
+  print $'\U01F4AB' $YELLOW " $LINERA_WALLET_ENV"
   $LINERA_WALLET_ENV
+  print $'\U01F4AB' $YELLOW " $LINERA_STORAGE_ENV"
   $LINERA_STORAGE_ENV
 
   while true; do

@@ -733,7 +733,7 @@ impl Review {
                     Some(comment_to_cid) => {
                         self.comment_content(
                             comment_to_cid,
-                            content.cid,
+                            content.cid.clone(),
                             content.content,
                             content.author,
                         )
@@ -751,7 +751,7 @@ impl Review {
                 }
                 match reason_cid {
                     Some(cid) => {
-                        self.recommend_content(content_cid, cid, reason.unwrap_or_default())
+                        self.recommend_content(content_cid.clone(), cid, reason.unwrap_or_default())
                             .await?
                     }
                     _ => {}

@@ -238,7 +238,6 @@ impl Activity {
         let (resp, _) = self
             .call_application(true, Self::foundation_app_id()?, &call, vec![])
             .await?;
-        let balance = resp.data.to_string().parse().unwrap();
-        Ok(balance)
+        Ok(resp)
     }
 }

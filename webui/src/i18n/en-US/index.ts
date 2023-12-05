@@ -3,5 +3,6 @@
 
 export default {
   failed: 'Action failed',
-  success: 'Action was successful'
+  success: 'Action was successful',
+  MSG_REVIEW_CONTENT: 'Review Content'
 }

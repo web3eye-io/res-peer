@@ -1,7 +1,7 @@
 <template>
   <div class='row'>
     <q-space />
-    <div :style='{width:"720px"}'>
+    <div :style='{width:"960px"}'>
       <activity-card
         v-for='_activity in activities'
         :key='_activity.id'

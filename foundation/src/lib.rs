@@ -12,7 +12,7 @@ impl ContractAbi for FoundationAbi {
     type ApplicationCall = ApplicationCall;
     type SessionCall = ();
     type SessionState = ();
-    type Response = Response;
+    type Response = Amount;
 }
 
 impl ServiceAbi for FoundationAbi {

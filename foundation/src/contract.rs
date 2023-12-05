@@ -3,7 +3,6 @@
 mod state;
 
 use self::state::Foundation;
-use async_graphql::Response;
 use async_trait::async_trait;
 use foundation::{ApplicationCall, Message, Operation, RewardType};
 use linera_sdk::{
@@ -169,7 +168,7 @@ impl Contract for Foundation {
 
     async fn handle_application_call(
         &mut self,
-        _context: &CalleeContext,
+        context: &CalleeContext,
         call: Self::ApplicationCall,
         _forwarded_sessions: Vec<SessionId>,
     ) -> Result<ApplicationCallResult<Self::Message, Self::Response, Self::SessionState>, Self::Error>
@@ -214,7 +213,7 @@ impl Contract for Foundation {
             ApplicationCall::Balance { owner } => {
                 let balance = self.balance(owner).await?;
                 let mut result = ApplicationCallResult::default();
-                result.value = Response::new(balance.to_string());
+                result.value = balance;
                 return Ok(result);
             }
         };
