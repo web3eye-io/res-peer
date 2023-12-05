@@ -41,7 +41,7 @@
       <q-input type='number' label='Maximum Words' v-model='params.condition.maxWords' />
     </div>
     <h6>Prizes</h6>
-    <table :style='{width:"100%",border:"1px solid black"}'>
+    <table :style='{width:"100%",border:"1px solid black"}' class='text-center'>
       <tr>
         <th>Place</th>
         <th>Medal</th>
@@ -53,13 +53,18 @@
         <td>{{ prize.medal }}</td>
         <td>{{ prize.title }}</td>
         <td>{{ prize.rewardAmount }}</td>
+        <td>
+          <q-btn @click='onDeletePrizeConfig(prize.place)'>
+            Delete
+          </q-btn>
+        </td>
       </tr>
     </table>
     <div class='row' v-if='addPrize' :style='{marginBottom:"16px"}'>
       <div class='row'>
         <q-input dense label='Prize place' v-model='newPrize.place' type='number' />
-        <q-input dense label='Prize medal' v-model='newPrize.medal' />
-        <q-input dense label='Prize title' v-model='newPrize.title' />
+        <q-input dense label='Prize medal' v-model='newPrize.medal' :style='{width:"480px",marginRight:"16px"}' />
+        <q-input dense label='Prize title' v-model='newPrize.title' :style='{width:"160px",marginRight:"16px"}' />
         <q-input dense label='Prize Reward Amount' v-model='newPrize.rewardAmount' />
       </div>
       <q-btn label='Confirm' @click='onConfirmAddPrizeClick' />
@@ -172,6 +177,7 @@ const params = ref({
   objectType: ObjectType.Content,
   joinType: JoinType.Online,
   condition: {
+    classes: [] as Array<string>,
     minWords: 0,
     maxWords: 1000000
   } as ObjectCondition,
@@ -180,7 +186,9 @@ const params = ref({
   registerStartAt: date.formatDate(new Date().toString(), 'YYYY/MM/DD'),
   registerEndAt: date.formatDate(new Date().toString(), 'YYYY/MM/DD'),
   voteStartAt: date.formatDate(new Date().toString(), 'YYYY/MM/DD'),
-  voteEndAt: date.formatDate(new Date().toString(), 'YYYY/MM/DD')
+  voteEndAt: date.formatDate(new Date().toString(), 'YYYY/MM/DD'),
+  posters: [] as Array<string>,
+  prizeConfigs: [] as Array<PrizeConfig>
 } as CreateParams)
 
 const newPoster = ref('')
@@ -226,7 +234,7 @@ const onConfirmAddPrizeClick = () => {
   if (!newPrize.value.title || params.value.prizeConfigs.find((el) => el.place === newPrize.value.place)) {
     return
   }
-  params.value.prizeConfigs.push(newPrize.value)
+  params.value.prizeConfigs.push({ ...newPrize.value })
   addPrize.value = false
 }
 
@@ -243,17 +251,21 @@ const router = useRouter()
 const params2Gql = () => {
   let s = `mutation createActivity {
     create (params: {
-      title: ${params.value.title},
-      slogan: ${params.value.slogan as string},
-      banner: ${params.value.banner},
+      title: "${params.value.title}",
+  `
+  if (!params.value.slogan?.length) {
+    s += `slogan: "${params.value.slogan as string}",`
+  }
+  s += `
+      banner: "${params.value.banner}",
       posters: [
   `
   params.value.posters?.forEach((poster, i) => {
-    s += i < params.value.posters.length - 1 ? poster + ',' : poster
+    s += i < params.value.posters.length - 1 ? `"${poster}",` : `"${poster}"`
   })
   s += '],'
   s += `
-    introduction: ${params.value.introduction},
+    introduction: "${params.value.introduction}",
     activity_type: ${params.value.activityType},
     votable: ${params.value.votable as unknown as string},
     vote_type: ${params.value.voteType},
@@ -266,18 +278,18 @@ const params2Gql = () => {
   })
   s += `    ],
       min_words: ${params.value.condition.minWords},
-      max_words: ${params.value.condition.maxWords},
+      max_words: ${params.value.condition.maxWords}
     },
     prize_configs: [
   `
   params.value.prizeConfigs?.forEach((prize, i) => {
     s += `{
       place: ${prize.place},
-      medal: ${prize.medal},
-      title: ${prize.title}
+      medal: "${prize.medal}",
+      title: "${prize.title}"
     `
     if (prize.rewardAmount) {
-      s += `,reward_amount: ${prize.rewardAmount}`
+      s += `,reward_amount: "${prize.rewardAmount}"`
     }
     s += '}'
     if (i < params.value.prizeConfigs.length - 1) {
@@ -288,7 +300,7 @@ const params2Gql = () => {
     voter_reward_percent: ${params.value.voterRewardPercent},
     budget_amount: "${params.value.budgetAmount as unknown as string}",
     join_type: ${params.value.joinType},
-    location: ${params.value.location},
+    location: "${params.value.location}",
     register_start_at: ${Date.parse(params.value.registerStartAt)},
     register_end_at: ${Date.parse(params.value.registerEndAt)},
     vote_start_at: ${Date.parse(params.value.voteStartAt)},
@@ -302,6 +314,7 @@ const params2Gql = () => {
 
 const onSubmitClick = async () => {
   const gqlStr = params2Gql()
+  console.log(gqlStr)
   const { mutate, onDone, onError } = provideApolloClient(apolloClient)(() => useMutation(gql(
     gqlStr
   )))
@@ -321,6 +334,11 @@ const onSubmitClick = async () => {
     endpoint: 'activity',
     chainId: targetChain.value
   })
+}
+
+const onDeletePrizeConfig = (place: number) => {
+  const index = params.value.prizeConfigs.findIndex((el) => el.place === place)
+  params.value.prizeConfigs.splice(index >= 0 ? index : 0, index >= 0 ? 1 : 0)
 }
 
 </script>
