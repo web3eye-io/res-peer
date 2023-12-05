@@ -168,7 +168,7 @@ impl Contract for Foundation {
 
     async fn handle_application_call(
         &mut self,
-        context: &CalleeContext,
+        _context: &CalleeContext,
         call: Self::ApplicationCall,
         _forwarded_sessions: Vec<SessionId>,
     ) -> Result<ApplicationCallResult<Self::Message, Self::Response, Self::SessionState>, Self::Error>

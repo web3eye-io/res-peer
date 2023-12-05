@@ -1,6 +1,6 @@
 use std::{cmp::Ordering, collections::HashMap};
 
-use activity::{ActivityError, ActivityItem, CreateParams, Winner};
+use activity::{ActivityError, ActivityItem, CreateParams, UpdateParams, Winner};
 use linera_sdk::{
     base::Owner,
     contract::system_api,
@@ -63,6 +63,77 @@ impl Activity {
                 finalized: false,
             },
         )?)
+    }
+
+    pub(crate) async fn update_activity(
+        &mut self,
+        params: UpdateParams,
+    ) -> Result<(), ActivityError> {
+        let mut activity = self.activities.get(&params.activity_id).await?.unwrap();
+        if let Some(title) = params.title {
+            activity.title = title
+        }
+        if let Some(slogan) = params.slogan {
+            activity.slogan = Some(slogan)
+        }
+        if let Some(banner) = params.banner {
+            activity.banner = banner
+        }
+        if let Some(host_resume) = params.host_resume {
+            activity.host_resume = host_resume
+        }
+        if let Some(posters) = params.posters {
+            activity.posters = posters
+        }
+        if let Some(introduction) = params.introduction {
+            activity.introduction = introduction
+        }
+        if let Some(activity_type) = params.activity_type {
+            activity.activity_type = activity_type
+        }
+        if let Some(votable) = params.votable {
+            activity.votable = votable
+        }
+        if let Some(vote_type) = params.vote_type {
+            activity.vote_type = vote_type
+        }
+        if let Some(object_type) = params.object_type {
+            activity.object_type = Some(object_type)
+        }
+        if let Some(condition) = params.condition {
+            activity.condition = condition
+        }
+        if let Some(sponsors) = params.sponsors {
+            activity.sponsors = sponsors
+        }
+        if let Some(prize_configs) = params.prize_configs {
+            activity.prize_configs = prize_configs
+        }
+        if let Some(voter_reward_percent) = params.voter_reward_percent {
+            activity.voter_reward_percent = voter_reward_percent
+        }
+        if let Some(budget_amount) = params.budget_amount {
+            activity.budget_amount = budget_amount
+        }
+        if let Some(join_type) = params.join_type {
+            activity.join_type = join_type
+        }
+        if let Some(location) = params.location {
+            activity.location = location
+        }
+        if let Some(register_start_at) = params.register_start_at {
+            activity.register_start_at = register_start_at
+        }
+        if let Some(register_end_at) = params.register_end_at {
+            activity.register_end_at = register_end_at
+        }
+        if let Some(vote_start_at) = params.vote_start_at {
+            activity.vote_start_at = vote_start_at
+        }
+        if let Some(vote_end_at) = params.vote_end_at {
+            activity.vote_end_at = vote_end_at
+        }
+        Ok(())
     }
 
     pub(crate) async fn register(

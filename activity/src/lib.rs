@@ -150,6 +150,7 @@ scalar!(CreateParams);
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct UpdateParams {
+    pub activity_id: u64,
     pub title: Option<String>,
     pub slogan: Option<String>,
     pub banner: Option<String>,
@@ -170,7 +171,7 @@ pub struct UpdateParams {
     pub register_start_at: Option<Timestamp>,
     pub register_end_at: Option<Timestamp>,
     pub vote_start_at: Option<Timestamp>,
-    pub vote_end_at: Option<Timestamp>
+    pub vote_end_at: Option<Timestamp>,
 }
 
 scalar!(UpdateParams);

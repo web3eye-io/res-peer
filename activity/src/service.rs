@@ -8,7 +8,7 @@ use async_trait::async_trait;
 use linera_sdk::{base::WithServiceAbi, QueryContext, Service, ViewStateStorage};
 use std::sync::Arc;
 
-use activity::{ActivityError, AnnounceParams, CreateParams, Operation};
+use activity::{ActivityError, AnnounceParams, CreateParams, Operation, UpdateParams};
 
 linera_sdk::service!(Activity);
 
@@ -38,6 +38,10 @@ struct MutationRoot;
 impl MutationRoot {
     async fn create(&self, params: CreateParams) -> Vec<u8> {
         bcs::to_bytes(&Operation::Create { params }).unwrap()
+    }
+
+    async fn update(&self, params: UpdateParams) -> Vec<u8> {
+        bcs::to_bytes(&Operation::Update { params }).unwrap()
     }
 
     async fn register(&self, activity_id: u64, object_id: String) -> Vec<u8> {

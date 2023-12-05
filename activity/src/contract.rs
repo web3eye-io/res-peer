@@ -109,8 +109,7 @@ impl Contract for Activity {
                     .with_authenticated_message(dest, Message::Create { params }))
             }
             Message::Update { params } => {
-                self.update_activity(context.authenticated_signer.unwrap(), params.clone())
-                    .await?;
+                self.update_activity(params.clone()).await?;
                 let dest =
                     Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
                 Ok(ExecutionResult::default()
