@@ -30,6 +30,7 @@ const getActivities = (activityKey: number, done?: () => void) => {
         posters
         introduction
         host
+        hostResume
         createdAt
         activityType
         votable

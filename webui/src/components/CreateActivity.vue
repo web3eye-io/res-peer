@@ -4,6 +4,7 @@
     <q-input label='Title' v-model='params.title' />
     <q-input label='Slogan' v-model='params.slogan' />
     <q-input label='Banner' v-model='params.banner' />
+    <q-input label='Host resume' v-model='params.hostResume' />
     <h6>Posters</h6>
     <ul>
       <li v-for='poster in params.posters' :key='poster'>
@@ -261,6 +262,7 @@ const params2Gql = () => {
   }
   s += `
       banner: "${params.value.banner}",
+      host_resume: "${params.value.hostResume}",
       posters: [
   `
   params.value.posters?.forEach((poster, i) => {

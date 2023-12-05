@@ -55,6 +55,7 @@ export interface CreateParams {
   title: string
   slogan?: string
   banner: string
+  hostResume: string
   posters: Array<string>
   introduction: string
   activityType: ActivityType
@@ -82,6 +83,7 @@ export interface Activity {
   posters: Array<string>
   introduction: string
   host: string
+  hostResume: string
   createdAt: number
   activityType: ActivityType
   votable: boolean
@@ -123,6 +125,15 @@ export const useActivityStore = defineStore('activity', {
           if (host) ok &&= el.host === host
           return ok
         }).sort((a, b) => a.createdAt - b.createdAt)
+      }
+    },
+    votes (): (id: number) => number {
+      return (id: number) => {
+        let votes = 0
+        Object.values(this.activities.get(id)?.voters || new Map<string, Map<string, boolean>>()).forEach((el: Map<string, boolean>) => {
+          votes += el.size
+        })
+        return votes
       }
     }
   },
