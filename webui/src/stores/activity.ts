@@ -212,9 +212,9 @@ export const useActivityStore = defineStore('activity', {
         return joinType
       }
     },
-    objectRegistered (): (id: number, objectId: string) => boolean {
+    objectRegistered (): (id: number, objectId: string) => boolean | undefined {
       return (id: number, objectId: string) => {
-        return this.activities.get(id)?.objectCandidates.get(objectId) || false
+        return Object.keys(this.activities.get(id)?.objectCandidates || new Map<string, boolean>()).includes(objectId)
       }
     }
   },

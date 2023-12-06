@@ -5,25 +5,18 @@
     </div>
     <div v-else>
       <div v-if='contents.length'>
-        <div v-for='(_content, i) in contents' :key='_content.cid' :style='{borderBottom:i < contents.length - 1 ? "1px solid grey" : ""}'>
+        <div
+          v-for='(_content, i) in contents'
+          :key='_content.cid'
+          :style='{borderBottom:i < contents.length - 1 ? "1px solid grey" : "",marginBottom:"32px"}'
+        >
           <div :style='{paddingBottom: "48px"}'>
-            <div class='row'>
-              <div
-                class='cursor-pointer'
-                :style='{fontWeight: "bold", fontSize: "26px", wordBreak: "break-word", marginBottom: "4px"}'
-                @click='onTitleClick(_content.cid)'
-              >
-                {{ _content.title?.length ? _content.title : 'You should have a title!' }}
-              </div>
-              <q-btn
-                flat
-                dense
-                label='Register'
-                class='text-blue-6'
-                :style='{marginLeft:"16px"}'
-                @click='onRegisterClick(_content.cid)'
-                :disable='objectRegistered(_content.cid)'
-              />
+            <div
+              class='cursor-pointer'
+              :style='{fontWeight: "bold", fontSize: "26px", wordBreak: "break-word", marginBottom: "4px"}'
+              @click='onTitleClick(_content.cid)'
+            >
+              {{ _content.title?.length ? _content.title : 'You should have a title!' }}
             </div>
             <div :style='{marginBottom: "12px"}' class='text-grey-8'>
               {{ date.formatDate(_content.createdAt / 1000, 'YYYY-MM-DD HH:mm') }}
@@ -31,6 +24,17 @@
             <div :style='{wordBreak:"break-word"}'>
               {{ _content.content }}
             </div>
+            <div>{{ _content.cid }} - {{ activityId }} - {{ objectRegistered(_content.cid) }}</div>
+            <q-btn
+              flat
+              dense
+              class='text-blue-6'
+              :style='{marginTop:"16px"}'
+              @click='onRegisterClick(_content.cid)'
+              :disable='objectRegistered(_content.cid)'
+            >
+              REGISTER TO <span class='text-green-8' :style='{marginLeft:"8px",fontSize:"12px"}'>{{ _activity?.title }}</span>
+            </q-btn>
           </div>
         </div>
       </div>
@@ -83,7 +87,7 @@ const onTitleClick = (cid: string) => {
 }
 
 const objectRegistered = (cid: string) => {
-  return activity.objectRegistered(activityId.value, cid)
+  return activity.objectRegistered(Number(activityId.value), cid)
 }
 
 const onRegisterClick = async (cid: string) => {
