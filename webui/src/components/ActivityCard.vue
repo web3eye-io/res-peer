@@ -158,7 +158,7 @@
     <div class='row'>
       <div class='row'>
         <q-icon name='app_registration' color='green' size='24px' />
-        <span class='text-bold text-grey-7' :style='{fontSize:"18px"}'>{{ activity.objectCandidates?.size || 0 }}</span>
+        <span class='text-bold text-grey-7' :style='{fontSize:"18px"}'>{{ _activity.objectCandidateCount(activity.id) }}</span>
       </div>
       <div class='row' :style='{marginLeft:"8px"}'>
         <q-icon name='where_to_vote' color='blue' size='24px' />

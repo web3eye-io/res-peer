@@ -124,7 +124,7 @@ export const useActivityStore = defineStore('activity', {
           let ok = true
           if (host) ok &&= el.host === host
           return ok
-        }).sort((a, b) => a.createdAt - b.createdAt)
+        }).sort((a, b) => b.createdAt - a.createdAt)
       }
     },
     votes (): (id: number) => number {
@@ -134,6 +134,11 @@ export const useActivityStore = defineStore('activity', {
           votes += el.size
         })
         return votes
+      }
+    },
+    objectCandidateCount (): (id: number) => number {
+      return (id: number) => {
+        return Object.values(this.activities.get(id)?.objectCandidates || new Map<string, boolean>()).length
       }
     },
     activity (): (id: number) => Activity | undefined {
