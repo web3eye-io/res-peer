@@ -154,10 +154,7 @@ export const useActivityStore = defineStore('activity', {
     objectVoteCount (): (id: number, objectId: string) => number {
       return (id: number, objectId: string) => {
         return Number(
-          new Map(
-            new Map(
-              Object.entries(Object.entries(this.activities.get(id)?.voters || new Map<string, Array<string>>()))).get(objectId)
-          ).size)
+          (new Map<string, Array<string>>(Object.entries(this.activities.get(id)?.voters || new Map<string, Array<string>>())).get(objectId) || []).length)
       }
     },
     activity (): (id: number) => Activity | undefined {
