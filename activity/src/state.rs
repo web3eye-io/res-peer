@@ -1,8 +1,8 @@
-use std::{cmp::Ordering, collections::HashMap};
+use std::{cmp::Ordering, collections::{HashMap, HashSet}};
 
 use activity::{ActivityError, ActivityItem, CreateParams, UpdateParams, Winner};
 use linera_sdk::{
-    base::Owner,
+    base::{Owner, Amount},
     contract::system_api,
     views::{MapView, RegisterView, ViewStorageContext},
 };
@@ -12,7 +12,7 @@ use linera_views::views::{GraphQLView, RootView};
 #[view(context = "ViewStorageContext")]
 pub struct Activity {
     pub activities: MapView<u64, ActivityItem>,
-    pub activity_id: RegisterView<u64>,
+    pub activity_id: RegisterView<u64>
 }
 
 #[allow(dead_code)]
@@ -44,21 +44,21 @@ impl Activity {
                 sponsors: params.sponsors,
                 prize_configs: params.prize_configs,
                 voter_reward_percent: params.voter_reward_percent,
-                object_candidates: HashMap::default(),
-                announcements: HashMap::default(),
+                object_candidates: HashSet::default(),
+                announcements: HashSet::default(),
                 prize_announcement: String::default(),
                 vote_powers: HashMap::default(),
                 voters: HashMap::default(),
                 budget_amount: params.budget_amount,
                 join_type: params.join_type,
                 location: params.location,
-                comments: Vec::new(),
-                registers: Vec::new(),
+                comments: HashSet::default(),
+                registers: HashSet::default(),
                 register_start_at: params.register_start_at,
                 register_end_at: params.register_end_at,
                 vote_start_at: params.vote_start_at,
                 vote_end_at: params.vote_end_at,
-                participantors: Vec::new(),
+                participantors: HashSet::default(),
                 winners: Vec::new(),
                 finalized: false,
             },
@@ -146,7 +146,7 @@ impl Activity {
             Ok(Some(mut activity)) => match activity.object_candidates.get(&object_id) {
                 Some(_) => Err(ActivityError::AlreadyRegistered),
                 _ => {
-                    activity.object_candidates.insert(object_id, true);
+                    activity.object_candidates.insert(object_id);
                     Ok(self.activities.insert(&activity_id, activity)?)
                 }
             },
@@ -189,26 +189,27 @@ impl Activity {
         activity_id: u64,
         object_id: String,
         // If by power, it'll be owner balance; if by account, it'll be 1
-        power: u128,
+        power: Amount,
     ) -> Result<(), ActivityError> {
         match self.voted(owner, activity_id, object_id.clone()).await {
             Ok(true) => return Err(ActivityError::ActivityObjectAlreadyVoted),
             Ok(false) => {}
             Err(err) => return Err(err),
         }
+
         let mut activity = self.activity(activity_id).await?;
         match activity.object_candidates.get(&object_id) {
             Some(_) => {
                 let vote_power = match activity.vote_powers.get(&object_id) {
-                    Some(votes) => votes + power,
+                    Some(votes) => votes.saturating_add(power),
                     None => power,
                 };
                 activity.vote_powers.insert(object_id.clone(), vote_power);
                 let mut voters = match activity.voters.get(&object_id) {
                     Some(voters) => voters.clone(),
-                    None => HashMap::default(),
+                    None => HashSet::default(),
                 };
-                voters.insert(owner, true);
+                voters.insert(owner);
                 activity.voters.insert(object_id.clone(), voters.clone());
                 self.activities.insert(&activity_id, activity)?;
                 log::info!(
@@ -236,7 +237,7 @@ impl Activity {
             Some(_) => return Err(ActivityError::ActivityAnnouncementAlreadyCreated),
             None => {}
         }
-        activity.announcements.insert(cid.clone(), true);
+        activity.announcements.insert(cid.clone());
         if announce_prize {
             activity.prize_announcement = cid;
         }
@@ -249,7 +250,7 @@ impl Activity {
             return Err(ActivityError::ActivityAlreadyFinalized);
         }
         let mut winners = Vec::<Winner>::new();
-        let mut least_winner_power = 0 as u128;
+        let mut least_winner_power = Amount::ZERO;
         let mut least_winner_index = 0;
         activity
             .vote_powers

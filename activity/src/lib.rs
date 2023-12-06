@@ -1,4 +1,4 @@
-use std::{collections::HashMap, convert::Infallible};
+use std::{collections::{HashMap, HashSet}, convert::Infallible};
 
 use async_graphql::{scalar, Enum, InputObject, Request, Response, SimpleObject};
 use linera_sdk::base::{
@@ -98,25 +98,25 @@ pub struct ActivityItem {
     pub votable: bool,
     pub vote_type: VoteType,
     pub object_type: Option<ObjectType>,
-    pub object_candidates: HashMap<String, bool>,
+    pub object_candidates: HashSet<String>,
     pub condition: ObjectCondition,
     pub sponsors: Vec<Owner>,
     pub prize_configs: Vec<PrizeConfig>,
-    pub announcements: HashMap<String, bool>,
+    pub announcements: HashSet<String>,
     pub prize_announcement: String,
     pub voter_reward_percent: u8,
-    pub vote_powers: HashMap<String, u128>,
-    pub voters: HashMap<String, HashMap<Owner, bool>>,
+    pub vote_powers: HashMap<String, Amount>,
+    pub voters: HashMap<String, HashSet<Owner>>,
     pub budget_amount: Amount,
     pub join_type: JoinType,
     pub location: String,
-    pub comments: Vec<String>,
-    pub registers: Vec<Owner>,
+    pub comments: HashSet<String>,
+    pub registers: HashSet<Owner>,
     pub register_start_at: Timestamp,
     pub register_end_at: Timestamp,
     pub vote_start_at: Timestamp,
     pub vote_end_at: Timestamp,
-    pub participantors: Vec<Owner>,
+    pub participantors: HashSet<Owner>,
     pub winners: Vec<Winner>,
     pub finalized: bool,
 }

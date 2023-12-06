@@ -144,10 +144,10 @@ impl Contract for Activity {
                     .await?;
                 let activity = self.activity(activity_id).await?;
                 let power = match activity.vote_type {
-                    VoteType::Account => 1 as u128,
-                    VoteType::Power => balance.into(),
+                    VoteType::Power => balance,
+                    VoteType::Account => Amount::ONE,
                 };
-                if power == 0 {
+                if power.eq(&Amount::ZERO) {
                     return Err(ActivityError::AccountBalanceRequired);
                 }
                 self.vote(
