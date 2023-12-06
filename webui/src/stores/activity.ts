@@ -89,15 +89,15 @@ export interface Activity {
   votable: boolean
   voteType: VoteType
   objectType: ObjectType
-  objectCandidates: Map<string, boolean>
+  objectCandidates: Array<string>
   condition: ObjectCondition
   sponsors: Array<string>
   prizeConfigs: Array<PrizeConfig>
-  announcements: Map<string, boolean>
+  announcements: Array<string>
   prizeAnnouncement: string
   voterRewardPercent: number
   votePowers: Map<string, string>
-  voters: Map<string, Map<string, boolean>>
+  voters: Map<string, Array<string>>
   budgetAmount: string
   joinType: JoinType
   location: string
@@ -130,20 +130,20 @@ export const useActivityStore = defineStore('activity', {
     votes (): (id: number) => number {
       return (id: number) => {
         let votes = 0
-        Object.values(this.activities.get(id)?.voters || new Map<string, Map<string, boolean>>()).forEach((el: Map<string, boolean>) => {
-          votes += el.size
+        Object.values(this.activities.get(id)?.voters || new Map<string, Array<string>>()).forEach((el: Array<string>) => {
+          votes += el.length
         })
         return votes
       }
     },
     objectCandidateCount (): (id: number) => number {
       return (id: number) => {
-        return Object.values(this.activities.get(id)?.objectCandidates || new Map<string, boolean>()).length
+        return (this.activities.get(id)?.objectCandidates || []).length
       }
     },
     objectCandidates (): (id: number) => Array<string> {
       return (id: number) => {
-        return Object.keys(this.activities.get(id)?.objectCandidates || new Map<string, boolean>())
+        return this.activities.get(id)?.objectCandidates || []
       }
     },
     objectVotePower (): (id: number, objectId: string) => number {
@@ -156,7 +156,7 @@ export const useActivityStore = defineStore('activity', {
         return Number(
           new Map(
             new Map(
-              Object.entries(Object.entries(this.activities.get(id)?.voters || new Map<string, Map<string, boolean>>()))).get(objectId)
+              Object.entries(Object.entries(this.activities.get(id)?.voters || new Map<string, Array<string>>()))).get(objectId)
           ).size)
       }
     },
@@ -238,15 +238,13 @@ export const useActivityStore = defineStore('activity', {
     },
     objectRegistered (): (id: number, objectId: string) => boolean | undefined {
       return (id: number, objectId: string) => {
-        return Object.keys(this.activities.get(id)?.objectCandidates || new Map<string, boolean>()).includes(objectId)
+        return (this.activities.get(id)?.objectCandidates || []).includes(objectId)
       }
     },
     objectVoted (): (id: number, objectId: string, account: string) => boolean | undefined {
       return (id: number, objectId: string, account: string) => {
-        const voters = new Map<string, Map<string, boolean>>(Object.entries(this.activities.get(id)?.voters || new Map<string, Map<string, boolean>>()))
-        return Object.keys(
-          voters.get(objectId) || new Map<string, boolean>()
-        ).includes(account)
+        const voters = new Map<string, Map<string, boolean>>(Object.entries(this.activities.get(id)?.voters || new Map<string, Array<string>>()))
+        return ((voters.get(objectId) || []) as Array<string>).includes(account)
       }
     }
   },

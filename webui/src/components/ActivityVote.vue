@@ -96,7 +96,7 @@ const user = useUserStore()
 const account = computed(() => user.account)
 
 const content = useContentStore()
-const contents = computed(() => content._contents(account.value).filter((el) => objectCandidates.value.includes(el.cid)).sort((a, b) => {
+const contents = computed(() => content._contents().filter((el) => objectCandidates.value.includes(el.cid)).sort((a, b) => {
   return activity.objectVotePower(activityId.value, b.cid) - activity.objectVotePower(activityId.value, a.cid)
 }))
 
