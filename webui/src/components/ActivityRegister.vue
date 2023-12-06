@@ -24,7 +24,6 @@
             <div :style='{wordBreak:"break-word"}'>
               {{ _content.content }}
             </div>
-            <div>{{ _content.cid }} - {{ activityId }} - {{ objectRegistered(_content.cid) }}</div>
             <q-btn
               flat
               dense

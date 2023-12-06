@@ -100,6 +100,7 @@
                 label='Vote'
                 :disable='!votable()'
                 color='blue-7'
+                @click='onVoteClick'
               />
             </div>
             <q-separator />
@@ -210,13 +211,23 @@ const registerable = () => {
 
 const votable = () => {
   const now = Date.now()
-  return activity.value.voteStartAt <= now && activity.value.voteEndAt > now
+  return activity.value.voteStartAt <= now && activity.value.voteEndAt > now && _activity.objectCandidateCount(activity.value.id)
 }
 
 const router = useRouter()
 const onRegisterClick = () => {
   void router.push({
     path: '/activity/register',
+    query: {
+      port: Cookies.get('service-port'),
+      activityId: activity.value.id
+    }
+  })
+}
+
+const onVoteClick = () => {
+  void router.push({
+    path: '/activity/vote',
     query: {
       port: Cookies.get('service-port'),
       activityId: activity.value.id
