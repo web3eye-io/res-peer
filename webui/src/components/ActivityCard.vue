@@ -60,6 +60,18 @@
             <div :style='{margin:"4px 8px 4px 4px"}'>
               Progress
             </div>
+            <q-separator />
+            <div :style='{margin:"4px 8px 4px 4px"}'>
+              Join Type
+            </div>
+            <q-separator />
+            <div :style='{margin:"4px 8px 4px 4px"}'>
+              Object Type
+            </div>
+            <q-separator />
+            <div :style='{margin:"4px 8px 4px 4px"}'>
+              Vote Type
+            </div>
           </template>
           <template #after>
             <div class='row'>
@@ -96,6 +108,18 @@
             <q-separator />
             <div :style='{margin:"4px 8px 4px 4px"}' class='text-bold text-grey-6'>
               {{ activity.finalized ? 'Finalized' : 'In Progress' }}
+            </div>
+            <q-separator />
+            <div :style='{margin:"4px 8px 4px 4px"}' class='text-bold text-blue-6'>
+              {{ activity.joinType }}
+            </div>
+            <q-separator />
+            <div :style='{margin:"4px 8px 4px 4px"}' class='text-bold text-blue-6'>
+              {{ activity.objectType }}
+            </div>
+            <q-separator />
+            <div :style='{margin:"4px 8px 4px 4px"}' class='text-bold text-blue-6'>
+              {{ activity.voteType }}
             </div>
           </template>
         </q-splitter>

@@ -133,6 +133,7 @@ impl Activity {
         if let Some(vote_end_at) = params.vote_end_at {
             activity.vote_end_at = vote_end_at
         }
+        self.activities.insert(&activity.clone().id, activity)?;
         Ok(())
     }
 

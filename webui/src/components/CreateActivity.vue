@@ -146,7 +146,7 @@
 </template>
 
 <script lang='ts' setup>
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import {
   ActivityTypes,
   ActivityType,
@@ -180,34 +180,37 @@ const activityId = ref((route.query as unknown as Query).activityId)
 const activity = useActivityStore()
 const _activity = computed(() => activity.activity(Number(activityId.value)))
 
-watch(_activity, () => {
+const activity2Params = () => {
   if (!_activity.value) {
     return
   }
   params.value = {
-    id: activityId.value,
     title: _activity.value.title,
     slogan: _activity.value.slogan,
     banner: _activity.value.banner,
     hostResume: _activity.value.hostResume,
     posters: _activity.value.posters,
     introduction: _activity.value.introduction,
-    activityType: _activity.value.activityType,
+    activityType: activity.activityType(_activity.value.id),
     votable: _activity.value.votable,
-    voteType: _activity.value.voteType,
-    objectType: _activity.value.objectType,
+    voteType: activity.voteType(_activity.value.id),
+    objectType: activity.objectType(_activity.value.id),
     condition: _activity.value.condition,
     sponsors: _activity.value.sponsors,
     prizeConfigs: _activity.value.prizeConfigs,
     voterRewardPercent: _activity.value.voterRewardPercent,
     budgetAmount: _activity.value.budgetAmount,
-    joinType: _activity.value.joinType,
+    joinType: activity.joinType(_activity.value.id),
     location: _activity.value.location,
     registerStartAt: date.formatDate(_activity.value.registerStartAt, 'YYYY/MM/DD').toString(),
     registerEndAt: date.formatDate(_activity.value.registerEndAt, 'YYYY/MM/DD').toString(),
     voteStartAt: date.formatDate(_activity.value.voteStartAt, 'YYYY/MM/DD').toString(),
     voteEndAt: date.formatDate(_activity.value.voteEndAt, 'YYYY/MM/DD').toString()
   } as CreateParams
+}
+
+watch(_activity, () => {
+  activity2Params()
 })
 
 const params = ref({
@@ -300,7 +303,7 @@ const params2Gql = () => {
   } else {
     s += ` updateActivity {
       update (params: {
-        id: ${_activity.value.id},
+        activity_id: ${_activity.value.id},
     `
   }
   s += `
@@ -368,6 +371,7 @@ const params2Gql = () => {
 
 const onSubmitClick = async () => {
   const gqlStr = params2Gql()
+  console.log(gqlStr)
   const { mutate, onDone, onError } = provideApolloClient(apolloClient)(() => useMutation(gql(
     gqlStr
   )))
@@ -393,5 +397,9 @@ const onDeletePrizeConfig = (place: number) => {
   const index = params.value.prizeConfigs.findIndex((el) => el.place === place)
   params.value.prizeConfigs.splice(index >= 0 ? index : 0, index >= 0 ? 1 : 0)
 }
+
+onMounted(() => {
+  activity2Params()
+})
 
 </script>
