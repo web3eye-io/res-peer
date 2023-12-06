@@ -54,6 +54,7 @@
       <request-credit-subscribe />
       <request-foundation-subscribe />
       <request-market-subscribe />
+      <request-activity-subscribe />
       <user-reviewer-query />
       <content-applications-keys-query />
       <content-applications-query />
@@ -135,6 +136,7 @@ import RequestFeedSubscribe from 'src/components/RequestFeedSubscribe.vue'
 import RequestCreditSubscribe from 'src/components/RequestCreditSubscribe.vue'
 import RequestFoundationSubscribe from 'src/components/RequestFoundationSubscribe.vue'
 import RequestMarketSubscribe from 'src/components/RequestMarketSubscribe.vue'
+import RequestActivitySubscribe from 'src/components/RequestActivitySubscribe.vue'
 import ChainQuery from 'src/components/ChainQuery.vue'
 import UserReviewerQuery from 'src/components/UserReviewerQuery.vue'
 import RequestReviewSubscribe from 'src/components/RequestReviewSubscribe.vue'

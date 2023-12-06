@@ -211,6 +211,11 @@ export const useActivityStore = defineStore('activity', {
         }
         return joinType
       }
+    },
+    objectRegistered (): (id: number, objectId: string) => boolean {
+      return (id: number, objectId: string) => {
+        return this.activities.get(id)?.objectCandidates.get(objectId) || false
+      }
     }
   },
   actions: {}

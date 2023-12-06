@@ -43,7 +43,7 @@ const columns = computed(() => [
   }, {
     name: 'RegisterStartAt',
     label: 'Register Start At',
-    field: (row: Activity) => date.formatDate(row.registerEndAt)
+    field: (row: Activity) => date.formatDate(row.registerStartAt)
   }, {
     name: 'VoteStartAt',
     label: 'Vote Start At',

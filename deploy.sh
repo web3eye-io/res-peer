@@ -13,7 +13,6 @@ function print() {
   echo -e $1$2$3$NC
 }
 
-
 NODE_LOG_FILE=$HOME/linera-project/linera.log
 SERVICE_LOG_FILE=$HOME/linera-project/service_8080.log
 WALLET_NUMBER=3
