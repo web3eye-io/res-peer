@@ -32,7 +32,7 @@ export const useContentStore = defineStore('content', {
           let ok = !el.commentToCid
           if (author) ok &&= el.author === author
           return ok
-        }).sort((a: Content, b: Content) => a.createdAt - b.createdAt)
+        }).sort((a: Content, b: Content) => b.createdAt - a.createdAt)
       }
     },
     _recommends (): (cid: string) => Array<Content> {
@@ -48,7 +48,7 @@ export const useContentStore = defineStore('content', {
         return Array.from(this.contents.values()).filter((el) => {
           const index = this.comments.get(cid)?.findIndex((el1) => el1 === el.cid)
           return index !== undefined && index >= 0
-        })?.sort((a: Content, b: Content) => a.createdAt < b.createdAt ? 1 : -1) || []
+        })?.sort((a: Content, b: Content) => b.createdAt - a.createdAt) || []
       }
     }
   },

@@ -62,3 +62,16 @@ https://ipfs.moralis.io:2053/ipfs/QmcyuFVLbfBmSeQ9ynu4dk67r97nB1abEekotuVuRGWedm
 
 
 
+
+Map.prototype.forEach() - JavaScript - MDN Web Docs - Mozilla
+
+Return value None (undefined). Description The forEach method executes the provided callback once for each key of the map which actually exist. It is not invoked for keys which have been deleted. However, it is executed for values which are present but have the value undefined. callback is invoked with three arguments: the entry's value the entry's key the Map object being traversed If a thisArg parameter is provided to forEach, it will be passed to callback when invoked, for use as its this value. Otherwise, the value undefined will be passed for use as its this value. The this value ultimately observable by callback is determined according to the usual rules for determining the this seen by a function. Each value is visited once, except in the case when it was deleted and re-added before forEach has finished. callback is not invoked for values deleted before being visited. New values added before forEach has finished will be visited.
+
+
+
+Iterating over Typescript Map
+
+Per the TypeScript 2.3 release notes on "New --downlevelIteration": for..of statements, Array Destructuring, and Spread elements in Array, Call, and New expressions support Symbol.iterator in ES5/E3 if available when using --downlevelIteration This is not enabled by default! Add "downlevelIteration": true to your tsconfig.json, or pass --downlevelIteration flag to tsc, to get full iterator support. With this in place, you can write for (let keyval of myMap) {...} and keyval's type will be automatically inferred. Why is this turned off by default? According to TypeScript contributor @aluanhaddad, It is optional because it has a very significant impact on the size of generated code, and potentially on performance, for all uses of iterables (including arrays). If you can target ES2015 ("target": "es2015" in tsconfig.json or tsc --target ES2015) or later, enabling downlevelIteration is a no-brainer, but if you're targeting ES5/ES3, you might benchmark to ensure iterator support doesn't impact performance (if it does, you might be better off with Array.from conversion or forEach or some other workaround).
+
+
+

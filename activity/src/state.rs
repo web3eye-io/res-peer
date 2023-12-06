@@ -176,7 +176,7 @@ impl Activity {
         let activity = self.activity(activity_id).await?;
         match activity.voters.get(&object_id) {
             Some(voters) => match voters.get(&owner) {
-                Some(_) => Ok(false),
+                Some(_) => Ok(true),
                 None => Ok(false),
             },
             None => Ok(false),
@@ -209,8 +209,16 @@ impl Activity {
                     None => HashMap::default(),
                 };
                 voters.insert(owner, true);
-                activity.voters.insert(object_id, voters);
+                activity.voters.insert(object_id.clone(), voters.clone());
                 self.activities.insert(&activity_id, activity)?;
+                log::info!(
+                    "{} vote to {} power {} voters {:?} activity {:?}",
+                    owner,
+                    object_id,
+                    vote_power,
+                    voters,
+                    self.activities.get(&activity_id).await?
+                );
                 Ok(())
             }
             _ => return Err(ActivityError::ActivityObjectNotFound),

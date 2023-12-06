@@ -214,6 +214,16 @@ watch(_activity, () => {
 })
 
 const params = ref({
+  title: 'The Best Novel of the Month',
+  slogan: 'Find the best author of the world, and support them!',
+  banner: 'https://ipfs.moralis.io:2053/ipfs/QmcyuFVLbfBmSeQ9ynu4dk67r97nB1abEekotuVuRGWedm',
+  hostResume: 'https://www.baidu.com',
+  posters: [
+    'https://ipfs.moralis.io:2053/ipfs/QmbzbxQcdcUcdzqrtU1S7cFd7swmcBnytWv5rf1yw94g9s',
+    'https://ipfs.moralis.io:2053/ipfs/Qmdco6YbN7qK81tNbQw3RmnowSUXiEuaKjG6tt8FsChDuA',
+    'https://ipfs.moralis.io:2053/ipfs/QmTSfgqeKUNvNUqRfQSFTbPkjjFDtGZFxWQkhyqWwMHhAJ'
+  ],
+  introduction: 'Within the vote period, user can vote for their favorite novel listed in the candidates. The only criteria is how much you like the novel. The author of the winner novel will get 90% of the reward amount. Remainant part of the reward will be distributed to voter according to their vote power when they vote.',
   votable: true,
   activityType: ActivityType.Campaign,
   voteType: VoteType.Power,
@@ -227,11 +237,28 @@ const params = ref({
   voterRewardPercent: 12,
   budgetAmount: '10000000',
   registerStartAt: date.formatDate(new Date().toString(), 'YYYY/MM/DD'),
-  registerEndAt: date.formatDate(new Date().toString(), 'YYYY/MM/DD'),
+  registerEndAt: date.formatDate(new Date(Date.now() + 3600000000).toString(), 'YYYY/MM/DD'),
   voteStartAt: date.formatDate(new Date().toString(), 'YYYY/MM/DD'),
-  voteEndAt: date.formatDate(new Date().toString(), 'YYYY/MM/DD'),
-  posters: [] as Array<string>,
-  prizeConfigs: [] as Array<PrizeConfig>
+  voteEndAt: date.formatDate(new Date(Date.now() + 3600000000).toString(), 'YYYY/MM/DD'),
+  prizeConfigs: [
+    {
+      place: 1,
+      medal: 'https://ipfs.moralis.io:2053/ipfs/QmTDxnzcvj2p3xBrKcGv1wxoyhAn2yzCQnZZ9LmFjReuH9',
+      title: 'Best Month Novel',
+      rewardAmount: '12500.'
+    }, {
+      place: 2,
+      medal: 'https://ipfs.moralis.io:2053/ipfs/QmbvZ2hbF3nEq5r3ijMEiSGssAmJvtyFwiejTAGHv74LR5',
+      title: 'Better Month Novel',
+      rewardAmount: '7500.'
+    }, {
+      place: 3,
+      medal: 'https://ipfs.moralis.io:2053/ipfs/QmVpwaCqLut3wqwB5KSQr2fGnbLuJt5e3LhNvzvcisewZB',
+      title: 'Good Month Novel',
+      rewardAmount: '2500.'
+    }
+  ],
+  location: 'https://ipfs.moralis.io:2053/ipfs/QmcyuFVLbfBmSeQ9ynu4dk67r97nB1abEekotuVuRGWedm'
 } as CreateParams)
 
 const newPoster = ref('')
