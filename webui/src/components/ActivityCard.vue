@@ -85,6 +85,7 @@
                 label='Register'
                 :disable='!registerable()'
                 color='blue-7'
+                @click='onRegisterClick'
               />
             </div>
             <q-separator />
@@ -174,9 +175,10 @@
 
 <script lang='ts' setup>
 import { defineProps, ref, toRef } from 'vue'
-import { date } from 'quasar'
+import { Cookies, date } from 'quasar'
 import { useCollectionStore } from 'src/stores/collection'
 import { Activity, useActivityStore, JoinType } from 'src/stores/activity'
+import { useRouter } from 'vue-router'
 
 const collection = useCollectionStore()
 const splitter = ref(200)
@@ -209,6 +211,17 @@ const registerable = () => {
 const votable = () => {
   const now = Date.now()
   return activity.value.voteStartAt <= now && activity.value.voteEndAt > now
+}
+
+const router = useRouter()
+const onRegisterClick = () => {
+  void router.push({
+    path: '/activity/register',
+    query: {
+      port: Cookies.get('service-port'),
+      activityId: activity.value.id
+    }
+  })
 }
 
 </script>
