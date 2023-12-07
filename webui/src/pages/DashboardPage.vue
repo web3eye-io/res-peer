@@ -42,6 +42,7 @@
           <q-tab v-if='reviewer' name='review-contents' label='Review Content' />
           <q-tab v-if='reviewer' name='review-assets' label='Review Asset' />
           <q-tab v-if='reviewer' name='review-reviewers' label='Review Reviewer' />
+          <q-tab v-if='reviewer' name='review-activities' label='Review Activity' />
           <q-tab v-if='!reviewer' name='apply-reviewer' label='Apply Reviewer' />
           <q-tab name='foundation' label='Foundation' />
           <q-tab name='activity' label='Activity' />
@@ -76,6 +77,9 @@
           </q-tab-panel>
           <q-tab-panel name='review-reviewers'>
             <review-reviewers />
+          </q-tab-panel>
+          <q-tab-panel name='review-activities'>
+            <review-activities />
           </q-tab-panel>
           <q-tab-panel name='credits'>
             <user-balance />
@@ -135,6 +139,7 @@ import ContentApplicationList from 'src/components/ContentApplicationList.vue'
 import AssetApplicationList from 'src/components/AssetApplicationList.vue'
 import FoundationPage from 'src/components/FoundationPage.vue'
 import ActivityPage from 'src/components/ActivityPage.vue'
+import ReviewActivities from 'src/components/ReviewActivities.vue'
 
 interface Query {
   tab: string
