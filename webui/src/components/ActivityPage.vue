@@ -50,11 +50,11 @@ const columns = computed(() => [
   }, {
     name: 'RegisterStartAt',
     label: 'Register Start At',
-    field: (row: Activity) => date.formatDate(row.registerStartAt)
+    field: (row: Activity) => date.formatDate(row.registerStartAt, 'YYYY/MM/DD HH:mm')
   }, {
     name: 'VoteStartAt',
     label: 'Vote Start At',
-    field: (row: Activity) => date.formatDate(row.voteStartAt)
+    field: (row: Activity) => date.formatDate(row.voteStartAt, 'YYYY/MM/DD HH:mm')
   }, {
     name: 'ReviewState',
     label: 'Review State',
