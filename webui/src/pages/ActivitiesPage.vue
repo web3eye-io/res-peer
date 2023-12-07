@@ -16,10 +16,19 @@
 <script lang='ts' setup>
 import { useActivityStore } from 'src/stores/activity'
 import { computed } from 'vue'
+import { useReviewStore } from 'src/stores/review'
 
 import ActivityCard from 'src/components/ActivityCard.vue'
 
+const review = useReviewStore()
+const reviewerNumber = computed(() => review.reviewerNumber)
+const approvedThreshold = computed(() => review.activityApprovedThreshold)
+const activityApplications = computed(() => review.activityApplications)
+
 const activity = useActivityStore()
-const activities = computed(() => activity._activities())
+const activities = computed(() => activity._activities().filter((el) => {
+  return (activityApplications.value.get(el.id)?.approved || 0) >= approvedThreshold.value ||
+         (activityApplications.value.get(el.id)?.approved || 0) >= reviewerNumber.value
+}))
 
 </script>

@@ -3,7 +3,7 @@
 mod state;
 
 use self::state::Activity;
-use activity::{ActivityError, AnnounceParams, Message, Operation, VoteType};
+use activity::{ActivityError, AnnounceParams, CreateParams, Message, Operation, VoteType};
 use async_trait::async_trait;
 use foundation::FoundationAbi;
 use linera_sdk::{
@@ -101,7 +101,7 @@ impl Contract for Activity {
     ) -> Result<ExecutionResult<Self::Message>, Self::Error> {
         match message {
             Message::Create { params } => {
-                self.create_activity(context.authenticated_signer.unwrap(), params.clone())
+                self._create_activity(context.authenticated_signer.unwrap(), params.clone())
                     .await?;
                 let dest =
                     Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
@@ -134,6 +134,11 @@ impl Contract for Activity {
                 activity_id,
                 object_id,
             } => {
+                match self.activity_approved(activity_id).await {
+                    Ok(true) => {}
+                    Ok(false) => return Err(ActivityError::ActivityNotApproved),
+                    Err(err) => return Err(err),
+                }
                 match self.votable(activity_id).await {
                     Ok(true) => {}
                     Ok(false) => return Err(ActivityError::ActivityNotVotable),
@@ -251,5 +256,28 @@ impl Activity {
             .call_application(true, Self::foundation_app_id()?, &call, vec![])
             .await?;
         Ok(resp)
+    }
+
+    async fn _create_activity(
+        &mut self,
+        owner: Owner,
+        params: CreateParams,
+    ) -> Result<(), ActivityError> {
+        let activity_id = self.create_activity(owner, params.clone()).await?;
+        let call = review::ApplicationCall::SubmitActivity {
+            activity_id,
+            budget_amount: params.budget_amount,
+        };
+        self.call_application(true, Self::review_app_id()?, &call, vec![])
+            .await?;
+        Ok(())
+    }
+
+    async fn activity_approved(&mut self, activity_id: u64) -> Result<bool, ActivityError> {
+        let call = review::ApplicationCall::ActivityApproved { activity_id };
+        let (approved, _) = self
+            .call_application(true, Self::review_app_id()?, &call, vec![])
+            .await?;
+        Ok(approved)
     }
 }

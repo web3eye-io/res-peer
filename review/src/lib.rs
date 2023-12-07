@@ -14,7 +14,7 @@ impl ContractAbi for ReviewAbi {
     type ApplicationCall = ApplicationCall;
     type SessionCall = ();
     type SessionState = ();
-    type Response = ();
+    type Response = bool;
 }
 
 impl ServiceAbi for ReviewAbi {
@@ -39,6 +39,8 @@ pub struct InitialState {
     pub asset_rejected_threshold: u16,
     pub reviewer_approved_threshold: u16,
     pub reviewer_rejected_threshold: u16,
+    pub activity_approved_threshold: u16,
+    pub activity_rejected_threshold: u16,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, SimpleObject, Eq, PartialEq)]
@@ -241,5 +243,8 @@ pub enum ApplicationCall {
     SubmitActivity {
         activity_id: u64,
         budget_amount: Amount,
+    },
+    ActivityApproved {
+        activity_id: u64,
     },
 }

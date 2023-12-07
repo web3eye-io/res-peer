@@ -36,6 +36,11 @@ export interface Reviewer extends ReviewApplication {
   resume: string
 }
 
+export interface Activity extends ReviewApplication {
+  activityId: number
+  budgetAmount: string
+}
+
 export const useReviewStore = defineStore('review', {
   state: () => ({
     contentApplicationsKeys: [] as Array<string>,
@@ -44,15 +49,20 @@ export const useReviewStore = defineStore('review', {
     assetApplications: new Map<string, Asset>(),
     reviewerApplicationsKeys: [] as Array<string>,
     reviewerApplications: new Map<string, Reviewer>(),
+    activityApplicationsKeys: [] as Array<number>,
+    activityApplications: new Map<number, Activity>(),
     contentMutateKeys: [] as Array<string>,
     assetMutateKeys: [] as Array<string>,
     reviewerMutateKeys: [] as Array<string>,
+    activityMutateKeys: [] as Array<number>,
     contentApprovedThreshold: 0,
     contentRejectedThreshold: 0,
     assetApprovedThreshold: 0,
     assetRejectedThreshold: 0,
     reviewerApprovedThreshold: 0,
     reviewerRejectedThreshold: 0,
+    activityApprovedThreshold: 0,
+    activityRejectedThreshold: 0,
     reviewerNumber: 0
   }),
   getters: {

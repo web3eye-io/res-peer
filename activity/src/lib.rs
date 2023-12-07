@@ -229,6 +229,9 @@ pub enum ActivityError {
     #[error("Activity not votable")]
     ActivityNotVotable,
 
+    #[error("Activity not approved")]
+    ActivityNotApproved,
+
     #[error("Activity object not found")]
     ActivityObjectNotFound,
 

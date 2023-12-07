@@ -543,6 +543,11 @@ impl Contract for Review {
                 );
                 Ok(result)
             }
+            ApplicationCall::ActivityApproved { activity_id } => {
+                let mut result = ApplicationCallResult::default();
+                result.value = self.activity_approved(activity_id).await?;
+                Ok(result)
+            }
         }
     }
 
@@ -996,6 +1001,7 @@ impl Review {
         }
         self.reward_credits(owner, Amount::from_tokens(50)).await?;
         self.reward_tokens().await?;
+        // TODO: here we should lock budget from foundation
         Ok(())
     }
 

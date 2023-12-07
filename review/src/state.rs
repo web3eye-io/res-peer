@@ -46,6 +46,10 @@ impl Review {
             .set(state.reviewer_approved_threshold);
         self.reviewer_rejected_threshold
             .set(state.reviewer_rejected_threshold);
+        self.activity_approved_threshold
+            .set(state.activity_approved_threshold);
+        self.activity_rejected_threshold
+            .set(state.activity_rejected_threshold);
         Ok(())
     }
 
@@ -57,6 +61,8 @@ impl Review {
             asset_rejected_threshold: *self.asset_rejected_threshold.get(),
             reviewer_approved_threshold: *self.reviewer_approved_threshold.get(),
             reviewer_rejected_threshold: *self.reviewer_rejected_threshold.get(),
+            activity_approved_threshold: *self.activity_approved_threshold.get(),
+            activity_rejected_threshold: *self.activity_rejected_threshold.get(),
         })
     }
 
@@ -552,6 +558,21 @@ impl Review {
             return Ok(Some(activity));
         }
         Ok(None)
+    }
+
+    pub(crate) async fn activity_approved(&self, activity_id: u64) -> Result<bool, StateError> {
+        match self.activity_applications.get(&activity_id).await {
+            Ok(Some(activity)) => {
+                let approved_threshold = *self.activity_approved_threshold.get();
+                let reviewer_number = *self.reviewer_number.get();
+                if activity.approved >= approved_threshold || activity.approved >= reviewer_number {
+                    return Ok(true);
+                }
+                Ok(false)
+            }
+            Ok(None) => Err(StateError::InvalidActivity),
+            Err(err) => Err(StateError::ViewError(err)),
+        }
     }
 }
 

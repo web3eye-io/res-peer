@@ -25,6 +25,13 @@ import { useUserStore } from 'src/stores/user'
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { Cookies, date } from 'quasar'
+import { useReviewStore } from 'src/stores/review'
+
+const review = useReviewStore()
+const reviewerNumber = computed(() => review.reviewerNumber)
+const approvedThreshold = computed(() => review.activityApprovedThreshold)
+const activityApplications = computed(() => review.activityApplications)
+const rejectedThreshold = computed(() => review.activityRejectedThreshold)
 
 const user = useUserStore()
 const account = computed(() => user.account)
@@ -48,6 +55,20 @@ const columns = computed(() => [
     name: 'VoteStartAt',
     label: 'Vote Start At',
     field: (row: Activity) => date.formatDate(row.voteStartAt)
+  }, {
+    name: 'ReviewState',
+    label: 'Review State',
+    field: (row: Activity) => {
+      const approvers = approvedThreshold.value > reviewerNumber.value ? approvedThreshold.value : reviewerNumber.value
+      if ((activityApplications.value.get(row.id)?.approved || 0) > approvers) {
+        return 'Approved'
+      }
+      const rejecters = rejectedThreshold.value > reviewerNumber.value ? rejectedThreshold.value : reviewerNumber.value
+      if ((activityApplications.value.get(row.id)?.rejected || 0) > rejecters) {
+        return 'Rejected'
+      }
+      return `Reviewing (${activityApplications.value.get(row.id)?.approved || 0} approved, ${approvers} needed)`
+    }
   }
 ])
 

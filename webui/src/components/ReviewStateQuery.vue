@@ -30,6 +30,8 @@ const getReviewState = () => {
       assetRejectedThreshold
       reviewerApprovedThreshold
       reviewerRejectedThreshold
+      activityApprovedThreshold
+      activityRejectedThreshold
       reviewerNumber
     }
   `, {
@@ -52,6 +54,8 @@ const getReviewState = () => {
     review.assetRejectedThreshold = ret.assetRejectedThreshold
     review.reviewerApprovedThreshold = ret.reviewerApprovedThreshold
     review.reviewerRejectedThreshold = ret.reviewerRejectedThreshold
+    review.activityApprovedThreshold = ret.activityApprovedThreshold
+    review.activityRejectedThreshold = ret.activityRejectedThreshold
     review.reviewerNumber = ret.reviewerNumber
   })
 }

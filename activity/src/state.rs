@@ -24,10 +24,10 @@ impl Activity {
         &mut self,
         owner: Owner,
         params: CreateParams,
-    ) -> Result<(), ActivityError> {
+    ) -> Result<u64, ActivityError> {
         let activity_id = self.activity_id.get() + 1;
         self.activity_id.set(activity_id);
-        Ok(self.activities.insert(
+        self.activities.insert(
             &activity_id,
             ActivityItem {
                 id: activity_id,
@@ -65,7 +65,8 @@ impl Activity {
                 winners: Vec::new(),
                 finalized: false,
             },
-        )?)
+        )?;
+        Ok(activity_id)
     }
 
     pub(crate) async fn update_activity(

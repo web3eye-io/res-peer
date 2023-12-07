@@ -66,6 +66,8 @@
       <foundation-info-query />
       <activities-keys-query />
       <activities-query />
+      <activity-applications-keys-query />
+      <activity-applications-query />
     </q-page-container>
 
     <q-footer elevated :style='{height: "32px", lineHeight: "32px"}'>
@@ -150,6 +152,8 @@ import ReviewStateQuery from 'src/components/ReviewStateQuery.vue'
 import FoundationInfoQuery from 'src/components/FoundationInfoQuery.vue'
 import ActivitiesKeysQuery from 'src/components/ActivitiesKeysQuery.vue'
 import ActivitiesQuery from 'src/components/ActivitiesQuery.vue'
+import ActivityApplicationsKeysQuery from 'src/components/ActivityApplicationsKeysQuery.vue'
+import ActivityApplicationsQuery from 'src/components/ActivityApplicationsQuery.vue'
 
 const router = useRouter()
 const account = ref('')
