@@ -1,4 +1,7 @@
-use std::{collections::{HashMap, HashSet}, convert::Infallible};
+use std::{
+    collections::{HashMap, HashSet},
+    convert::Infallible,
+};
 
 use async_graphql::{scalar, Enum, InputObject, Request, Response, SimpleObject};
 use linera_sdk::base::{

@@ -88,6 +88,16 @@ pub struct Asset {
     pub created_at: Timestamp,
 }
 
+#[derive(Debug, Deserialize, Serialize, Clone, SimpleObject, Eq, PartialEq)]
+pub struct Activity {
+    pub activity_id: u64,
+    pub budget_amount: Amount,
+    pub approved: u16,
+    pub rejected: u16,
+    pub created_at: Timestamp,
+    pub reviewers: HashMap<Owner, Review>,
+}
+
 #[derive(Debug, Deserialize, Serialize)]
 pub enum Operation {
     ApplyReviewer {
@@ -139,6 +149,14 @@ pub enum Operation {
         name: String,
     },
     RequestSubscribe,
+    ApproveActivity {
+        activity_id: u64,
+        reason: Option<String>,
+    },
+    RejectActivity {
+        activity_id: u64,
+        reason: String,
+    },
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
@@ -199,6 +217,18 @@ pub enum Message {
     InitialState {
         state: InitialState,
     },
+    SubmitActivity {
+        activity_id: u64,
+        budget_amount: Amount,
+    },
+    ApproveActivity {
+        activity_id: u64,
+        reason: Option<String>,
+    },
+    RejectActivity {
+        activity_id: u64,
+        reason: String,
+    },
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -207,5 +237,9 @@ pub enum ApplicationCall {
         cid: String,
         title: String,
         content: String,
+    },
+    SubmitActivity {
+        activity_id: u64,
+        budget_amount: Amount,
     },
 }

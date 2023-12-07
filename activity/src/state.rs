@@ -1,8 +1,11 @@
-use std::{cmp::Ordering, collections::{HashMap, HashSet}};
+use std::{
+    cmp::Ordering,
+    collections::{HashMap, HashSet},
+};
 
 use activity::{ActivityError, ActivityItem, CreateParams, UpdateParams, Winner};
 use linera_sdk::{
-    base::{Owner, Amount},
+    base::{Amount, Owner},
     contract::system_api,
     views::{MapView, RegisterView, ViewStorageContext},
 };
@@ -12,7 +15,7 @@ use linera_views::views::{GraphQLView, RootView};
 #[view(context = "ViewStorageContext")]
 pub struct Activity {
     pub activities: MapView<u64, ActivityItem>,
-    pub activity_id: RegisterView<u64>
+    pub activity_id: RegisterView<u64>,
 }
 
 #[allow(dead_code)]

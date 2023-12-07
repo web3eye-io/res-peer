@@ -34,6 +34,8 @@
             <q-tr :props='props' class='cursor-pointer'>
               <q-td key='Medal' :props='props' @click='onContentClick(props.row.cid)'>
                 <q-icon name='workspace_premium' :class='placeColor(props.row.cid)' size='32px' />
+                <q-icon v-if='activity.objectWon(Number(activityId), props.row.cid)' name='emoji_events' :class='placeColor(props.row.cid)' size='32px' />
+                <q-icon v-if='activity.objectVoteCount(Number(activityId), props.row.cid) || true' name='where_to_vote' color='blue' size='32px' />
               </q-td>
               <q-td key='Place' :props='props' @click='onContentClick(props.row.cid)'>
                 {{ objectPlace(props.row.cid) }}
@@ -74,7 +76,7 @@ import { Cookies } from 'quasar'
 import { useActivityStore, ObjectType } from 'src/stores/activity'
 import { useContentStore } from 'src/stores/content'
 import { useUserStore } from 'src/stores/user'
-import { computed, ref } from 'vue'
+import { computed, ref, toRef } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { provideApolloClient, useMutation } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
@@ -86,8 +88,16 @@ import { Content } from 'src/stores/review'
 interface Query {
   activityId: number
 }
+
+interface Props {
+  activityIndex?: number
+}
+
+const _props = defineProps<Props>()
 const route = useRoute()
-const activityId = ref((route.query as unknown as Query).activityId)
+
+const activityId = ref((route.query as unknown as Query).activityId || toRef(_props, 'activityIndex').value as number)
+
 const activity = useActivityStore()
 const _activity = computed(() => activity.activity(Number(activityId.value)))
 const objectCandidates = computed(() => activity.objectCandidates(Number(activityId.value)))
@@ -106,7 +116,7 @@ const objectPlace = (objectId: string) => {
 
 const placeColor = (objectId: string) => {
   if (objectPlace(objectId) === 1) {
-    return 'text-orange-9'
+    return 'text-amber-9'
   }
   if (objectPlace(objectId) === 2) {
     return 'text-green-9'

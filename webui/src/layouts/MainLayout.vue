@@ -179,7 +179,7 @@ const onDashboardClick = () => {
 const onActivityClick = () => {
   tab.value = 'activity'
   void router.push({
-    path: '/activity',
+    path: '/activities',
     query: {
       port: port.value
     }

@@ -1,12 +1,12 @@
 use std::collections::HashMap;
 
 use linera_sdk::{
-    base::{ArithmeticError, ChainId, Owner},
+    base::{Amount, ArithmeticError, ChainId, Owner},
     contract::system_api,
     views::{MapView, RegisterView, ViewStorageContext},
 };
 use linera_views::views::{GraphQLView, RootView};
-use review::{Asset, Content, InitialState, Review as _Review, Reviewer};
+use review::{Activity, Asset, Content, InitialState, Review as _Review, Reviewer};
 use thiserror::Error;
 
 #[derive(RootView, GraphQLView)]
@@ -23,6 +23,9 @@ pub struct Review {
     pub asset_rejected_threshold: RegisterView<u16>,
     pub reviewer_approved_threshold: RegisterView<u16>,
     pub reviewer_rejected_threshold: RegisterView<u16>,
+    pub activity_applications: MapView<u64, Activity>,
+    pub activity_approved_threshold: RegisterView<u16>,
+    pub activity_rejected_threshold: RegisterView<u16>,
 }
 
 #[allow(dead_code)]
@@ -452,6 +455,104 @@ impl Review {
         }
         Ok(())
     }
+
+    pub(crate) async fn submit_activity(
+        &mut self,
+        activity_id: u64,
+        budget_amount: Amount,
+    ) -> Result<(), StateError> {
+        match self.activity_applications.get(&activity_id).await {
+            Ok(Some(_)) => Err(StateError::AlreadyExists),
+            _ => Ok(self.activity_applications.insert(
+                &activity_id,
+                Activity {
+                    activity_id,
+                    budget_amount,
+                    approved: 0,
+                    rejected: 0,
+                    created_at: system_api::current_system_time(),
+                    reviewers: HashMap::default(),
+                },
+            )?),
+        }
+    }
+
+    pub(crate) async fn validate_activity_review(
+        &self,
+        owner: Owner,
+        activity_id: u64,
+    ) -> Result<(), StateError> {
+        match self.activity_applications.get(&activity_id).await {
+            Ok(Some(activity)) => match activity.reviewers.get(&owner) {
+                Some(_) => Err(StateError::AlreadyReviewed),
+                _ => Ok(()),
+            },
+            Ok(None) => Err(StateError::InvalidActivity),
+            Err(err) => Err(StateError::ViewError(err)),
+        }
+    }
+
+    pub(crate) async fn approve_activity(
+        &mut self,
+        owner: Owner,
+        activity_id: u64,
+        reason: String,
+    ) -> Result<Option<Activity>, StateError> {
+        self.validate_activity_review(owner, activity_id).await?;
+
+        let mut activity = self.activity_applications.get(&activity_id).await?.unwrap();
+        activity.reviewers.insert(
+            owner.clone(),
+            _Review {
+                reviewer: owner,
+                approved: true,
+                reason,
+                created_at: system_api::current_system_time(),
+            },
+        );
+        activity.approved += 1;
+        self.activity_applications
+            .insert(&activity_id, activity.clone())?;
+
+        let approved_threshold = *self.activity_approved_threshold.get();
+        let reviewer_number = *self.reviewer_number.get();
+
+        if activity.approved >= approved_threshold || activity.approved >= reviewer_number {
+            return Ok(Some(activity));
+        }
+        Ok(None)
+    }
+
+    pub(crate) async fn reject_activity(
+        &mut self,
+        owner: Owner,
+        activity_id: u64,
+        reason: String,
+    ) -> Result<Option<Activity>, StateError> {
+        self.validate_activity_review(owner, activity_id).await?;
+
+        let mut activity = self.activity_applications.get(&activity_id).await?.unwrap();
+        activity.reviewers.insert(
+            owner.clone(),
+            _Review {
+                reviewer: owner,
+                approved: true,
+                reason,
+                created_at: system_api::current_system_time(),
+            },
+        );
+        activity.rejected += 1;
+        self.activity_applications
+            .insert(&activity_id, activity.clone())?;
+
+        let rejected_threshold = *self.activity_rejected_threshold.get();
+        let reviewer_number = *self.reviewer_number.get();
+
+        if activity.rejected >= rejected_threshold || activity.rejected >= reviewer_number {
+            return Ok(Some(activity));
+        }
+        Ok(None)
+    }
 }
 
 #[derive(Debug, Error)]
@@ -473,4 +574,7 @@ pub enum StateError {
 
     #[error("Already exists")]
     AlreadyExists,
+
+    #[error("Invalid activity")]
+    InvalidActivity,
 }

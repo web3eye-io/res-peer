@@ -1,13 +1,21 @@
 <template>
-  <div>
+  <div :style='{width:"960px", margin:"32px 0 0 0"}'>
     <div
-      class='cursor-pointer'
+      class='row'
       :style='{fontWeight: "bold", fontSize: "26px", wordBreak: "break-word", marginBottom: "8px"}'
-      @click='onTitleClick()'
     >
-      {{ activity.title?.length ? activity.title : 'You should have a title!' }}
+      {{ activity?.title || 'You should have a title!' }}
+      <q-btn
+        v-if='voteEnd() && activity?.host === account'
+        :style='{fontSize:"12px",marginTop:"10px",marginLeft:"10px"}'
+        dense
+        flat
+        label='Finalize'
+        color='blue-7'
+        @click='onFinalizeClick'
+      />
     </div>
-    <div v-if='activity.slogan?.length' class='text-blue-7' :style='{fontSize:"16px", marginBottom:"16px"}'>
+    <div v-if='activity?.slogan?.length' class='text-blue-7' :style='{fontSize:"16px", marginBottom:"16px"}'>
       {{ activity.slogan }}
     </div>
     <div class='row'>
@@ -16,19 +24,19 @@
           <div>
             Hosted By
             <span class='text-grey-6 text-bold cursor-pointer'>
-              {{ activity.host?.length ? activity.host : 'Anonymous' }}
+              {{ activity?.host || 'Anonymous' }}
             </span>
           </div>
-          <a :href='activity.hostResume' :style='{marginLeft:"8px"}'>Resume</a>
+          <a :href='activity?.hostResume' :style='{marginLeft:"8px"}'>Resume</a>
         </div>
         <div>
           Created At
-          <span class='text-grey-6 text-bold'>{{ date.formatDate(activity.createdAt / 1000) }}</span>
+          <span class='text-grey-6 text-bold'>{{ date.formatDate(activity?.createdAt || 0 / 1000) }}</span>
         </div>
       </div>
       <q-avatar :style='{marginLeft: "4px", marginTop: "-12px"}'>
         <q-img
-          :src='userAvatar(activity.host) ? userAvatar(activity.host) : "~/assets/ResPeer.png"'
+          :src='userAvatar(activity?.host as string) || "~/assets/ResPeer.png"'
           width='32px'
           height='32px'
           fit='cover'
@@ -49,7 +57,7 @@
               Register
             </div>
             <q-separator />
-            <div v-if='activity.votable' :style='{margin:"4px 8px 4px 4px"}'>
+            <div v-if='activity?.votable' :style='{margin:"4px 8px 4px 4px"}'>
               Vote
             </div>
             <q-separator />
@@ -76,7 +84,7 @@
           <template #after>
             <div class='row'>
               <div :style='{margin:"4px 8px 4px 4px"}' class='text-bold text-green-6'>
-                {{ date.formatDate(activity.registerStartAt, 'YYYY-MM-DD') }} ~ {{ date.formatDate(activity.registerEndAt, 'YYYY-MM-DD') }}
+                {{ date.formatDate(activity?.registerStartAt, 'YYYY-MM-DD') }} ~ {{ date.formatDate(activity?.registerEndAt, 'YYYY-MM-DD') }}
               </div>
               <q-btn
                 :style='{fontSize:"12px"}'
@@ -89,9 +97,9 @@
               />
             </div>
             <q-separator />
-            <div v-if='activity.votable' class='row'>
+            <div v-if='activity?.votable' class='row'>
               <div :style='{margin:"4px 8px 4px 4px"}' class='text-bold text-green-6'>
-                {{ date.formatDate(activity.voteStartAt, 'YYYY-MM-DD') }} ~ {{ date.formatDate(activity.voteEndAt, 'YYYY-MM-DD') }}
+                {{ date.formatDate(activity?.voteStartAt || 0, 'YYYY-MM-DD') }} ~ {{ date.formatDate(activity?.voteEndAt || 0, 'YYYY-MM-DD') }}
               </div>
               <q-btn
                 :style='{fontSize:"12px"}'
@@ -105,23 +113,23 @@
             </div>
             <q-separator />
             <div :style='{margin:"4px 8px 4px 4px"}' class='text-bold text-grey-6'>
-              {{ activity.voterRewardPercent }} %
+              {{ activity?.voterRewardPercent }} %
             </div>
             <q-separator />
             <div :style='{margin:"4px 8px 4px 4px"}' class='text-bold text-grey-6'>
-              {{ activity.finalized ? 'Finalized' : 'In Progress' }}
+              {{ activity?.finalized ? 'Finalized' : 'In Progress' }}
             </div>
             <q-separator />
             <div :style='{margin:"4px 8px 4px 4px"}' class='text-bold text-blue-6'>
-              {{ activity.joinType }}
+              {{ activity?.joinType }}
             </div>
             <q-separator />
             <div :style='{margin:"4px 8px 4px 4px"}' class='text-bold text-blue-6'>
-              {{ activity.objectType }}
+              {{ activity?.objectType }}
             </div>
             <q-separator />
             <div :style='{margin:"4px 8px 4px 4px"}' class='text-bold text-blue-6'>
-              {{ activity.voteType }}
+              {{ activity?.voteType }}
             </div>
           </template>
         </q-splitter>
@@ -133,7 +141,7 @@
             <th>Title</th>
             <th>Reward Amount (Linera)</th>
           </tr>
-          <tr v-for='prize in activity.prizeConfigs' :key='prize.place'>
+          <tr v-for='prize in activity?.prizeConfigs' :key='prize.place'>
             <td class='text-center'>
               {{ prize.place }}
             </td>
@@ -145,7 +153,7 @@
           </tr>
         </table>
       </div>
-      <q-img v-if='activity.banner?.length' :src='activity.banner' :style='{marginTop:"32px",marginLeft:"3%"}' width='47%'>
+      <q-img v-if='activity?.banner?.length' :src='activity?.banner' :style='{marginTop:"32px",marginLeft:"3%"}' width='47%'>
         <template #error>
           <div class='absolute-full flex flex-center error error-normal' />
         </template>
@@ -154,53 +162,53 @@
     <div
       class='text-grey-10'
       :style='{margin: "24px 0 24px 0", fontSize: "16px", wordBreak: "break-word"}'
-      v-html='activity.introduction?.length ? activity.introduction : "You should have some introduction!"'
+      v-html='activity?.introduction || "You should have some introduction!"'
     />
     <div class='row'>
       <div class='row'>
         <q-icon name='app_registration' color='green' size='24px' />
-        <span class='text-bold text-grey-7' :style='{fontSize:"18px"}'>{{ _activity.objectCandidateCount(activity.id) }}</span>
+        <span class='text-bold text-grey-7' :style='{fontSize:"18px"}'>{{ _activity.objectCandidateCount(activity?.id || -1) }}</span>
       </div>
       <div class='row' :style='{marginLeft:"8px"}'>
         <q-icon name='where_to_vote' color='blue' size='24px' />
-        <span class='text-bold text-grey-7' :style='{fontSize:"18px"}'>{{ _activity.votes(activity.id) }}</span>
+        <span class='text-bold text-grey-7' :style='{fontSize:"18px"}'>{{ _activity.votes(activity?.id || -1) }}</span>
       </div>
       <div class='row' :style='{marginLeft:"8px"}'>
         <q-icon name='pin_drop' color='blue' size='24px' />
-        <span v-if='activity.joinType === JoinType.InPerson.toUpperCase()' class='text-grey-7' :style='{fontSize:"16px"}'>{{ activity.location }}</span>
-        <a v-if='activity.joinType === JoinType.Online.toUpperCase()' class='text-grey-7' :style='{fontSize:"16px"}' :href='activity.location'>{{ activity.location }}</a>
+        <span v-if='activity?.joinType === JoinType.InPerson.toUpperCase()' class='text-grey-7' :style='{fontSize:"16px"}'>{{ activity?.location }}</span>
+        <a v-if='activity?.joinType === JoinType.Online.toUpperCase()' class='text-grey-7' :style='{fontSize:"16px"}' :href='activity?.location'>{{ activity?.location }}</a>
       </div>
+    </div>
+    <div :style='{marginTop:"-32px"}'>
+      <activity-vote :activity-index='activityId' />
     </div>
   </div>
 </template>
 
 <script lang='ts' setup>
-import { defineProps, ref, toRef } from 'vue'
+import { computed, ref } from 'vue'
 import { Cookies, date } from 'quasar'
 import { useCollectionStore } from 'src/stores/collection'
-import { Activity, useActivityStore, JoinType } from 'src/stores/activity'
-import { useRouter } from 'vue-router'
+import { useActivityStore, JoinType } from 'src/stores/activity'
+import { useRoute, useRouter } from 'vue-router'
+import { useUserStore } from 'src/stores/user'
+
+import ActivityVote from './ActivityVote.vue'
 
 const collection = useCollectionStore()
 const splitter = ref(200)
 
-interface Props {
-  activity: Activity
+interface Query {
+  activityId: number
 }
 
-const props = defineProps<Props>()
-const activity = toRef(props, 'activity')
+const route = useRoute()
+const activityId = ref((route.query as unknown as Query).activityId)
 const _activity = useActivityStore()
+const activity = computed(() => _activity.activity(Number(activityId.value)))
 
-const onTitleClick = () => {
-  void router.push({
-    path: '/activity',
-    query: {
-      port: Cookies.get('service-port'),
-      activityId: activity.value.id
-    }
-  })
-}
+const user = useUserStore()
+const account = computed(() => user.account)
 
 const userAvatar = (account: string) => {
   const ids = collection.avatars.get(account)
@@ -212,12 +220,18 @@ const userAvatar = (account: string) => {
 
 const registerable = () => {
   const now = Date.now()
-  return activity.value.registerStartAt <= now && activity.value.registerEndAt > now
+  return (activity.value?.registerStartAt || 0) <= now && (activity.value?.registerEndAt || 0) > now
 }
 
 const votable = () => {
   const now = Date.now()
-  return activity.value.voteStartAt <= now && activity.value.voteEndAt > now && _activity.objectCandidateCount(activity.value.id)
+  return (activity.value?.voteStartAt || 0) <= now &&
+         (activity.value?.voteEndAt || 0) > now &&
+        _activity.objectCandidateCount(activity.value?.id || -1)
+}
+
+const voteEnd = () => {
+  return (activity.value?.voteEndAt || 0) < Date.now()
 }
 
 const router = useRouter()
@@ -226,7 +240,7 @@ const onRegisterClick = () => {
     path: '/activity/register',
     query: {
       port: Cookies.get('service-port'),
-      activityId: activity.value.id
+      activityId: activity.value?.id
     }
   })
 }
@@ -236,9 +250,13 @@ const onVoteClick = () => {
     path: '/activity/vote',
     query: {
       port: Cookies.get('service-port'),
-      activityId: activity.value.id
+      activityId: activity.value?.id
     }
   })
+}
+
+const onFinalizeClick = () => {
+  // TODO
 }
 
 </script>

@@ -151,6 +151,26 @@ impl Contract for Review {
                     system_api::current_application_id().creation.chain_id,
                     Message::RequestSubscribe,
                 )),
+            Operation::ApproveActivity {
+                activity_id,
+                reason,
+            } => Ok(ExecutionResult::default().with_authenticated_message(
+                system_api::current_application_id().creation.chain_id,
+                Message::ApproveActivity {
+                    activity_id,
+                    reason,
+                },
+            )),
+            Operation::RejectActivity {
+                activity_id,
+                reason,
+            } => Ok(ExecutionResult::default().with_authenticated_message(
+                system_api::current_application_id().creation.chain_id,
+                Message::RejectActivity {
+                    activity_id,
+                    reason,
+                },
+            )),
         }
     }
 
@@ -422,9 +442,65 @@ impl Contract for Review {
                 Ok(result)
             }
             Message::InitialState { state } => {
-                log::info!("Initial state {:?}", state);
                 self.initialize_review(state).await?;
                 Ok(ExecutionResult::default())
+            }
+            Message::SubmitActivity {
+                activity_id,
+                budget_amount,
+            } => {
+                self._submit_activity(activity_id, budget_amount).await?;
+                let dest =
+                    Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
+                Ok(ExecutionResult::default().with_authenticated_message(
+                    dest,
+                    Message::SubmitActivity {
+                        activity_id,
+                        budget_amount,
+                    },
+                ))
+            }
+            Message::ApproveActivity {
+                activity_id,
+                reason,
+            } => {
+                self._approve_activity(
+                    context.authenticated_signer.unwrap(),
+                    activity_id,
+                    reason.clone(),
+                    context.chain_id == system_api::current_application_id().creation.chain_id,
+                )
+                .await?;
+                let dest =
+                    Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
+                Ok(ExecutionResult::default().with_authenticated_message(
+                    dest,
+                    Message::ApproveActivity {
+                        activity_id,
+                        reason,
+                    },
+                ))
+            }
+            Message::RejectActivity {
+                activity_id,
+                reason,
+            } => {
+                self._reject_activity(
+                    context.authenticated_signer.unwrap(),
+                    activity_id,
+                    reason.clone(),
+                    context.chain_id == system_api::current_application_id().creation.chain_id,
+                )
+                .await?;
+                let dest =
+                    Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
+                Ok(ExecutionResult::default().with_authenticated_message(
+                    dest,
+                    Message::RejectActivity {
+                        activity_id,
+                        reason,
+                    },
+                ))
             }
         }
     }
@@ -449,6 +525,20 @@ impl Contract for Review {
                         cid,
                         title,
                         content,
+                    },
+                );
+                Ok(result)
+            }
+            ApplicationCall::SubmitActivity {
+                activity_id,
+                budget_amount,
+            } => {
+                let mut result = ApplicationCallResult::default();
+                result.execution_result = ExecutionResult::default().with_authenticated_message(
+                    system_api::current_application_id().creation.chain_id,
+                    Message::SubmitActivity {
+                        activity_id,
+                        budget_amount,
                     },
                 );
                 Ok(result)
@@ -879,6 +969,49 @@ impl Review {
             created_at: system_api::current_system_time(),
         })
         .await?;
+        Ok(())
+    }
+
+    async fn _submit_activity(
+        &mut self,
+        activity_id: u64,
+        budget_amount: Amount,
+    ) -> Result<(), ContractError> {
+        self.submit_activity(activity_id, budget_amount).await?;
+        Ok(())
+    }
+
+    async fn _approve_activity(
+        &mut self,
+        owner: Owner,
+        activity_id: u64,
+        reason: Option<String>,
+        creation_chain: bool,
+    ) -> Result<(), ContractError> {
+        let _activity = self
+            .approve_activity(owner, activity_id, reason.unwrap_or_default())
+            .await?;
+        if !creation_chain {
+            return Ok(());
+        }
+        self.reward_credits(owner, Amount::from_tokens(50)).await?;
+        self.reward_tokens().await?;
+        Ok(())
+    }
+
+    async fn _reject_activity(
+        &mut self,
+        owner: Owner,
+        activity_id: u64,
+        reason: String,
+        creation_chain: bool,
+    ) -> Result<(), ContractError> {
+        let _activity = self.reject_activity(owner, activity_id, reason).await?;
+        if !creation_chain {
+            return Ok(());
+        }
+        self.reward_credits(owner, Amount::from_tokens(50)).await?;
+        self.reward_tokens().await?;
         Ok(())
     }
 }

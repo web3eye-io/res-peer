@@ -48,7 +48,7 @@ export const JoinTypes = Object.values(JoinType)
 
 export interface Winner {
   place: number
-  object_id: string
+  objectId: string
 }
 
 export interface CreateParams {
@@ -155,6 +155,11 @@ export const useActivityStore = defineStore('activity', {
       return (id: number, objectId: string) => {
         return Number(
           (new Map<string, Array<string>>(Object.entries(this.activities.get(id)?.voters || new Map<string, Array<string>>())).get(objectId) || []).length)
+      }
+    },
+    objectWon (): (id: number, objectId: string) => boolean {
+      return (id: number, objectId: string) => {
+        return this.activities.get(id)?.winners?.find((el) => el.objectId === objectId) !== undefined
       }
     },
     activity (): (id: number) => Activity | undefined {
