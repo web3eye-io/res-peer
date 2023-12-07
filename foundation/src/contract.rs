@@ -100,17 +100,15 @@ impl Contract for Foundation {
             }
             Message::Lock {
                 activity_id,
-                activity_host,
                 amount,
             } => {
-                self.lock(activity_host, activity_id, amount).await?;
+                self.lock(activity_id, amount).await?;
                 let dest =
                     Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
                 Ok(ExecutionResult::default().with_authenticated_message(
                     dest,
                     Message::Lock {
                         activity_id,
-                        activity_host,
                         amount,
                     },
                 ))
@@ -129,21 +127,8 @@ impl Contract for Foundation {
                     Some(user) => user,
                     None => return Err(ContractError::InvalidUser),
                 };
-                let activity_host = match reward_type {
-                    RewardType::Activity => match context.authenticated_signer {
-                        Some(user) => Some(user),
-                        None => return Err(ContractError::InvalidUser),
-                    },
-                    _ => None,
-                };
-                self.reward(
-                    _reward_user,
-                    reward_type,
-                    amount,
-                    activity_id,
-                    activity_host,
-                )
-                .await?;
+                self.reward(_reward_user, reward_type, amount, activity_id)
+                    .await?;
                 let dest =
                     Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
                 Ok(ExecutionResult::default().with_authenticated_message(
@@ -181,13 +166,11 @@ impl Contract for Foundation {
                 ),
             ApplicationCall::Lock {
                 activity_id,
-                activity_host,
                 amount,
             } => ExecutionResult::default().with_authenticated_message(
                 system_api::current_application_id().creation.chain_id,
                 Message::Lock {
                     activity_id,
-                    activity_host,
                     amount,
                 },
             ),

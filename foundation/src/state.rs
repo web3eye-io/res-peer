@@ -18,7 +18,6 @@ pub struct Foundation {
     pub author_reward_factor: RegisterView<u8>,
     pub activity_reward_percent: RegisterView<u8>,
     pub activity_reward_balance: RegisterView<Amount>,
-    pub activity_owners: MapView<u64, Owner>,
     pub activity_lock_funds: MapView<u64, Amount>,
     pub user_balances: MapView<Owner, Amount>,
 }
@@ -157,19 +156,11 @@ impl Foundation {
 
     pub(crate) async fn reward_activity(
         &mut self,
-        activity_host: Owner,
         reward_user: Owner,
         amount: Amount,
         activity_id: u64,
     ) -> Result<(), StateError> {
-        match self.activity_owners.get(&activity_id).await? {
-            Some(owner) => {
-                if owner != activity_host {
-                    return Err(StateError::InvalidActivityOwner);
-                }
-            }
-            None => return Err(StateError::InvalidActivityOwner),
-        }
+        // TODO: check who can reward activity here
         let balance = match self.activity_lock_funds.get(&activity_id).await? {
             Some(balance) => balance,
             None => return Err(StateError::InsufficientBalance),
@@ -215,17 +206,11 @@ impl Foundation {
         reward_type: RewardType,
         amount: Option<Amount>,
         activity_id: Option<u64>,
-        activity_host: Option<Owner>,
     ) -> Result<(), StateError> {
         match reward_type {
             RewardType::Activity => {
-                self.reward_activity(
-                    activity_host.unwrap(),
-                    reward_user,
-                    amount.unwrap(),
-                    activity_id.unwrap(),
-                )
-                .await
+                self.reward_activity(reward_user, amount.unwrap(), activity_id.unwrap())
+                    .await
             }
             RewardType::Publish => self.reward_author(reward_user).await,
             RewardType::Review => self.reward_reviewer(reward_user).await,
@@ -234,7 +219,6 @@ impl Foundation {
 
     pub(crate) async fn lock(
         &mut self,
-        activity_host: Owner,
         activity_id: u64,
         amount: Amount,
     ) -> Result<(), StateError> {
@@ -242,18 +226,9 @@ impl Foundation {
             Some(amount) => amount,
             None => Amount::ZERO,
         };
-        let _activity_host = match self.activity_owners.get(&activity_id).await? {
-            Some(user) => {
-                if activity_host != user {
-                    return Err(StateError::InvalidActivityOwner);
-                }
-                user
-            }
-            None => activity_host,
-        };
+        // TODO: check who can lock funds for activity here
         let amount = locked.try_add(amount)?;
         self.activity_lock_funds.insert(&activity_id, amount)?;
-        self.activity_owners.insert(&activity_id, _activity_host)?;
         Ok(())
     }
 
@@ -280,9 +255,6 @@ pub enum StateError {
 
     #[error("Arithmetic error")]
     ArithmeticError(#[from] ArithmeticError),
-
-    #[error("Invalid activity owner")]
-    InvalidActivityOwner,
 
     #[error("Invalid account")]
     InvalidAccount,

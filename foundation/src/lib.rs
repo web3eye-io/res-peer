@@ -66,7 +66,6 @@ pub enum ApplicationCall {
     },
     Lock {
         activity_id: u64,
-        activity_host: Owner,
         amount: Amount,
     },
     Balance {
@@ -104,7 +103,6 @@ pub enum Message {
     },
     Lock {
         activity_id: u64,
-        activity_host: Owner,
         amount: Amount,
     },
 }
