@@ -59,15 +59,17 @@ const columns = computed(() => [
     name: 'ReviewState',
     label: 'Review State',
     field: (row: Activity) => {
-      const approvers = approvedThreshold.value > reviewerNumber.value ? approvedThreshold.value : reviewerNumber.value
-      if ((activityApplications.value.get(row.id)?.approved || 0) > approvers) {
+      const approvers = approvedThreshold.value > reviewerNumber.value ? reviewerNumber.value : approvedThreshold.value
+      const approved = activityApplications.value.get(row.id)?.approved
+      if (approved !== undefined && approved >= approvers) {
         return 'Approved'
       }
-      const rejecters = rejectedThreshold.value > reviewerNumber.value ? rejectedThreshold.value : reviewerNumber.value
-      if ((activityApplications.value.get(row.id)?.rejected || 0) > rejecters) {
+      const rejecters = rejectedThreshold.value > reviewerNumber.value ? reviewerNumber.value : rejectedThreshold.value
+      const rejected = activityApplications.value.get(row.id)?.rejected
+      if (rejected !== undefined && rejected >= rejecters) {
         return 'Rejected'
       }
-      return `Reviewing (${activityApplications.value.get(row.id)?.approved || 0} approved, ${approvers} needed)`
+      return `Reviewing (${approved !== undefined ? approved : 0} approved, ${approvers} needed)`
     }
   }
 ])

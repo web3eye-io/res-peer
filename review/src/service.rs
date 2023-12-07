@@ -124,6 +124,22 @@ impl MutationRoot {
     async fn request_subscribe(&self) -> Vec<u8> {
         bcs::to_bytes(&Operation::RequestSubscribe {}).unwrap()
     }
+
+    async fn approve_activity(&self, activity_id: u64, reason: Option<String>) -> Vec<u8> {
+        bcs::to_bytes(&Operation::ApproveActivity {
+            activity_id,
+            reason,
+        })
+        .unwrap()
+    }
+
+    async fn reject_activity(&self, activity_id: u64, reason: String) -> Vec<u8> {
+        bcs::to_bytes(&Operation::RejectActivity {
+            activity_id,
+            reason,
+        })
+        .unwrap()
+    }
 }
 
 /// An error that can occur while querying the service.

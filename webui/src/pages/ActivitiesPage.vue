@@ -27,8 +27,11 @@ const activityApplications = computed(() => review.activityApplications)
 
 const activity = useActivityStore()
 const activities = computed(() => activity._activities().filter((el) => {
-  return (activityApplications.value.get(el.id)?.approved || 0) >= approvedThreshold.value ||
-         (activityApplications.value.get(el.id)?.approved || 0) >= reviewerNumber.value
+  const approved = activityApplications.value.get(el.id)?.approved
+  if (!approved) {
+    return false
+  }
+  return approved >= approvedThreshold.value || approved >= reviewerNumber.value
 }))
 
 </script>

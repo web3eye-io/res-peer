@@ -20,7 +20,7 @@
       <div :style='{marginTop: "24px"}'>
         <q-input v-model='reason' type='textarea' :label='$t("MSG_REVIEW_REASON")' :disable='reviewed' />
       </div>
-      <div :style='{marginTop: "24px"}' class='row'>
+      <div :style='{margin: "24px 0"}' class='row'>
         <q-btn :label='$t("MSG_APPROVE")' :style='{marginRight:"16px",color: _review?.approved ? "blue" : ""}' @click='onApproveClick' :disable='reviewed' />
         <q-btn :label='$t("MSG_REJECT")' :style='{color: _review && !_review?.approved ? "red" : ""}' @click='onRejectClick' :disable='reviewed' />
       </div>
@@ -81,7 +81,7 @@ const onApproveClick = async () => {
     console.log(error)
   })
   await mutate({
-    activityId,
+    activityId: parseInt(activityId.value.toString()),
     reason: reason.value,
     endpoint: 'review',
     chainId: targetChain.value
@@ -111,7 +111,7 @@ const onRejectClick = async () => {
     console.log(error)
   })
   await mutate({
-    activityId,
+    activityId: parseInt(activityId.value.toString()),
     reason: reason.value,
     endpoint: 'review',
     chainId: targetChain.value
