@@ -671,6 +671,20 @@ impl Review {
         Ok(())
     }
 
+    async fn lock_activity_funds(
+        &mut self,
+        activity_id: u64,
+        budget_amount: Amount,
+    ) -> Result<(), ContractError> {
+        let call = foundation::ApplicationCall::Lock {
+            activity_id,
+            amount: budget_amount,
+        };
+        self.call_application(true, Self::foundation_app_id()?, &call, vec![])
+            .await?;
+        Ok(())
+    }
+
     async fn _initialize(&mut self, state: InitialState) -> Result<(), ContractError> {
         self.initialize_review(state).await?;
         Ok(())
@@ -993,7 +1007,7 @@ impl Review {
         reason: Option<String>,
         creation_chain: bool,
     ) -> Result<(), ContractError> {
-        let _activity = self
+        let activity = self
             .approve_activity(owner, activity_id, reason.unwrap_or_default())
             .await?;
         if !creation_chain {
@@ -1001,7 +1015,10 @@ impl Review {
         }
         self.reward_credits(owner, Amount::from_tokens(50)).await?;
         self.reward_tokens().await?;
-        // TODO: here we should lock budget from foundation
+        if let Some(activity) = activity {
+            self.lock_activity_funds(activity_id, activity.budget_amount)
+                .await?;
+        }
         Ok(())
     }
 

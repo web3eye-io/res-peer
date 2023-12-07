@@ -587,7 +587,7 @@ pub enum StateError {
     #[error("Invalid reviewer")]
     InvalidReviewer,
 
-    #[error("Already reviewer")]
+    #[error("Already reviewed")]
     AlreadyReviewed,
 
     #[error("Invalid content")]

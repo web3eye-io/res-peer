@@ -168,6 +168,7 @@ impl Foundation {
         if balance.le(&amount) {
             return Err(StateError::InsufficientBalance);
         }
+        // TODO: distribute reward from locked activity balance
         self.reward_user(reward_user, amount).await?;
         self.activity_lock_funds
             .insert(&activity_id, balance.saturating_sub(amount))?;
@@ -222,6 +223,7 @@ impl Foundation {
         activity_id: u64,
         amount: Amount,
     ) -> Result<(), StateError> {
+        // TODO: check application balance
         let locked = match self.activity_lock_funds.get(&activity_id).await? {
             Some(amount) => amount,
             None => Amount::ZERO,
