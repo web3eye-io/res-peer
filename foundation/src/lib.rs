@@ -55,14 +55,21 @@ pub enum ApplicationCall {
         amount: Amount,
     },
     Reward {
-        // Review: sender is the reward user
-        // Author: sender is not the reward user
-        // Activity: sender is not the reward user
+        // Review: sender is the reward user (the reviewer)
+        // Author: sender is not the reward user but the reviewer
+        // Activity: sender must be the activity host
         reward_user: Option<Owner>,
         reward_type: RewardType,
         // For activity we have amount, for other type amount is determined by foundation
         amount: Option<Amount>,
         activity_id: Option<u64>,
+    },
+    ActivityRewards {
+        activity_id: u64,
+        winner_user: Owner,
+        voter_users: Vec<Owner>,
+        reward_amount: Amount,
+        voter_reward_percent: u8,
     },
     Lock {
         activity_id: u64,
@@ -92,14 +99,21 @@ pub enum Message {
         amount: Amount,
     },
     Reward {
-        // Review: sender is the reward user
-        // Author: sender is not the reward user
-        // Activity: sender is not the reward user
+        // Review: sender is the reward user (the reviewer)
+        // Author: sender is not the reward user but the reviewer
+        // Activity: sender must be the activity host
         reward_user: Option<Owner>,
         reward_type: RewardType,
         // For activity we have amount, for other type amount is determined by foundation
         amount: Option<Amount>,
         activity_id: Option<u64>,
+    },
+    ActivityRewards {
+        activity_id: u64,
+        winner_user: Owner,
+        voter_users: Vec<Owner>,
+        reward_amount: Amount,
+        voter_reward_percent: u8,
     },
     Lock {
         activity_id: u64,

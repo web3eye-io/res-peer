@@ -93,6 +93,7 @@ pub struct Asset {
 #[derive(Debug, Deserialize, Serialize, Clone, SimpleObject, Eq, PartialEq)]
 pub struct Activity {
     pub activity_id: u64,
+    pub activity_host: Owner,
     pub budget_amount: Amount,
     pub approved: u16,
     pub rejected: u16,
@@ -221,6 +222,7 @@ pub enum Message {
     },
     SubmitActivity {
         activity_id: u64,
+        activity_host: Owner,
         budget_amount: Amount,
     },
     ApproveActivity {
@@ -242,6 +244,7 @@ pub enum ApplicationCall {
     },
     SubmitActivity {
         activity_id: u64,
+        activity_host: Owner,
         budget_amount: Amount,
     },
     ActivityApproved {

@@ -6,7 +6,7 @@ use self::state::Foundation;
 use async_trait::async_trait;
 use foundation::{ApplicationCall, Message, Operation, RewardType};
 use linera_sdk::{
-    base::{ChannelName, Destination, SessionId, WithContractAbi},
+    base::{Amount, ChannelName, Destination, Owner, SessionId, WithContractAbi},
     contract::system_api,
     ApplicationCallResult, CalleeContext, Contract, ExecutionResult, MessageContext,
     OperationContext, SessionCallResult, ViewStateStorage,
@@ -148,6 +148,34 @@ impl Contract for Foundation {
                 Ok(ExecutionResult::default()
                     .with_authenticated_message(dest, Message::Transfer { from, to, amount }))
             }
+            Message::ActivityRewards {
+                activity_id,
+                winner_user,
+                voter_users,
+                reward_amount,
+                voter_reward_percent,
+            } => {
+                self._activity_rewards(
+                    activity_id,
+                    winner_user,
+                    voter_users.clone(),
+                    reward_amount,
+                    voter_reward_percent,
+                )
+                .await?;
+                let dest =
+                    Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
+                Ok(ExecutionResult::default().with_authenticated_message(
+                    dest,
+                    Message::ActivityRewards {
+                        activity_id,
+                        winner_user,
+                        voter_users,
+                        reward_amount,
+                        voter_reward_percent,
+                    },
+                ))
+            }
         }
     }
 
@@ -199,6 +227,22 @@ impl Contract for Foundation {
                 result.value = balance;
                 return Ok(result);
             }
+            ApplicationCall::ActivityRewards {
+                activity_id,
+                winner_user,
+                voter_users,
+                reward_amount,
+                voter_reward_percent,
+            } => ExecutionResult::default().with_authenticated_message(
+                system_api::current_application_id().creation.chain_id,
+                Message::ActivityRewards {
+                    activity_id,
+                    winner_user,
+                    voter_users,
+                    reward_amount,
+                    voter_reward_percent,
+                },
+            ),
         };
         let mut result = ApplicationCallResult::default();
         result.execution_result = execution_result;
@@ -217,6 +261,28 @@ impl Contract for Foundation {
     }
 }
 
+impl Foundation {
+    async fn _activity_rewards(
+        &mut self,
+        activity_id: u64,
+        winner_user: Owner,
+        voter_users: Vec<Owner>,
+        reward_amount: Amount,
+        voter_reward_percent: u8,
+    ) -> Result<(), ContractError> {
+        self.spend_activity_funds(activity_id, reward_amount)
+            .await?;
+        self.distribute_activity_rewards(
+            winner_user,
+            voter_users,
+            reward_amount,
+            voter_reward_percent,
+        )
+        .await?;
+        Ok(())
+    }
+}
+
 /// An error that can occur during the contract execution.
 #[derive(Debug, Error)]
 pub enum ContractError {
@@ -228,6 +294,9 @@ pub enum ContractError {
     #[error("Failed to deserialize JSON string")]
     JsonError(#[from] serde_json::Error),
 
+    #[error("View error")]
+    ViewError(#[from] linera_views::views::ViewError),
+
     // Add more error variants here.
     #[error(transparent)]
     StateError(#[from] state::StateError),
@@ -237,4 +306,7 @@ pub enum ContractError {
 
     #[error("Cross-application sessions not supported")]
     SessionsNotSupported,
+
+    #[error("Insufficient funds")]
+    InsufficientFunds,
 }

@@ -242,6 +242,79 @@ impl Foundation {
             .unwrap()
             .unwrap_or_default())
     }
+
+    pub(crate) async fn spend_activity_funds(
+        &mut self,
+        activity_id: u64,
+        reward_amount: Amount,
+    ) -> Result<(), StateError> {
+        match self.activity_lock_funds.get(&activity_id).await {
+            Ok(Some(funds)) => {
+                if funds < reward_amount {
+                    return Err(StateError::InsufficientBalance);
+                } else {
+                    self.activity_lock_funds
+                        .insert(&activity_id, funds.saturating_sub(reward_amount))?;
+                    Ok(())
+                }
+            }
+            Ok(None) => return Err(StateError::InvalidActivityFunds),
+            Err(err) => return Err(StateError::ViewError(err)),
+        }
+    }
+
+    pub(crate) async fn distribute_activity_rewards(
+        &mut self,
+        winner_user: Owner,
+        voter_users: Vec<Owner>,
+        reward_amount: Amount,
+        voter_reward_percent: u8,
+    ) -> Result<(), StateError> {
+        if voter_reward_percent > 100 {
+            return Err(StateError::InvalidPercent);
+        }
+        let balance = match self.user_balances.get(&winner_user).await {
+            Ok(Some(balance)) => balance,
+            _ => Amount::ZERO,
+        };
+        let winner_amount = Amount::from_tokens(
+            reward_amount
+                .saturating_mul(100 - voter_reward_percent as u128)
+                .saturating_div(Amount::from_atto(100)),
+        );
+        let balance = balance.saturating_add(winner_amount);
+        self.user_balances.insert(&winner_user, balance)?;
+
+        let mut user_balance_total = Amount::ZERO;
+        for user in voter_users.clone().into_iter() {
+            let balance = match self.user_balances.get(&user).await {
+                Ok(Some(balance)) => balance,
+                _ => Amount::ZERO,
+            };
+            user_balance_total = user_balance_total.saturating_add(balance);
+        }
+
+        let voter_amount = reward_amount.saturating_sub(winner_amount);
+        for user in voter_users.into_iter() {
+            let balance = match self.user_balances.get(&user).await {
+                Ok(Some(balance)) => balance,
+                _ => Amount::ZERO,
+            };
+            if balance == Amount::ZERO {
+                continue;
+            }
+            let percent = balance
+                .saturating_mul(100 as u128)
+                .saturating_div(user_balance_total);
+            let balance = balance.saturating_add(Amount::from_tokens(
+                voter_amount
+                    .saturating_div(Amount::from_atto(100))
+                    .saturating_mul(percent),
+            ));
+            self.user_balances.insert(&user, balance)?;
+        }
+        Ok(())
+    }
 }
 
 #[derive(Debug, Error)]
@@ -260,4 +333,7 @@ pub enum StateError {
 
     #[error("Invalid account")]
     InvalidAccount,
+
+    #[error("Invalid activity funds")]
+    InvalidActivityFunds,
 }

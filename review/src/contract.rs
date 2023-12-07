@@ -447,15 +447,18 @@ impl Contract for Review {
             }
             Message::SubmitActivity {
                 activity_id,
+                activity_host,
                 budget_amount,
             } => {
-                self._submit_activity(activity_id, budget_amount).await?;
+                self._submit_activity(activity_id, activity_host, budget_amount)
+                    .await?;
                 let dest =
                     Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
                 Ok(ExecutionResult::default().with_authenticated_message(
                     dest,
                     Message::SubmitActivity {
                         activity_id,
+                        activity_host,
                         budget_amount,
                     },
                 ))
@@ -531,6 +534,7 @@ impl Contract for Review {
             }
             ApplicationCall::SubmitActivity {
                 activity_id,
+                activity_host,
                 budget_amount,
             } => {
                 let mut result = ApplicationCallResult::default();
@@ -538,6 +542,7 @@ impl Contract for Review {
                     system_api::current_application_id().creation.chain_id,
                     Message::SubmitActivity {
                         activity_id,
+                        activity_host,
                         budget_amount,
                     },
                 );
@@ -994,9 +999,11 @@ impl Review {
     async fn _submit_activity(
         &mut self,
         activity_id: u64,
+        activity_host: Owner,
         budget_amount: Amount,
     ) -> Result<(), ContractError> {
-        self.submit_activity(activity_id, budget_amount).await?;
+        self.submit_activity(activity_id, activity_host, budget_amount)
+            .await?;
         Ok(())
     }
 

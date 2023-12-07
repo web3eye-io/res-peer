@@ -465,6 +465,7 @@ impl Review {
     pub(crate) async fn submit_activity(
         &mut self,
         activity_id: u64,
+        activity_host: Owner,
         budget_amount: Amount,
     ) -> Result<(), StateError> {
         match self.activity_applications.get(&activity_id).await {
@@ -473,6 +474,7 @@ impl Review {
                 &activity_id,
                 Activity {
                     activity_id,
+                    activity_host,
                     budget_amount,
                     approved: 0,
                     rejected: 0,

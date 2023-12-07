@@ -199,7 +199,7 @@ impl Contract for Activity {
                 Ok(result)
             }
             Message::Finalize { activity_id } => {
-                self.finalize(activity_id).await?;
+                self._finalize(activity_id).await?;
                 let dest =
                     Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
                 Ok(ExecutionResult::default()
@@ -266,6 +266,7 @@ impl Activity {
         let activity_id = self.create_activity(owner, params.clone()).await?;
         let call = review::ApplicationCall::SubmitActivity {
             activity_id,
+            activity_host: owner,
             budget_amount: params.budget_amount,
         };
         self.call_application(true, Self::review_app_id()?, &call, vec![])
@@ -279,5 +280,10 @@ impl Activity {
             .call_application(true, Self::review_app_id()?, &call, vec![])
             .await?;
         Ok(approved)
+    }
+
+    async fn _finalize(&mut self, activity_id: u64) -> Result<(), ActivityError> {
+        self.finalize(activity_id).await?;
+        Ok(())
     }
 }
