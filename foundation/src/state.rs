@@ -278,7 +278,7 @@ impl Foundation {
             Ok(Some(balance)) => balance,
             _ => Amount::ZERO,
         };
-        let winner_amount = Amount::from_tokens(
+        let winner_amount = Amount::from_atto(
             reward_amount
                 .saturating_mul(100 - voter_reward_percent as u128)
                 .saturating_div(Amount::from_atto(100)),
@@ -307,7 +307,7 @@ impl Foundation {
             let percent = balance
                 .saturating_mul(100 as u128)
                 .saturating_div(user_balance_total);
-            let balance = balance.saturating_add(Amount::from_tokens(
+            let balance = balance.saturating_add(Amount::from_atto(
                 voter_amount
                     .saturating_div(Amount::from_atto(100))
                     .saturating_mul(percent),
