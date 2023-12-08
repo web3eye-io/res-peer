@@ -320,6 +320,17 @@ impl Activity {
         Ok(())
     }
 
+    async fn reward_activity_host(&mut self, activity_id: u64) -> Result<(), ActivityError> {
+        let call = foundation::ApplicationCall::Reward {
+            reward_user: None,
+            reward_type: foundation::RewardType::Activity,
+            activity_id: Some(activity_id),
+        };
+        self.call_application(true, Self::foundation_app_id()?, &call, vec![])
+            .await?;
+        Ok(())
+    }
+
     async fn _finalize(&mut self, activity_id: u64) -> Result<(), ActivityError> {
         self.finalize(activity_id).await?;
         let activity = self.activity(activity_id).await?;
@@ -347,6 +358,7 @@ impl Activity {
             )
             .await?;
         }
+        self.reward_activity_host(activity_id).await?;
         Ok(())
     }
 }

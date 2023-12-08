@@ -596,7 +596,6 @@ impl Review {
         let call = foundation::ApplicationCall::Reward {
             reward_user: None,
             reward_type: foundation::RewardType::Review,
-            amount: None,
             activity_id: None,
         };
         self.call_application(true, Self::foundation_app_id()?, &call, vec![])

@@ -192,8 +192,16 @@ import { useCollectionStore } from 'src/stores/collection'
 import { useActivityStore, JoinType } from 'src/stores/activity'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from 'src/stores/user'
+import { provideApolloClient, useMutation } from '@vue/apollo-composable'
+import gql from 'graphql-tag'
+import { getClientOptions } from 'src/apollo'
+import { ApolloClient } from '@apollo/client/core'
 
 import ActivityVote from './ActivityVote.vue'
+import { targetChain } from 'src/stores/chain'
+
+const options = /* await */ getClientOptions(/* {app, router ...} */)
+const apolloClient = new ApolloClient(options)
 
 const collection = useCollectionStore()
 const splitter = ref(200)
@@ -231,7 +239,7 @@ const votable = () => {
 }
 
 const voteEnd = () => {
-  return (activity.value?.voteEndAt || 0) < Date.now()
+  return ((activity.value?.voteEndAt || 0) < Date.now() && !activity.value?.finalized) || true
 }
 
 const router = useRouter()
@@ -255,8 +263,23 @@ const onVoteClick = () => {
   })
 }
 
-const onFinalizeClick = () => {
-  // TODO
+const onFinalizeClick = async () => {
+  const { mutate, onDone, onError } = provideApolloClient(apolloClient)(() => useMutation(gql`
+    mutation finalize($activityId: Int!) {
+      finalize(activityId: $activityId)
+    }
+  `))
+  onDone(() => {
+    // TODO
+  })
+  onError((error) => {
+    console.log(error)
+  })
+  await mutate({
+    activityId: parseInt(activityId.value.toString()),
+    endpoint: 'activity',
+    chainId: targetChain.value
+  })
 }
 
 </script>

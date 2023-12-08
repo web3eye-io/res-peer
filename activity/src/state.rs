@@ -305,6 +305,7 @@ impl Activity {
         }
         activity.winners = winners;
         activity.finalized = true;
+        self.activities.insert(&activity_id, activity)?;
         Ok(())
     }
 }

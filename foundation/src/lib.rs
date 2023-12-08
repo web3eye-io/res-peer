@@ -62,8 +62,6 @@ pub enum ApplicationCall {
         // Activity: sender must be the activity host
         reward_user: Option<Owner>,
         reward_type: RewardType,
-        // For activity we have amount, for other type amount is determined by foundation
-        amount: Option<Amount>,
         activity_id: Option<u64>,
     },
     ActivityRewards {
@@ -104,10 +102,9 @@ pub enum Message {
         // Review: sender is the reward user (the reviewer)
         // Author: sender is not the reward user but the reviewer
         // Activity: sender must be the activity host
+        // TODO: for activity host reward we should review it
         reward_user: Option<Owner>,
         reward_type: RewardType,
-        // For activity we have amount, for other type amount is determined by foundation
-        amount: Option<Amount>,
         activity_id: Option<u64>,
     },
     ActivityRewards {

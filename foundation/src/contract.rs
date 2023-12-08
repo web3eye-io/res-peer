@@ -118,7 +118,6 @@ impl Contract for Foundation {
             Message::Reward {
                 reward_user,
                 reward_type,
-                amount,
                 activity_id,
             } => {
                 let reward_user = match reward_type {
@@ -129,8 +128,7 @@ impl Contract for Foundation {
                     Some(user) => user,
                     None => return Err(ContractError::InvalidUser),
                 };
-                self.reward(_reward_user, reward_type, amount, activity_id)
-                    .await?;
+                self.reward(_reward_user, reward_type, activity_id).await?;
                 let dest =
                     Destination::Subscribers(ChannelName::from(SUBSCRIPTION_CHANNEL.to_vec()));
                 Ok(ExecutionResult::default().with_authenticated_message(
@@ -138,7 +136,6 @@ impl Contract for Foundation {
                     Message::Reward {
                         reward_user,
                         reward_type,
-                        amount,
                         activity_id,
                     },
                 ))
@@ -207,14 +204,12 @@ impl Contract for Foundation {
             ApplicationCall::Reward {
                 reward_user,
                 reward_type,
-                amount,
                 activity_id,
             } => ExecutionResult::default().with_authenticated_message(
                 system_api::current_application_id().creation.chain_id,
                 Message::Reward {
                     reward_user,
                     reward_type,
-                    amount,
                     activity_id,
                 },
             ),

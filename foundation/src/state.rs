@@ -159,7 +159,6 @@ impl Foundation {
     pub(crate) async fn reward_activity(
         &mut self,
         reward_user: Owner,
-        amount: Amount,
         activity_id: u64,
     ) -> Result<(), StateError> {
         // TODO: check who can reward activity here
@@ -167,6 +166,7 @@ impl Foundation {
             Some(balance) => balance,
             None => return Err(StateError::InsufficientBalance),
         };
+        let amount = Amount::from_tokens(50);
         if balance.le(&amount) {
             return Err(StateError::InsufficientBalance);
         }
@@ -207,12 +207,11 @@ impl Foundation {
         &mut self,
         reward_user: Owner,
         reward_type: RewardType,
-        amount: Option<Amount>,
         activity_id: Option<u64>,
     ) -> Result<(), StateError> {
         match reward_type {
             RewardType::Activity => {
-                self.reward_activity(reward_user, amount.unwrap(), activity_id.unwrap())
+                self.reward_activity(reward_user, activity_id.unwrap())
                     .await
             }
             RewardType::Publish => self.reward_author(reward_user).await,

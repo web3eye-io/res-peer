@@ -303,7 +303,6 @@ impl Feed {
         let call = foundation::ApplicationCall::Reward {
             reward_user: Some(author),
             reward_type: foundation::RewardType::Publish,
-            amount: None,
             activity_id: None,
         };
         self.call_application(true, Self::foundation_app_id()?, &call, vec![])
