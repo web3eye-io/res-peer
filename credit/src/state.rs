@@ -27,7 +27,6 @@ impl Credit {
         if state.initial_supply.eq(&Amount::ZERO) {
             state.initial_supply = Amount::from_tokens(100000000);
         }
-        log::info!("Initialize credits {:?}", state);
         self.initial_supply.set(state.initial_supply);
         self.balance.set(state.initial_supply);
         self.amount_alive_ms.set(state.amount_alive_ms);

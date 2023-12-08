@@ -296,7 +296,7 @@ impl Activity {
             .await?;
         match author {
             Some(author) => Ok(author),
-            _ => Err(ActivityError::InvalidActivity),
+            _ => Err(ActivityError::InvalidContentAuthor),
         }
     }
 

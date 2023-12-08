@@ -216,14 +216,6 @@ impl Activity {
                 voters.insert(owner);
                 activity.voters.insert(object_id.clone(), voters.clone());
                 self.activities.insert(&activity_id, activity)?;
-                log::info!(
-                    "{} vote to {} power {} voters {:?} activity {:?}",
-                    owner,
-                    object_id,
-                    vote_power,
-                    voters,
-                    self.activities.get(&activity_id).await?
-                );
                 Ok(())
             }
             _ => return Err(ActivityError::ActivityObjectNotFound),

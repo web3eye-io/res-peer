@@ -412,27 +412,6 @@ impl Contract for Review {
                         Message::ExistReviewer { reviewer },
                     );
                 }
-                /*
-                let mut reviewers = Vec::new();
-                self.reviewers
-                    .for_each_index_value(|_index, reviewer| -> Result<(), ViewError> {
-                        reviewers.push(reviewer);
-                        Ok(())
-                    })
-                    .await?;
-                log::info!(
-                    "Synced reviewers to {} at {} creation {}",
-                    context.message_id.chain_id,
-                    context.chain_id,
-                    system_api::current_application_id().creation.chain_id
-                );
-                for reviewer in reviewers {
-                    result = result.with_authenticated_message(
-                        context.message_id.chain_id,
-                        Message::ExistReviewer { reviewer },
-                    );
-                }
-                */
                 result = result.with_authenticated_message(
                     context.message_id.chain_id,
                     Message::InitialState {

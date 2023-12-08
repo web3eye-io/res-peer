@@ -201,7 +201,6 @@ impl Market {
                         _ => return Err(StateError::CollectionNotExists),
                     };
                     if owner == buyer {
-                        log::info!("TODO: buyer could not be the same as owner");
                         return Err(StateError::BuyerIsOwner);
                     }
                     let mut token_owners = token_owners.clone();
