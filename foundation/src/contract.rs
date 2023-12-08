@@ -2,6 +2,8 @@
 
 mod state;
 
+use std::collections::HashSet;
+
 use self::state::Foundation;
 use async_trait::async_trait;
 use foundation::{ApplicationCall, Message, Operation, RewardType};
@@ -266,7 +268,7 @@ impl Foundation {
         &mut self,
         activity_id: u64,
         winner_user: Owner,
-        voter_users: Vec<Owner>,
+        voter_users: HashSet<Owner>,
         reward_amount: Amount,
         voter_reward_percent: u8,
     ) -> Result<(), ContractError> {

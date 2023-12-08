@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use async_graphql::{Request, Response};
 use linera_sdk::base::{Amount, ContractAbi, Owner, ServiceAbi};
 use serde::{Deserialize, Serialize};
@@ -67,7 +69,7 @@ pub enum ApplicationCall {
     ActivityRewards {
         activity_id: u64,
         winner_user: Owner,
-        voter_users: Vec<Owner>,
+        voter_users: HashSet<Owner>,
         reward_amount: Amount,
         voter_reward_percent: u8,
     },
@@ -111,7 +113,7 @@ pub enum Message {
     ActivityRewards {
         activity_id: u64,
         winner_user: Owner,
-        voter_users: Vec<Owner>,
+        voter_users: HashSet<Owner>,
         reward_amount: Amount,
         voter_reward_percent: u8,
     },

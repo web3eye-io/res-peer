@@ -215,26 +215,26 @@ impl Contract for Feed {
                 cid,
                 reason_cid,
                 reason,
-            } => {
-                let mut result = ApplicationCallResult::default();
-                result.execution_result = ExecutionResult::default().with_authenticated_message(
+            } => Ok(ApplicationCallResult {
+                value: None,
+                execution_result: ExecutionResult::default().with_authenticated_message(
                     system_api::current_application_id().creation.chain_id,
                     Message::Recommend {
                         cid,
                         reason_cid,
                         reason,
                     },
-                );
-                Ok(result)
-            }
+                ),
+                create_sessions: vec![],
+            }),
             ApplicationCall::Comment {
                 cid,
                 comment_cid,
                 comment,
                 commentor,
-            } => {
-                let mut result = ApplicationCallResult::default();
-                result.execution_result = ExecutionResult::default().with_authenticated_message(
+            } => Ok(ApplicationCallResult {
+                value: None,
+                execution_result: ExecutionResult::default().with_authenticated_message(
                     system_api::current_application_id().creation.chain_id,
                     Message::Comment {
                         cid,
@@ -242,17 +242,17 @@ impl Contract for Feed {
                         comment,
                         commentor,
                     },
-                );
-                Ok(result)
-            }
+                ),
+                create_sessions: vec![],
+            }),
             ApplicationCall::Publish {
                 cid,
                 title,
                 content,
                 author,
-            } => {
-                let mut result = ApplicationCallResult::default();
-                result.execution_result = ExecutionResult::default().with_authenticated_message(
+            } => Ok(ApplicationCallResult {
+                value: None,
+                execution_result: ExecutionResult::default().with_authenticated_message(
                     system_api::current_application_id().creation.chain_id,
                     Message::Publish {
                         cid,
@@ -260,9 +260,14 @@ impl Contract for Feed {
                         content,
                         author,
                     },
-                );
-                Ok(result)
-            }
+                ),
+                create_sessions: vec![],
+            }),
+            ApplicationCall::ContentAuthor { cid } => Ok(ApplicationCallResult {
+                value: Some(self.content_author(cid).await?),
+                execution_result: ExecutionResult::default(),
+                create_sessions: vec![],
+            }),
         }
     }
 

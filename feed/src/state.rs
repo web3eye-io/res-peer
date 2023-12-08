@@ -136,6 +136,14 @@ impl Feed {
         }
         Ok(())
     }
+
+    pub(crate) async fn content_author(&self, cid: String) -> Result<Owner, StateError> {
+        match self.contents.get(&cid).await {
+            Ok(Some(content)) => Ok(content.author),
+            Ok(None) => Err(StateError::InvalidContent),
+            Err(err) => Err(StateError::ViewError(err)),
+        }
+    }
 }
 
 /// Attempts to debit from an account with insufficient funds.
@@ -153,6 +161,9 @@ pub enum StateError {
 
     #[error("Only 1 like is allowed for each content")]
     TooManyLike,
+
+    #[error("Invalid content")]
+    InvalidContent,
 
     #[error("View error")]
     ViewError(#[from] linera_views::views::ViewError),

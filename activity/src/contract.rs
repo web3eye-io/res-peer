@@ -2,9 +2,12 @@
 
 mod state;
 
+use std::collections::HashSet;
+
 use self::state::Activity;
 use activity::{ActivityError, AnnounceParams, CreateParams, Message, Operation, VoteType};
 use async_trait::async_trait;
+use feed::FeedAbi;
 use foundation::FoundationAbi;
 use linera_sdk::{
     base::{Amount, ApplicationId, ChannelName, Destination, Owner, SessionId, WithContractAbi},
@@ -239,6 +242,10 @@ impl Activity {
         Ok(Self::parameters().unwrap().foundation_app_id)
     }
 
+    fn feed_app_id() -> Result<ApplicationId<FeedAbi>, ActivityError> {
+        Ok(Self::parameters().unwrap().feed_app_id)
+    }
+
     async fn create_announcement(&mut self, params: AnnounceParams) -> Result<(), ActivityError> {
         let call = review::ApplicationCall::SubmitContent {
             cid: params.cid,
@@ -282,8 +289,64 @@ impl Activity {
         Ok(approved)
     }
 
+    async fn content_author(&mut self, cid: String) -> Result<Owner, ActivityError> {
+        let call = feed::ApplicationCall::ContentAuthor { cid };
+        let (author, _) = self
+            .call_application(true, Self::feed_app_id()?, &call, vec![])
+            .await?;
+        match author {
+            Some(author) => Ok(author),
+            _ => Err(ActivityError::InvalidActivity),
+        }
+    }
+
+    async fn activity_rewards(
+        &mut self,
+        activity_id: u64,
+        winner_user: Owner,
+        voter_users: HashSet<Owner>,
+        reward_amount: Amount,
+        voter_reward_percent: u8,
+    ) -> Result<(), ActivityError> {
+        let call = foundation::ApplicationCall::ActivityRewards {
+            activity_id,
+            winner_user,
+            voter_users,
+            reward_amount,
+            voter_reward_percent,
+        };
+        self.call_application(true, Self::foundation_app_id()?, &call, vec![])
+            .await?;
+        Ok(())
+    }
+
     async fn _finalize(&mut self, activity_id: u64) -> Result<(), ActivityError> {
         self.finalize(activity_id).await?;
+        let activity = self.activity(activity_id).await?;
+        for winner in activity.winners {
+            let author = self.content_author(winner.clone().object_id).await?;
+            let voter_users = activity.voters.get(&winner.object_id).unwrap().clone();
+            let index = match activity
+                .prize_configs
+                .iter()
+                .position(|r| r.place == winner.place)
+            {
+                Some(index) => index,
+                _ => return Err(ActivityError::InvalidPrizeConfig),
+            };
+            let reward_amount = match activity.prize_configs[index].reward_amount {
+                Some(amount) => amount,
+                _ => Amount::ZERO,
+            };
+            self.activity_rewards(
+                activity_id,
+                author,
+                voter_users,
+                reward_amount,
+                activity.voter_reward_percent,
+            )
+            .await?;
+        }
         Ok(())
     }
 }

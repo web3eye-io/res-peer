@@ -34,6 +34,7 @@ impl ServiceAbi for ActivityAbi {
 pub struct ActivityParameters {
     pub review_app_id: ApplicationId<review::ReviewAbi>,
     pub foundation_app_id: ApplicationId<foundation::FoundationAbi>,
+    pub feed_app_id: ApplicationId<feed::FeedAbi>,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, Eq, PartialEq, Enum, Copy)]
@@ -68,10 +69,10 @@ pub struct ObjectCondition {
 
 #[derive(Debug, Deserialize, Serialize, Clone, SimpleObject, Eq, PartialEq, InputObject)]
 pub struct PrizeConfig {
-    place: u16,
-    medal: String,
-    title: String,
-    reward_amount: Option<Amount>,
+    pub place: u16,
+    pub medal: String,
+    pub title: String,
+    pub reward_amount: Option<Amount>,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, Eq, PartialEq, Enum, Copy)]
@@ -249,6 +250,12 @@ pub enum ActivityError {
 
     #[error("Account balance required")]
     AccountBalanceRequired,
+
+    #[error("Invalid content author")]
+    InvalidContentAuthor,
+
+    #[error("Invalid prize config")]
+    InvalidPrizeConfig,
 
     #[error("Invalid query")]
     InvalidQuery(#[from] serde_json::Error),

@@ -15,6 +15,7 @@ serde_json = { workspace = true }
 thiserror = { workspace = true }
 review = { workspace = true }
 foundation = { workspace = true }
+feed = { workspace = true }
 log = { workspace = true }
 
 [dev-dependencies]

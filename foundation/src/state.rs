@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use foundation::{InitialState, RewardType};
 use linera_sdk::{
     base::{Amount, ArithmeticError, Owner},
@@ -266,7 +268,7 @@ impl Foundation {
     pub(crate) async fn distribute_activity_rewards(
         &mut self,
         winner_user: Owner,
-        voter_users: Vec<Owner>,
+        voter_users: HashSet<Owner>,
         reward_amount: Amount,
         voter_reward_percent: u8,
     ) -> Result<(), StateError> {

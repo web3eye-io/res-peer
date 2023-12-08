@@ -14,7 +14,7 @@ impl ContractAbi for FeedAbi {
     type ApplicationCall = ApplicationCall;
     type SessionCall = ();
     type SessionState = ();
-    type Response = ();
+    type Response = Option<Owner>;
 }
 
 impl ServiceAbi for FeedAbi {
@@ -106,5 +106,8 @@ pub enum ApplicationCall {
         comment_cid: String,
         comment: String,
         commentor: Owner,
+    },
+    ContentAuthor {
+        cid: String,
     },
 }
