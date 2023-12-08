@@ -122,6 +122,8 @@ impl Contract for Foundation {
             } => {
                 let reward_user = match reward_type {
                     RewardType::Review => context.authenticated_signer,
+                    // TODO: activity reward should be reviewed then here will removed
+                    RewardType::Activity => context.authenticated_signer,
                     _ => reward_user,
                 };
                 let _reward_user = match reward_user {

@@ -239,7 +239,7 @@ const votable = () => {
 }
 
 const voteEnd = () => {
-  return ((activity.value?.voteEndAt || 0) < Date.now() && !activity.value?.finalized) || true
+  return (activity.value?.voteEndAt || 0) < Date.now() && !activity.value?.finalized
 }
 
 const router = useRouter()

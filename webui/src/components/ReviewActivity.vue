@@ -76,7 +76,7 @@ const onApproveClick = async () => {
     }
   `))
   onDone(() => {
-    // TODO
+    review.activityMutateKeys.push(Number(activityId.value))
   })
   onError((error) => {
     console.log(error)
@@ -87,12 +87,7 @@ const onApproveClick = async () => {
     endpoint: 'review',
     chainId: targetChain.value
   })
-  void router.push({
-    path: '/',
-    query: {
-      port: port.value
-    }
-  })
+  void router.back()
 }
 
 const onRejectClick = async () => {
