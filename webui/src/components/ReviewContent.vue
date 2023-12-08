@@ -67,6 +67,7 @@ import * as json from 'multiformats/codecs/json'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { targetChain } from 'src/stores/chain'
 import { useUserStore } from 'src/stores/user'
+import { v4 as uuidv4 } from 'uuid'
 
 interface Query {
   cid: string
@@ -83,7 +84,7 @@ const user = useUserStore()
 const account = computed(() => user.account)
 const reviewed = computed(() => review.contentReviewed(cid.value, account.value))
 const _review = computed(() => review.contentReview(cid.value, account.value))
-const reason = ref(_review.value?.reason || 'I supper like this article not only it\'s about Linera, but also it\'s write by KK.')
+const reason = ref(_review.value?.reason || 'I supper like this article not only it\'s about Linera, but also it\'s write by KK.' + uuidv4())
 const port = computed(() => Cookies.get('service-port'))
 
 const onApproveClick = async () => {

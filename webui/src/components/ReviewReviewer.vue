@@ -68,6 +68,7 @@ import { getClientOptions } from 'src/apollo'
 import { ApolloClient } from '@apollo/client/core'
 import { targetChain } from 'src/stores/chain'
 import { useUserStore } from 'src/stores/user'
+import { v4 as uuidv4 } from 'uuid'
 
 interface Query {
   reviewer: string
@@ -84,7 +85,7 @@ const user = useUserStore()
 const account = computed(() => user.account)
 const reviewed = computed(() => review.reviewerReviewed(candidate.value, account.value))
 const _review = computed(() => review.reviewerReview(candidate.value, account.value))
-const reason = ref(_review.value?.reason || 'I supper like this man not only it\'s from Linera, but also it\'s recommended by KK.')
+const reason = ref(_review.value?.reason || 'I supper like this man not only it\'s from Linera, but also it\'s recommended by KK.' + uuidv4())
 const port = computed(() => Cookies.get('service-port'))
 
 const onApproveClick = async () => {

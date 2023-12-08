@@ -41,6 +41,7 @@ import { ApolloClient } from '@apollo/client/core'
 import { targetChain } from 'src/stores/chain'
 import { useUserStore } from 'src/stores/user'
 import { Activity, useActivityStore } from 'src/stores/activity'
+import { v4 as uuidv4 } from 'uuid'
 
 import ActivityCard from './ActivityCard.vue'
 
@@ -61,7 +62,7 @@ const user = useUserStore()
 const account = computed(() => user.account)
 const reviewed = computed(() => review.activityReviewed(Number(activityId.value), account.value))
 const _review = computed(() => review.activityReview(Number(activityId.value), account.value))
-const reason = ref(_review.value?.reason || 'I supper like this activity, it will promote liquidity of Linera')
+const reason = ref(_review.value?.reason || 'I supper like this activity, it will promote liquidity of Linera' + uuidv4())
 const port = computed(() => Cookies.get('service-port'))
 
 const onApproveClick = async () => {
