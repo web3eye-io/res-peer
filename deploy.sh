@@ -100,7 +100,7 @@ sed -i "s/foundationApp =.*/foundationApp = '$foundation_appid'/g" webui/src/con
 sed -i "s/activityApp =.*/activityApp = '$activity_appid',/g" webui/src/const/index.ts
 
 function run_new_service() {
-  BASE_PORT=8080
+  BASE_PORT=9080
   port=`expr $BASE_PORT + $1`
   print $'\U01f499' $LIGHTGREEN " Wallet of $port service ..."
   linera --with-wallet $1 wallet show
