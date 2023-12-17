@@ -15,7 +15,7 @@ function print() {
 
 NODE_LOG_FILE=$HOME/linera-project/linera.log
 SERVICE_LOG_FILE=$HOME/linera-project/service_8080.log
-WALLET_NUMBER=3
+WALLET_NUMBER=4
 EXTRA_WALLET_NUMBER=`expr $WALLET_NUMBER - 1`
 
 print $'\U01F4AB' $YELLOW " Running lienra net, log in $NODE_LOG_FILE ..."
